@@ -107,6 +107,23 @@ struct State {
     State(): j1(-1), i1(-1), i2(-1), manner(MANNER_NONE), premanner(MANNER_NONE), score(VALUE_FMIN), seq1foldscore(VALUE_MIN), seq2foldscore(VALUE_MIN), alignscore(ALN_VALUE_MIN), startHMMstate(HMMMANNER_NONE), endHMMstate(HMMMANNER_NONE) {}; //  check(0)
     // State(value_type s, Manner m): score(s), manner(m) {};
 
+    void init() {
+        j1 = -1;
+        i1 = -1;
+        i2 = -1;
+
+        manner = MANNER_NONE;
+        premanner = MANNER_NONE;
+
+        score = VALUE_FMIN;
+        seq1foldscore = VALUE_MIN;
+        seq2foldscore = VALUE_MIN;
+        alignscore = ALN_VALUE_MIN;
+        
+        startHMMstate = HMMMANNER_NONE;
+        endHMMstate = HMMMANNER_NONE;
+    }
+
     void set(int j1_, int i1_, int i2_, int seq1foldscore_, int seq2foldscore_, Manner premanner_, Manner manner_, float alignscore_, float walignscore_, HMMManner start_manner, HMMManner end_manner) {
         // assert (Fast_Exp(alignscore_) <= 1.0001);
         // check = true;

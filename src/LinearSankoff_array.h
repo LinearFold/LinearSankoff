@@ -40,10 +40,10 @@ public:
     int sum_len;
     vector<SeqObject> sequences;
 
-    int aln_range;
+    // int aln_range;
     // int fold_range;
-    int valid_range;
-    vector<int> s2start;
+    // int valid_range;
+    // vector<int> s2start;
 
     SankoffParser(int beam_size, int beam_size2, float aln_weight, float energy_diff, bool is_verbose=false);
     ~SankoffParser(){}
@@ -54,10 +54,10 @@ public:
 
 private:
     // state, cost of folding and alignment, three-dimentional: [s, (j1*seq1len+i1)*seq2len+i2] 
-    // State3 **bestH, **bestP, **bestMulti;
-    unordered_map<int, State3> *bestH, *bestP, *bestMulti;
-    State **bestM, **bestM2;
-    State *bestC;
+    State3 ****bestH, ****bestP, ****bestMulti;
+    // unordered_map<int, State3> *bestH, *bestP, *bestMulti;
+    State ****bestM, ****bestM2;
+    State **bestC;
 
     vector<int> accumulated_regions;
 

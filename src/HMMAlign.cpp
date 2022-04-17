@@ -770,7 +770,7 @@ void BeamAlign::cal_align_prob(float threshold){
             up_bounds[i] = upbound;
         }
 
-        // cout << i << " " << low_bounds[i] << " " << up_bounds[i] << endl;
+        cout << i << " " << low_bounds[i] << " " << up_bounds[i] << endl;
         for (int k = low_bounds[i]; k <= up_bounds[i]; k++) {
             max_j1[i+k] = max(max_j1[i+k], i);
             min_j1[i+k] = min(min_j1[i+k], i);
