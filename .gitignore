@@ -33,4 +33,5 @@
 
 bin/*
 .vscode/*
-debug.*
+debug*
+*.sh

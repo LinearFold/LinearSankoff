@@ -203,6 +203,12 @@ struct State3 {
     State alnobj, ins1obj, ins2obj;
 
     State3(): alnobj(), ins1obj(), ins2obj() {}; // j1(-1), i1(-1), i2(-1),
+
+    void init() {
+        alnobj.init();
+        ins1obj.init();
+        ins2obj.init();
+    }
 };
 
 struct SeqObject {
@@ -532,7 +538,7 @@ inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int s
     assert (i2 >= 0);
     // if (verbose) cout << "update_if_better"  << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
     if (state.score <= seq1foldscore + seq2foldscore + wegiht * alignscore) {
-        if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
+        if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << " " << premanner << " " << manner << endl;
         state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, seq1_l1, seq1_l2, seq2_l1, seq2_l2, alignscore, wegiht * alignscore, start_manner, end_manner);
     }
 }
