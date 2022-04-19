@@ -61,9 +61,9 @@ using namespace std;
 // ----------------------------------------
 // log computation from RNAstructure
 #define USE_XLOG_ZERO
-#define DBL_MAX __DBL_MAX__
+// #define DBL_MAX __DBL_MAX__
 #ifdef USE_XLOG_ZERO
-    static const float LOG_OF_ZERO = -log(DBL_MAX)*1000;
+    static const float LOG_OF_ZERO = VALUE_FMIN;
     #define IS_LOG_ZERO(x) (x<=LOG_OF_ZERO)
 #endif
 // ----------------------------------------

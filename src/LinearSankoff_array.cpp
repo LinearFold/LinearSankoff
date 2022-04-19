@@ -918,48 +918,24 @@ tuple<string, string, string, string> SankoffParser::get_parentheses(SeqObject& 
 
 float SankoffParser::get_hmm_score(int i1, int j1, int i2, int j2, int s1, bool allowout){
     // (...)
-    // left bracket must in the alignable region
-    if (i2 < hmmalign.low_bounds[i1] || i2 > hmmalign.up_bounds[i1]) return xlog(0.0);
-
-    // if (allowout){
-    //     if (j2 >= hmmalign.low_bounds[j1] && j2 <= hmmalign.up_bounds[j1]) {
-    //         return hmmalign.all_local_scores[s1][i1][i2-hmmalign.low_bounds[i1]][j1-i1+1][j2-i2+1];
-    //     } else {
-    //         return hmmalign.viterbi_path_local(i1, j1, i2, j2, static_cast<HMMManner>(s1+1), static_cast<HMMManner>(s1+1));
-    //     }
-    // }
-    // if (j2 < hmmalign.low_bounds[j1]-10 || j2 > hmmalign.up_bounds[j1]+10) return xlog(0.0);
-
-    if (j2 < hmmalign.low_bounds[j1] || j2 > hmmalign.up_bounds[j1]) return xlog(0.0);
+    if (i2 < hmmalign.low_bounds[i1] || i2 > hmmalign.up_bounds[i1]) return LOG_OF_ZERO;
+    if (j2 < hmmalign.low_bounds[j1] || j2 > hmmalign.up_bounds[j1]) return LOG_OF_ZERO;
 
     return hmmalign.all_local_scores[s1][i1][i2-hmmalign.low_bounds[i1]][j1-i1+1][j2-i2+1];
 }
 
 float SankoffParser::get_hmm_score_left(int i1, int j1, int i2, int j2, int s1, int s2){
     // (-->(
-    // left bracket must in the alignable region
-    if (i2 < hmmalign.low_bounds[i1] || i2 > hmmalign.up_bounds[i1]) return xlog(0.0);
-    if (j2 < hmmalign.low_bounds[j1] || j2 > hmmalign.up_bounds[j1]) return xlog(0.0);
+    if (i2 < hmmalign.low_bounds[i1] || i2 > hmmalign.up_bounds[i1]) return LOG_OF_ZERO;
+    if (j2 < hmmalign.low_bounds[j1] || j2 > hmmalign.up_bounds[j1]) return LOG_OF_ZERO;
 
     return hmmalign.left_local_scores[s1][s2][i1][i2-hmmalign.low_bounds[i1]][j1-i1+1][j2-i2+1];
 }
 
 float SankoffParser::get_hmm_score_right(int i1, int j1, int i2, int j2, int s1, int s2, bool allowout){
     // )-->)
-    // right bracket can be out of the alignable region
-    // if (allowout) {
-    //     if (i2 >= hmmalign.low_bounds[i1] && i2 <= hmmalign.up_bounds[i1] && j2 >= hmmalign.low_bounds[j1] && j2 <= hmmalign.up_bounds[j1]) {
-    //         if ((j1-i1+1 < 30) && (j2-i2+1 < 30)) {
-    //             return hmmalign.right_local_scores[s1][s2][i1][i2-hmmalign.low_bounds[i1]][j1-i1+1][j2-i2+1];
-    //         }
-    //     }
-    //     return hmmalign.viterbi_path_local_right(i1, j1, i2, j2, static_cast<HMMManner>(s1+1), static_cast<HMMManner>(s2+1), false);
-    // }
-    // if (i2 < hmmalign.low_bounds[i1]-10 || i2 > hmmalign.up_bounds[i1]+10) return xlog(0.0);
-    // if (j2 < hmmalign.low_bounds[j1]-10 || j2 > hmmalign.up_bounds[j1]+10) return xlog(0.0);
-
-    if (i2 < hmmalign.low_bounds[i1] || i2 > hmmalign.up_bounds[i1]) return xlog(0.0);
-    if (j2 < hmmalign.low_bounds[j1] || j2 > hmmalign.up_bounds[j1]) return xlog(0.0);
+    if (i2 < hmmalign.low_bounds[i1] || i2 > hmmalign.up_bounds[i1]) return LOG_OF_ZERO;
+    if (j2 < hmmalign.low_bounds[j1] || j2 > hmmalign.up_bounds[j1]) return LOG_OF_ZERO;
 
     if ((j1-i1+1 > 30) || (j2-i2+1 > 30))
         return hmmalign.viterbi_path_local_right(i1, j1, i2, j2, static_cast<HMMManner>(s1+1), static_cast<HMMManner>(s2+1));
@@ -2725,7 +2701,7 @@ void SankoffParser::parse(const vector<string> &seqs){
         if (verbose) cout << "push H" << endl;
         for (int j1=hmmalign.min_j1[s]; j1<=hmmalign.max_j1[s]; j1++) {
             int j2 = s - j1;
-            if (j2 < 1 || j2 >= seq2->seq_len - 1) continue; // boundary case
+            if (j1 < 1 || j2 < 1 || j2 >= seq2->seq_len - 1) continue; // boundary case
 
             // hmm constraint, left bracket
             if (j2 > hmmalign.up_bounds[j1] || j2 < hmmalign.low_bounds[j1]) continue;
@@ -2755,22 +2731,25 @@ void SankoffParser::parse(const vector<string> &seqs){
                     if (verbose) cout << "hairpin candidates: " << j1 << " " << j1next << " " << j2 << " " << j2next << endl;
 
                     float alignscore = get_hmm_score(j1, j1next, j2, j2next, 2);
-                    update_if_better(j1, j1next, j2, j2next,
-                                    bestH[j1][j1next][j2][j2next].alnobj,
-                                    newscore1.second, newscore2.second, MANNER_NONE, MANNER_H_ALN, 
-                                    alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+                    if (alignscore > LOG_OF_ZERO)
+                        update_if_better(j1, j1next, j2, j2next,
+                                        bestH[j1][j1next][j2][j2next].alnobj,
+                                        newscore1.second, newscore2.second, MANNER_NONE, MANNER_H_ALN, 
+                                        alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
 
                     float ins1score = get_hmm_score(j1, j1next, j2+1, j2next-1, 0);
-                    update_if_better(j1, j1next, j2, j2next,
-                                    bestH[j1][j1next][j2][j2next].ins1obj,
-                                    newscore1.second, newscore2.second, MANNER_NONE, MANNER_H_INS1, 
-                                    ins1score, MANNER_INS1, MANNER_INS1, weight, verbose);
+                    if (ins1score > LOG_OF_ZERO)
+                        update_if_better(j1, j1next, j2, j2next,
+                                        bestH[j1][j1next][j2][j2next].ins1obj,
+                                        newscore1.second, newscore2.second, MANNER_NONE, MANNER_H_INS1, 
+                                        ins1score, MANNER_INS1, MANNER_INS1, weight, verbose);
 
                     float ins2score = get_hmm_score(j1+1, j1next-1, j2, j2next, 1);
-                    update_if_better(j1, j1next, j2, j2next,
-                                    bestH[j1][j1next][j2][j2next].ins2obj,
-                                    newscore1.second, newscore2.second, MANNER_NONE, MANNER_H_INS2, 
-                                    ins2score, MANNER_INS2, MANNER_INS2, weight, verbose);
+                    if (ins2score > LOG_OF_ZERO)
+                        update_if_better(j1, j1next, j2, j2next,
+                                        bestH[j1][j1next][j2][j2next].ins2obj,
+                                        newscore1.second, newscore2.second, MANNER_NONE, MANNER_H_INS2, 
+                                        ins2score, MANNER_INS2, MANNER_INS2, weight, verbose);
 
                     // 2. generate p(i, j)
                     // only check hmm constraints for right side when convert to P
@@ -2778,20 +2757,23 @@ void SankoffParser::parse(const vector<string> &seqs){
                     if (seq1_P_pairs[j1next][j1] && seq2_P_pairs[j2next][j2]) {
                         if (verbose) cout << "H to P: " << j1 << " " << j1next << " " << j2 << " " << j2next << endl; 
 
-                        update_if_better(j1, j1next, j2, j2next,
-                                        bestP[j1][j1next][j2][j2next].alnobj,
-                                        newscore1.second, newscore2.second, MANNER_H_ALN, MANNER_HAIRPIN_ALN, 
-                                        alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
-                    
-                        update_if_better(j1, j1next, j2, j2next,
-                                        bestP[j1][j1next][j2][j2next].ins1obj,
-                                        newscore1.second, newscore2.second, MANNER_H_INS1, MANNER_HAIRPIN_INS1, 
-                                        ins1score, MANNER_INS1, MANNER_INS1, weight, verbose);
+                        if (alignscore > LOG_OF_ZERO)
+                            update_if_better(j1, j1next, j2, j2next,
+                                            bestP[j1][j1next][j2][j2next].alnobj,
+                                            newscore1.second, newscore2.second, MANNER_H_ALN, MANNER_HAIRPIN_ALN, 
+                                            alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
 
-                        update_if_better(j1, j1next, j2, j2next,
-                                        bestP[j1][j1next][j2][j2next].ins2obj,
-                                        newscore1.second, newscore2.second, MANNER_H_INS2, MANNER_HAIRPIN_INS2, 
-                                        ins2score, MANNER_INS2, MANNER_INS2, weight, verbose);
+                        if (ins1score > LOG_OF_ZERO)
+                            update_if_better(j1, j1next, j2, j2next,
+                                            bestP[j1][j1next][j2][j2next].ins1obj,
+                                            newscore1.second, newscore2.second, MANNER_H_INS1, MANNER_HAIRPIN_INS1, 
+                                            ins1score, MANNER_INS1, MANNER_INS1, weight, verbose);
+
+                        if (ins2score > LOG_OF_ZERO)
+                            update_if_better(j1, j1next, j2, j2next,
+                                            bestP[j1][j1next][j2][j2next].ins2obj,
+                                            newscore1.second, newscore2.second, MANNER_H_INS2, MANNER_HAIRPIN_INS2, 
+                                            ins2score, MANNER_INS2, MANNER_INS2, weight, verbose);
                     } // H->P(i, j)
                 }
             }
@@ -2827,6 +2809,36 @@ void SankoffParser::parse(const vector<string> &seqs){
                         }
 
                         State3& state3 = bestMulti[i1][j1][i2][j2];
+
+                        // 2. generate P (i, j)
+                        // single seq folding subopt
+                        if (seq1_P_pairs[j1][i1] && seq2_P_pairs[j2][i2]){
+                            if (verbose) cout << "Multi to P: " << i1 << " " << j1 << " " << i2 << " " << j2 << endl;                            
+
+                            int score1 = multiloop2Pscore(i1, j1, seq1);
+                            int score2 = multiloop2Pscore(i2, j2, seq2);
+
+                            if (state3.alnobj.manner != MANNER_NONE)
+                                update_if_better(i1, j1, i2, j2, bestP[i1][j1][i2][j2].alnobj,
+                                                state3.alnobj.seq1foldscore + score1, 
+                                                state3.alnobj.seq2foldscore + score2,
+                                                state3.alnobj.manner, MANNER_P_eq_MULTI_ALN,
+                                                state3.alnobj.alignscore, state3.alnobj.startHMMstate, state3.alnobj.endHMMstate, weight, verbose);
+                            if (state3.ins1obj.manner != MANNER_NONE)
+                                update_if_better(i1, j1, i2, j2, bestP[i1][j1][i2][j2].ins1obj,
+                                                state3.ins1obj.seq1foldscore + score1, 
+                                                state3.ins1obj.seq2foldscore + score2,
+                                                state3.ins1obj.manner, MANNER_P_eq_MULTI_INS1,
+                                                state3.ins1obj.alignscore, state3.ins1obj.startHMMstate, state3.ins1obj.endHMMstate, weight, verbose);
+                            if (state3.ins2obj.manner != MANNER_NONE)
+                                update_if_better(i1, j1, i2, j2, bestP[i1][j1][i2][j2].ins2obj,
+                                                state3.ins2obj.seq1foldscore + score1, 
+                                                state3.ins2obj.seq2foldscore + score2,
+                                                state3.ins2obj.manner, MANNER_P_eq_MULTI_INS2,
+                                                state3.ins2obj.alignscore, state3.ins2obj.startHMMstate, state3.ins2obj.endHMMstate, weight, verbose);
+                        } // 2. generate P (i, j)
+
+                        /*
                         State state;
                         for (int m=0; m<3; m++){
                             switch (m)
@@ -2847,7 +2859,6 @@ void SankoffParser::parse(const vector<string> &seqs){
                             if (state.manner == MANNER_NONE) continue;
                         
                             // 1. extend (i, j) to (i, jnext)
-                            /*
                             {
                                 tuple<int, int, char, int> result1 = multiloopUnpairedScore(i1, j1, seq1, &state.trace1);
                                 tuple<int, int, char, int> result2 = multiloopUnpairedScore(i2, j2, seq2, &state.trace2);
@@ -3013,7 +3024,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                                     }
                                 }
                             } // 1. extend (i, j) to (i, jnext)
-                            */
+                            
 
                             // 2. generate P (i, j)
                             // only check hmm constrain when convert to P? check in dynalign
@@ -3045,6 +3056,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                                                     state.alignscore, state.startHMMstate, state.endHMMstate, weight, verbose);
                             } // 2. generate P (i, j)
                         } // loop state ALN/INS1/INS2
+                        */
                         i2 = seq2->next_pair[nucj2][i2];
                     } // while loop i2
                     i1 = seq1->next_pair[nucj1][i1];
@@ -3165,13 +3177,14 @@ void SankoffParser::parse(const vector<string> &seqs){
                                                     alignscore = xlog_mul(pre_align_trans, state.alignscore);
                                                     alignscore = xlog_mul(alignscore, post_align_trans);
                                     
-                                                    update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].alnobj, // bestPALN[q1+q2][get_key1(q1, p1, p2)],  // helix, one branch using one state MANNER_SINGLE
-                                                                    state.seq1foldscore + p2p1,
-                                                                    state.seq2foldscore + p2p2,
-                                                                    state.manner, MANNER_SINGLE_ALN, 
-                                                                    static_cast<char>(i1 - p1), q1 - j1,
-                                                                    static_cast<char>(i2 - p2), q2 - j2,
-                                                                    alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+                                                    if (alignscore > LOG_OF_ZERO)
+                                                        update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].alnobj, // bestPALN[q1+q2][get_key1(q1, p1, p2)],  // helix, one branch using one state MANNER_SINGLE
+                                                                        state.seq1foldscore + p2p1,
+                                                                        state.seq2foldscore + p2p2,
+                                                                        state.manner, MANNER_SINGLE_ALN, 
+                                                                        static_cast<char>(i1 - p1), q1 - j1,
+                                                                        static_cast<char>(i2 - p2), q2 - j2,
+                                                                        alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
 
                                                     // si == sj == INS1
                                                     // align cost = (p, i) + (i, j) + (j, q); p2+1, q2-1
@@ -3181,13 +3194,14 @@ void SankoffParser::parse(const vector<string> &seqs){
                                                     alignscore = xlog_mul(pre_align_trans, state.alignscore);
                                                     alignscore = xlog_mul(alignscore, post_align_trans); 
 
-                                                    update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].ins1obj, // bestPINS1[q1+q2][get_key1(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
-                                                                    state.seq1foldscore + p2p1,
-                                                                    state.seq2foldscore + p2p2,
-                                                                    state.manner, MANNER_SINGLE_INS1, 
-                                                                    static_cast<char>(i1 - p1), q1 - j1,
-                                                                    static_cast<char>(i2 - p2), q2 - j2,
-                                                                    alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
+                                                    if (alignscore > LOG_OF_ZERO)
+                                                        update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].ins1obj, // bestPINS1[q1+q2][get_key1(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
+                                                                        state.seq1foldscore + p2p1,
+                                                                        state.seq2foldscore + p2p2,
+                                                                        state.manner, MANNER_SINGLE_INS1, 
+                                                                        static_cast<char>(i1 - p1), q1 - j1,
+                                                                        static_cast<char>(i2 - p2), q2 - j2,
+                                                                        alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
 
                                                     // si == sj == INS2
                                                     // align cost = (p, i) + (i, j) + (j, q);
@@ -3197,13 +3211,14 @@ void SankoffParser::parse(const vector<string> &seqs){
                                                     alignscore = xlog_mul(pre_align_trans, state.alignscore);
                                                     alignscore = xlog_mul(alignscore, post_align_trans);
 
-                                                    update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].ins2obj, // bestPINS2[q1+q2][get_key1(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
-                                                                    state.seq1foldscore + p2p1,
-                                                                    state.seq2foldscore + p2p2,
-                                                                    state.manner, MANNER_SINGLE_INS2, 
-                                                                    static_cast<char>(i1 - p1), q1 - j1, // char?? int?? 
-                                                                    static_cast<char>(i2 - p2), q2 - j2,
-                                                                    alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+                                                    if (alignscore > LOG_OF_ZERO)
+                                                        update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].ins2obj, // bestPINS2[q1+q2][get_key1(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
+                                                                        state.seq1foldscore + p2p1,
+                                                                        state.seq2foldscore + p2p2,
+                                                                        state.manner, MANNER_SINGLE_INS2, 
+                                                                        static_cast<char>(i1 - p1), q1 - j1, // char?? int?? 
+                                                                        static_cast<char>(i2 - p2), q2 - j2,
+                                                                        alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
                                                 } // ALN -> ALN/INS1/INS2
 
                                                 q2 = seq2->next_pair[nucp2][q2];
@@ -3253,11 +3268,12 @@ void SankoffParser::parse(const vector<string> &seqs){
                                                 float alignscore = xlog_mul(mstate.alignscore, hmmalign.trans_probs[mstate.endHMMstate-1][MANNER_ALN-1]); 
                                                 alignscore = xlog_mul(alignscore, state.alignscore);
                                                 
-                                                update_if_better(newi1, j1, newi2, j2, bestM2[newi1][j1][newi2][j2],
-                                                                mstate.seq1foldscore + newscore1 + state.seq1foldscore,
-                                                                mstate.seq2foldscore + newscore2 + state.seq2foldscore,
-                                                                mstate.manner, MANNER_M2_eq_M_plus_P, k1, k2,
-                                                                alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+                                                if (alignscore > LOG_OF_ZERO)
+                                                    update_if_better(newi1, j1, newi2, j2, bestM2[newi1][j1][newi2][j2],
+                                                                    mstate.seq1foldscore + newscore1 + state.seq1foldscore,
+                                                                    mstate.seq2foldscore + newscore2 + state.seq2foldscore,
+                                                                    mstate.manner, MANNER_M2_eq_M_plus_P, k1, k2,
+                                                                    alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
                                             }
                                         }
                                     } // 3. M2 = M + P 
@@ -3275,12 +3291,13 @@ void SankoffParser::parse(const vector<string> &seqs){
                                             float alignscore = xlog_mul(prefix_C.alignscore, hmmalign.trans_probs[prefix_C.endHMMstate-1][MANNER_ALN-1]); 
                                             alignscore = xlog_mul(alignscore, state.alignscore); 
 
-                                            update_if_better(0, j1, 0, j2, bestC[j1][j2],
-                                                            prefix_C.seq1foldscore + state.seq1foldscore + newscore1,
-                                                            prefix_C.seq2foldscore + state.seq2foldscore + newscore2, 
-                                                            prefix_C.manner, MANNER_C_eq_C_plus_P,
-                                                            k1, k2,
-                                                            alignscore, prefix_C.startHMMstate, state.endHMMstate, weight, verbose);  
+                                            if (alignscore > LOG_OF_ZERO)
+                                                update_if_better(0, j1, 0, j2, bestC[j1][j2],
+                                                                prefix_C.seq1foldscore + state.seq1foldscore + newscore1,
+                                                                prefix_C.seq2foldscore + state.seq2foldscore + newscore2, 
+                                                                prefix_C.manner, MANNER_C_eq_C_plus_P,
+                                                                k1, k2,
+                                                                alignscore, prefix_C.startHMMstate, state.endHMMstate, weight, verbose);  
                                         }             
                                     } // 4. C = C + P
                                 } // 3. M2 = M + P and 4. C = C + P
@@ -3339,13 +3356,14 @@ void SankoffParser::parse(const vector<string> &seqs){
                                             alignscore = xlog_mul(pre_align_trans, in2state.alignscore);
                                             alignscore = xlog_mul(alignscore, post_align_trans);
                             
-                                            update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].alnobj, // bestPALN[q1+q2][get_key1(q1, p1, p2)],  // helix, one branch using one state MANNER_SINGLE
-                                                            in2state.seq1foldscore + p2p1,
-                                                            in2state.seq2foldscore + p2p2,
-                                                            in2state.manner, MANNER_SINGLE_ALN, 
-                                                            static_cast<char>(i1 - p1), q1 - j1,
-                                                            static_cast<char>(i2 - p2), q2 - j2,
-                                                            alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+                                            if (alignscore > LOG_OF_ZERO)
+                                                update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].alnobj, // bestPALN[q1+q2][get_key1(q1, p1, p2)],  // helix, one branch using one state MANNER_SINGLE
+                                                                in2state.seq1foldscore + p2p1,
+                                                                in2state.seq2foldscore + p2p2,
+                                                                in2state.manner, MANNER_SINGLE_ALN, 
+                                                                static_cast<char>(i1 - p1), q1 - j1,
+                                                                static_cast<char>(i2 - p2), q2 - j2,
+                                                                alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
 
                                             // si == sj == INS1
                                             // align cost = (p, i) + (i, j) + (j, q); p2+1, q2-1
@@ -3355,13 +3373,14 @@ void SankoffParser::parse(const vector<string> &seqs){
                                             alignscore = xlog_mul(pre_align_trans, in2state.alignscore);
                                             alignscore = xlog_mul(alignscore, post_align_trans); 
 
-                                            update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].ins1obj, // bestPINS1[q1+q2][get_key1(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
-                                                            in2state.seq1foldscore + p2p1,
-                                                            in2state.seq2foldscore + p2p2,
-                                                            in2state.manner, MANNER_SINGLE_INS1, 
-                                                            static_cast<char>(i1 - p1), q1 - j1,
-                                                            static_cast<char>(i2 - p2), q2 - j2,
-                                                            alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
+                                            if (alignscore > LOG_OF_ZERO)
+                                                update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].ins1obj, // bestPINS1[q1+q2][get_key1(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
+                                                                in2state.seq1foldscore + p2p1,
+                                                                in2state.seq2foldscore + p2p2,
+                                                                in2state.manner, MANNER_SINGLE_INS1, 
+                                                                static_cast<char>(i1 - p1), q1 - j1,
+                                                                static_cast<char>(i2 - p2), q2 - j2,
+                                                                alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
 
                                             // si == sj == INS2
                                             // align cost = (p, i) + (i, j) + (j, q);
@@ -3371,13 +3390,14 @@ void SankoffParser::parse(const vector<string> &seqs){
                                             alignscore = xlog_mul(pre_align_trans, in2state.alignscore);
                                             alignscore = xlog_mul(alignscore, post_align_trans);
 
-                                            update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].ins2obj, // bestPINS2[q1+q2][get_key1(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
-                                                            in2state.seq1foldscore + p2p1,
-                                                            in2state.seq2foldscore + p2p2,
-                                                            in2state.manner, MANNER_SINGLE_INS2, 
-                                                            static_cast<char>(i1 - p1), q1 - j1, // char?? int?? 
-                                                            static_cast<char>(i2 - p2), q2 - j2,
-                                                            alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+                                            if (alignscore > LOG_OF_ZERO)
+                                                update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].ins2obj, // bestPINS2[q1+q2][get_key1(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
+                                                                in2state.seq1foldscore + p2p1,
+                                                                in2state.seq2foldscore + p2p2,
+                                                                in2state.manner, MANNER_SINGLE_INS2, 
+                                                                static_cast<char>(i1 - p1), q1 - j1, // char?? int?? 
+                                                                static_cast<char>(i2 - p2), q2 - j2,
+                                                                alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
                                         } 
                                         q2 = seq2->next_pair[nucp2][q2];
                                     } // while loop q2
@@ -3436,13 +3456,14 @@ void SankoffParser::parse(const vector<string> &seqs){
                                             post_align_trans = get_hmm_score_right(j1, q1, j2, q2, m, 2);
                                             alignscore = xlog_mul(pre_align_trans, ins1state.alignscore);
                                             alignscore = xlog_mul(alignscore, post_align_trans);
-                                            update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].alnobj, // bestPALN[q1+q2][get_key1(q1, p1, p2)],  // helix, one branch using one state MANNER_SINGLE
-                                                            ins1state.seq1foldscore + p2p1,
-                                                            ins1state.seq2foldscore + p2p2,
-                                                            ins1state.manner, MANNER_SINGLE_ALN, 
-                                                            static_cast<char>(i1 - p1), q1 - j1,
-                                                            static_cast<char>(i2 - p2), q2 - j2,
-                                                            alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+                                            if (alignscore > LOG_OF_ZERO)
+                                                update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].alnobj, // bestPALN[q1+q2][get_key1(q1, p1, p2)],  // helix, one branch using one state MANNER_SINGLE
+                                                                ins1state.seq1foldscore + p2p1,
+                                                                ins1state.seq2foldscore + p2p2,
+                                                                ins1state.manner, MANNER_SINGLE_ALN, 
+                                                                static_cast<char>(i1 - p1), q1 - j1,
+                                                                static_cast<char>(i2 - p2), q2 - j2,
+                                                                alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
 
                                             // si == sj == INS1
                                             // align cost = (p, i) + (i, j) + (j, q); p2+1, q2-1
@@ -3450,13 +3471,14 @@ void SankoffParser::parse(const vector<string> &seqs){
                                             post_align_trans = get_hmm_score_right(j1, q1, j2, q2-1, m, 0); 
                                             alignscore = xlog_mul(pre_align_trans, ins1state.alignscore);
                                             alignscore = xlog_mul(alignscore, post_align_trans); 
-                                            update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].ins1obj, // bestPINS1[q1+q2][get_key1(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
-                                                            ins1state.seq1foldscore + p2p1,
-                                                            ins1state.seq2foldscore + p2p2,
-                                                            ins1state.manner, MANNER_SINGLE_INS1, 
-                                                            static_cast<char>(i1 - p1), q1 - j1,
-                                                            static_cast<char>(i2 - p2), q2 - j2,
-                                                            alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
+                                            if (alignscore > LOG_OF_ZERO)
+                                                update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].ins1obj, // bestPINS1[q1+q2][get_key1(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
+                                                                ins1state.seq1foldscore + p2p1,
+                                                                ins1state.seq2foldscore + p2p2,
+                                                                ins1state.manner, MANNER_SINGLE_INS1, 
+                                                                static_cast<char>(i1 - p1), q1 - j1,
+                                                                static_cast<char>(i2 - p2), q2 - j2,
+                                                                alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
 
                                             // si == sj == INS2
                                             // align cost = (p, i) + (i, j) + (j, q);
@@ -3464,13 +3486,14 @@ void SankoffParser::parse(const vector<string> &seqs){
                                             post_align_trans = get_hmm_score_right(j1, q1-1, j2, q2, m, 1);
                                             alignscore = xlog_mul(pre_align_trans, ins1state.alignscore);
                                             alignscore = xlog_mul(alignscore, post_align_trans);
-                                            update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].ins2obj, // bestPINS2[q1+q2][get_key1(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
-                                                            ins1state.seq1foldscore + p2p1,
-                                                            ins1state.seq2foldscore + p2p2,
-                                                            ins1state.manner, MANNER_SINGLE_INS2, 
-                                                            static_cast<char>(i1 - p1), q1 - j1, // char?? int?? 
-                                                            static_cast<char>(i2 - p2), q2 - j2,
-                                                            alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+                                            if (alignscore > LOG_OF_ZERO)
+                                                update_if_better(p1, q1, p2, q2, bestP[p1][q1][p2][q2].ins2obj, // bestPINS2[q1+q2][get_key1(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
+                                                                ins1state.seq1foldscore + p2p1,
+                                                                ins1state.seq2foldscore + p2p2,
+                                                                ins1state.manner, MANNER_SINGLE_INS2, 
+                                                                static_cast<char>(i1 - p1), q1 - j1, // char?? int?? 
+                                                                static_cast<char>(i2 - p2), q2 - j2,
+                                                                alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
                                         } // ALN -> ALN/INS1/INS2
     
                                         q1 = seq1->next_pair[nucp1][q1];
@@ -3556,13 +3579,14 @@ void SankoffParser::parse(const vector<string> &seqs){
                                                 alignscore = xlog_mul(pre_align_trans, state.alignscore);
                                                 alignscore = xlog_mul(alignscore, post_align_trans);
 
-                                                update_if_better(p1, q1, p2, q2, bestMulti[p1][q1][p2][q2].alnobj,
-                                                                state.seq1foldscore + newscore1,
-                                                                state.seq2foldscore + newscore2, 
-                                                                state.manner, MANNER_MULTI_ALN,
-                                                                static_cast<char>(i1 - p1), q1 - j1,
-                                                                static_cast<char>(i2 - p2), q2 - j2,
-                                                                alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+                                                if (alignscore > LOG_OF_ZERO)
+                                                    update_if_better(p1, q1, p2, q2, bestMulti[p1][q1][p2][q2].alnobj,
+                                                                    state.seq1foldscore + newscore1,
+                                                                    state.seq2foldscore + newscore2, 
+                                                                    state.manner, MANNER_MULTI_ALN,
+                                                                    static_cast<char>(i1 - p1), q1 - j1,
+                                                                    static_cast<char>(i2 - p2), q2 - j2,
+                                                                    alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
 
                                                 // update bestMultiINS1
                                                 // align cost = (p, i) + (i, j) + (j, q); p2+1, q2-1
@@ -3572,13 +3596,14 @@ void SankoffParser::parse(const vector<string> &seqs){
                                                 alignscore = xlog_mul(pre_align_trans, state.alignscore);
                                                 alignscore = xlog_mul(alignscore, post_align_trans);
 
-                                                update_if_better(p1, q1, p2, q2, bestMulti[p1][q1][p2][q2].ins1obj,
-                                                                state.seq1foldscore + newscore1,
-                                                                state.seq2foldscore + newscore2, 
-                                                                state.manner, MANNER_MULTI_INS1,
-                                                                static_cast<char>(i1 - p1), q1 - j1,
-                                                                static_cast<char>(i2 - p2), q2 - j2,
-                                                                alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
+                                                if (alignscore > LOG_OF_ZERO)
+                                                    update_if_better(p1, q1, p2, q2, bestMulti[p1][q1][p2][q2].ins1obj,
+                                                                    state.seq1foldscore + newscore1,
+                                                                    state.seq2foldscore + newscore2, 
+                                                                    state.manner, MANNER_MULTI_INS1,
+                                                                    static_cast<char>(i1 - p1), q1 - j1,
+                                                                    static_cast<char>(i2 - p2), q2 - j2,
+                                                                    alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
 
                                                 // update bestMultiINS2
                                                 // align cost = (p, i) + (i, j) + (j, q); p1+1, q1-1
@@ -3588,13 +3613,14 @@ void SankoffParser::parse(const vector<string> &seqs){
                                                 alignscore = xlog_mul(pre_align_trans, state.alignscore);
                                                 alignscore = xlog_mul(alignscore, post_align_trans);
 
-                                                update_if_better(p1, q1, p2, q2, bestMulti[p1][q1][p2][q2].ins2obj,
-                                                                state.seq1foldscore + newscore1,
-                                                                state.seq2foldscore + newscore2, 
-                                                                state.manner, MANNER_MULTI_INS2,
-                                                                static_cast<char>(i1 - p1), q1 - j1,
-                                                                static_cast<char>(i2 - p2), q2 - j2,
-                                                                alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+                                                if (alignscore > LOG_OF_ZERO)
+                                                    update_if_better(p1, q1, p2, q2, bestMulti[p1][q1][p2][q2].ins2obj,
+                                                                    state.seq1foldscore + newscore1,
+                                                                    state.seq2foldscore + newscore2, 
+                                                                    state.manner, MANNER_MULTI_INS2,
+                                                                    static_cast<char>(i1 - p1), q1 - j1,
+                                                                    static_cast<char>(i2 - p2), q2 - j2,
+                                                                    alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
                                             }
                                             q2 = seq2->next_pair[nucp2][q2];
                                         } // while loop enumerate q2
@@ -3651,12 +3677,12 @@ void SankoffParser::parse(const vector<string> &seqs){
                                 if (seq1_M_pairs[j1+1][i1] && seq2_M_pairs[j2+1][i2]){
                                     trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_ALN, j1+1, j2+1, true);
                                     float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
-
-                                    update_if_better(i1, j1+1, i2, j2+1, bestM[i1][j1+1][i2][j2+1], // bestM[key1p1][newi2][newj2p1], // [s+2][j2+1][make_pair(i1, i2)],
-                                                    state.seq1foldscore,
-                                                    state.seq2foldscore,
-                                                    state.manner, MANNER_M_eq_M_plus_U_ALN,
-                                                    alignscore, state.startHMMstate, MANNER_ALN, weight, verbose);
+                                    if (alignscore > LOG_OF_ZERO)
+                                        update_if_better(i1, j1+1, i2, j2+1, bestM[i1][j1+1][i2][j2+1], // bestM[key1p1][newi2][newj2p1], // [s+2][j2+1][make_pair(i1, i2)],
+                                                        state.seq1foldscore,
+                                                        state.seq2foldscore,
+                                                        state.manner, MANNER_M_eq_M_plus_U_ALN,
+                                                        alignscore, state.startHMMstate, MANNER_ALN, weight, verbose);
                                 }
                             }
                         }
@@ -3667,12 +3693,12 @@ void SankoffParser::parse(const vector<string> &seqs){
                                 if (seq1_M_pairs[j1+1][i1]){
                                     trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS1, j1+1, j2, true);
                                     float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
-
-                                    update_if_better(i1, j1+1, i2, j2, bestM[i1][j1+1][i2][j2], // bestM[key1p1][newi2][newj2p1], // [s+1][j2][make_pair(i1, i2)],
-                                                    state.seq1foldscore,
-                                                    state.seq2foldscore,
-                                                    state.manner, MANNER_M_eq_M_plus_U_INS1,
-                                                    alignscore, state.startHMMstate, MANNER_INS1, weight, verbose);
+                                    if (alignscore > LOG_OF_ZERO)
+                                        update_if_better(i1, j1+1, i2, j2, bestM[i1][j1+1][i2][j2], // bestM[key1p1][newi2][newj2p1], // [s+1][j2][make_pair(i1, i2)],
+                                                        state.seq1foldscore,
+                                                        state.seq2foldscore,
+                                                        state.manner, MANNER_M_eq_M_plus_U_INS1,
+                                                        alignscore, state.startHMMstate, MANNER_INS1, weight, verbose);
                                 }
                             }
                         }
@@ -3683,12 +3709,12 @@ void SankoffParser::parse(const vector<string> &seqs){
                                 if (seq2_M_pairs[j2+1][i2]){
                                     trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS2, j1, j2+1, true);
                                     float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
-
-                                    update_if_better(i1, j1, i2, j2+1, bestM[i1][j1][i2][j2+1], // bestM[key1][newi2][newj2p1], //s+1][j2+1][make_pair(i1, i2)],
-                                                    state.seq1foldscore,
-                                                    state.seq2foldscore,
-                                                    state.manner, MANNER_M_eq_M_plus_U_INS2,
-                                                    alignscore, state.startHMMstate, MANNER_INS2, weight, verbose);
+                                    if (alignscore > LOG_OF_ZERO)
+                                        update_if_better(i1, j1, i2, j2+1, bestM[i1][j1][i2][j2+1], // bestM[key1][newi2][newj2p1], //s+1][j2+1][make_pair(i1, i2)],
+                                                        state.seq1foldscore,
+                                                        state.seq2foldscore,
+                                                        state.manner, MANNER_M_eq_M_plus_U_INS2,
+                                                        alignscore, state.startHMMstate, MANNER_INS2, weight, verbose);
                                 }
                             }
                         }
@@ -3720,12 +3746,12 @@ void SankoffParser::parse(const vector<string> &seqs){
 
                         trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_ALN, j1+1, j2+1, true);
                         float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
-
-                        update_if_better(0, j1+1, 0, j2+1, bestC[j1+1][j2+1], 
-                                        state.seq1foldscore + newscore1,
-                                        state.seq2foldscore + newscore2,
-                                        state.manner, MANNER_C_eq_C_plus_U_ALN,
-                                        alignscore, state.startHMMstate, MANNER_ALN, weight, verbose);
+                        if (alignscore > LOG_OF_ZERO)
+                            update_if_better(0, j1+1, 0, j2+1, bestC[j1+1][j2+1], 
+                                            state.seq1foldscore + newscore1,
+                                            state.seq2foldscore + newscore2,
+                                            state.manner, MANNER_C_eq_C_plus_U_ALN,
+                                            alignscore, state.startHMMstate, MANNER_ALN, weight, verbose);
                     }
                 } 
                 if (j1 < seq1->seq_len - 1 && j2 <= seq2->seq_len - 1) { // INS1
@@ -3734,12 +3760,12 @@ void SankoffParser::parse(const vector<string> &seqs){
 
                         trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS1, j1+1, j2, true);
                         float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
-
-                        update_if_better(0, j1+1, 0, j2, bestC[j1+1][j2],
-                                        state.seq1foldscore + newscore1,
-                                        state.seq2foldscore,
-                                        state.manner, MANNER_C_eq_C_plus_U_INS1,
-                                        alignscore, state.startHMMstate, MANNER_INS1, weight, verbose);
+                        if (alignscore > LOG_OF_ZERO)
+                            update_if_better(0, j1+1, 0, j2, bestC[j1+1][j2],
+                                            state.seq1foldscore + newscore1,
+                                            state.seq2foldscore,
+                                            state.manner, MANNER_C_eq_C_plus_U_INS1,
+                                            alignscore, state.startHMMstate, MANNER_INS1, weight, verbose);
                     }
                 } 
                 if (j2 < seq2->seq_len - 1 && j1 <= seq1->seq_len - 1) { // INS2
@@ -3748,12 +3774,12 @@ void SankoffParser::parse(const vector<string> &seqs){
 
                         trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS2, j1, j2+1, true);
                         float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
-                   
-                        update_if_better(0, j1, 0, j2+1, bestC[j1][j2+1],
-                                        state.seq1foldscore,
-                                        state.seq2foldscore + newscore2,
-                                        state.manner, MANNER_C_eq_C_plus_U_INS2,
-                                        alignscore, state.startHMMstate, MANNER_INS2, weight, verbose);
+                        if (alignscore > LOG_OF_ZERO)
+                            update_if_better(0, j1, 0, j2+1, bestC[j1][j2+1],
+                                            state.seq1foldscore,
+                                            state.seq2foldscore + newscore2,
+                                            state.manner, MANNER_C_eq_C_plus_U_INS2,
+                                            alignscore, state.startHMMstate, MANNER_INS2, weight, verbose);
                     }
                 }
             }     
@@ -3990,8 +4016,7 @@ SankoffParser::SankoffParser(int beam_size, int beam_size2, float aln_weight, fl
      weight(aln_weight),
      max_energy_diff(energy_diff),
      verbose(is_verbose){
-
-        
+    
     cout << "b1: " << beam << " b2: " << alnbeam << " weight: " << weight << " " << " max_energy_diff: " << max_energy_diff << endl;
 
     initialize();

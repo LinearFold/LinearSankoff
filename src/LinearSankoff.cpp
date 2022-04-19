@@ -843,7 +843,7 @@ float quickselect(vector<tuple<float, int, int> >& scores, unsigned long lower, 
 
 float BeamSankoffParser::beam_prune(unordered_map<int, State3> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside){
     scores.clear();
-    invalid_pos.clear();
+    // invalid_pos.clear();
     // int invalid = 0;
     for (auto &item : beamstep) {
         State &cand = item.second.alnobj;
@@ -851,22 +851,17 @@ float BeamSankoffParser::beam_prune(unordered_map<int, State3> &beamstep, int s,
         int i1 = cand.i1;
         int i2 = cand.i2;
         int j2 = s - j1;
-        if (i1 < 0 || i2 < 0 || j1 < 0) {
-            invalid_pos.push_back(item.first);
-            continue;
-        }
+        int k1 = i1 - 1;
+        int k2 = i2 - 1;
+        
+        // assert (j1 > 0); // lisiz TODO: DEBUG
+        // assert (i1 > 0); // lisiz TODO: DEBUG
+        // assert (i2 > 0); // lisiz TODO: DEBUG
+        // assert (k1 * k2 >= 0);
 
         // for tmRNA improve accuracy slightly 
         // if (cand.manner == MANNER_HAIRPIN_ALN) continue;
 
-        int k1 = i1 - 1;
-        int k2 = i2 - 1;
-
-        // TODO, i1=-1 debug
-
-        assert (k1 * k2 >= 0);
-
-        float newscore = VALUE_FMIN;
         
         // original
         // if (bestC[k1+k2][k1].score == VALUE_FMIN || cand.score == VALUE_FMIN) {
@@ -913,71 +908,36 @@ float BeamSankoffParser::beam_prune(unordered_map<int, State3> &beamstep, int s,
         // }
 
         // + alignment & folding heuristic 
-        int seq1_out = VALUE_MIN;
-        int seq2_out = VALUE_MIN;
         int foldingscore;
         float alignscore, forward_score, backward_score;
-        if (cand.score == VALUE_FMIN) {
-            invalid_pos.push_back(item.first);
-            continue;
-        } else {
-            // alignment score
+       
+        // alignment score
 #ifdef dynalign
-            int alignscore = bestC[k1+k2][k1].alignscore + cand.alignscore + abs(seq2_len-j2-seq1_len+j1);
+        int alignscore = bestC[k1+k2][k1].alignscore + cand.alignscore + abs(seq2_len-j2-seq1_len+j1);
 #else       
-            // forward score
-            HMMManner forward_endmanner = bestC[k1+k2][k1].endHMMstate;
-            forward_score = bestC[k1+k2][k1].alignscore; 
-            alignscore = xlog_mul(xlog_mul(forward_score, cand.alignscore), hmmalign.trans_probs[forward_endmanner-1][2]);
-            // backward/heuristic score
-            backward_score = aln_backward_score[j1][j2]; // hmmalign.bestALN[s][j2].beta;      
-            // cout << backward_score << " " << hmmalign.bestALN[s][j2].beta << endl;
-            alignscore = xlog_mul(alignscore, backward_score);
-            // alignscore = xlog_div(alignscore, aln_viterbi); // deviation
+        // alignment forward score
+        HMMManner forward_endmanner = bestC[k1+k2][k1].endHMMstate;
+        forward_score = bestC[k1+k2][k1].alignscore; 
+        alignscore = xlog_mul(xlog_mul(forward_score, cand.alignscore), hmmalign.trans_probs[forward_endmanner-1][2]);
+        // alignment backward/heuristic score
+        backward_score = aln_backward_score[j1][j2];      
+        alignscore = xlog_mul(alignscore, backward_score);
 #endif      
-            // folding score
-            foldingscore = cand.seq1foldscore + cand.seq2foldscore;
-            // folding heuristic
-            foldingscore += seq1_outside[j1][i1] + seq2_outside[j2][i2];
+        // folding score
+        foldingscore = cand.seq1foldscore + cand.seq2foldscore;
+        // folding heuristic
+        assert (seq1_outside[j1].find(i1) != seq1_outside[j1].end());
+        assert (seq2_outside[j2].find(i2) != seq2_outside[j2].end());
+        foldingscore += seq1_outside[j1][i1] + seq2_outside[j2][i2];
 
-            // if ((seq1_outside[j1].find(i1) != seq1_outside[j1].end())) {
-            //     seq1_out = seq1_outside[j1][i1];
-            // } else {
-            //     cout << i1 << " " << j1 << " seq1 single seq score not exists" << endl; 
-            // }
-            // if ((seq2_outside[j2].find(i2) != seq2_outside[j2].end())) {
-            //     seq2_out = seq2_outside[j2][i2];
-            // }  else {
-            //     cout << i2 << " " << j2 << " seq2 single seq score not exists" << endl; 
-            // }
-            // if (alignscore <= LOG_OF_ZERO || seq1_out == VALUE_MIN || seq2_out == VALUE_MIN) {
-            //     invalid_pos.push_back(item.first);
-            //     continue;
-            // }
-            // else {
-            //     foldingscore += seq1_out + seq2_out;
-            // }
-            
-            // final score
+        // final score
+        float newscore;
+        if (alignscore <= LOG_OF_ZERO)
+            newscore = LOG_OF_ZERO;
+        else
             newscore = foldingscore + weight * alignscore;
-        }
-
-        // debug tmRNA
-        // if (verbose && s == 383) {
-        //     cout << i1 << " " << j1 << " " << i2 << " " << j2 << " " << newscore << ": ";
-        //     cout << alignscore << " (" << bestC[k1+k2][k1].alignscore << " + " << cand.alignscore << " + " <<  backward_score << ") ";
-        //     cout << foldingscore << " (" << cand.seq1foldscore + cand.seq2foldscore << " + " << seq1_out << " + " << seq2_out << ") " << endl;
-        // }
-        // if (cand.manner == MANNER_P_eq_MULTI_ALN || cand.manner == MANNER_HAIRPIN_ALN) continue; // TODO?
         
         scores.push_back(make_pair(newscore, item.first));
-    }
-
-    // remove invalid positions first
-    if (invalid_pos.size() > 0) {
-        for (auto &p : invalid_pos) {
-            beamstep.erase(p);
-        }
     }
 
     if (scores.size() <= beam) return VALUE_FMIN;
@@ -990,24 +950,20 @@ float BeamSankoffParser::beam_prune(unordered_map<int, State3> &beamstep, int s,
 }
 float BeamSankoffParser::beam_prune(unordered_map<int, State> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside){
     scores.clear();
-    invalid_pos.clear();
+    // invalid_pos.clear();
     for (auto &item : beamstep) {
         State &cand = item.second;
         int j1 = cand.j1;
         int i1 = cand.i1;
         int i2 = cand.i2;
         int j2 = s - j1;
-        if (i1 < 0 || i2 < 0 || j1 < 0) {
-            invalid_pos.push_back(item.first);
-            continue;
-        }
-
         int k1 = i1 - 1;
         int k2 = i2 - 1;
 
-        assert (k1 * k2 >= 0);
-
-        float newscore = VALUE_FMIN;
+        // assert (j1 > 0); // lisiz TODO: DEBUG
+        // assert (i1 > 0); // lisiz TODO: DEBUG
+        // assert (i2 > 0); // lisiz TODO: DEBUG
+        // assert (k1 * k2 >= 0);
 
         ////////////////// original
         // if (bestC[k1+k2][k1].score == VALUE_FMIN || cand.score == VALUE_FMIN) {
@@ -1058,83 +1014,48 @@ float BeamSankoffParser::beam_prune(unordered_map<int, State> &beamstep, int s, 
         ////////////////// + alignment & folding heuristic 
         float alignscore, forward_score, backward_score;
         int foldingscore, seq1_out, seq2_out;
-        if (cand.score == VALUE_FMIN) {
-            invalid_pos.push_back(item.first);
-            continue;
-        } else {
-            // alignment score
+       
+        // alignment score
 #ifdef dynalign
-            int alignscore = bestC[k1+k2][k1].alignscore + cand.alignscore + abs(seq2_len-j2-seq1_len+j1);
+        int alignscore = bestC[k1+k2][k1].alignscore + cand.alignscore + abs(seq2_len-j2-seq1_len+j1);
 #else       
-            // add forward score
-            HMMManner forward_endmanner =  bestC[k1+k2][k1].endHMMstate;
-            forward_score = bestC[k1+k2][k1].alignscore; 
-            alignscore = xlog_mul(xlog_mul(forward_score, cand.alignscore), hmmalign.trans_probs[forward_endmanner-1][2]);
-            // backward/heuristic score
-            switch (cand.endHMMstate)
-            {
-                case MANNER_ALN:
-                    backward_score = aln_backward_score[j1][j2]; //hmmalign.bestALN[s][j2].beta;
-                    // cout << backward_score << " " << hmmalign.bestALN[s][j2].beta << endl;
-                    break;
-                case MANNER_INS1:
-                    backward_score = ins1_backward_score[j1][j2]; //hmmalign.bestINS1[s][j2].beta;
-                    // cout << backward_score << " " << hmmalign.bestINS1[s][j2].beta << endl;
-                    break;
-                case MANNER_INS2:
-                    backward_score = ins2_backward_score[j1][j2]; //hmmalign.bestINS2[s][j2].beta;
-                    // cout << backward_score << " " << hmmalign.bestINS2[s][j2].beta << endl;
-                    break;          
-                default:
-                    backward_score = aln_backward_score[j1][j2]; //hmmalign.bestALN[s][j2].beta;
-                    break;
-            }
-            alignscore = xlog_mul(alignscore, backward_score); // add backward/heuristic score
-            // alignscore = xlog_div(alignscore, aln_viterbi); // deviation
+        // add forward score
+        HMMManner forward_endmanner =  bestC[k1+k2][k1].endHMMstate;
+        forward_score = bestC[k1+k2][k1].alignscore; 
+        alignscore = xlog_mul(xlog_mul(forward_score, cand.alignscore), hmmalign.trans_probs[forward_endmanner-1][2]);
+        // backward/heuristic score
+        switch (cand.endHMMstate)
+        {
+            case MANNER_ALN:
+                backward_score = aln_backward_score[j1][j2];
+                break;
+            case MANNER_INS1:
+                backward_score = ins1_backward_score[j1][j2]; 
+                break;
+            case MANNER_INS2:
+                backward_score = ins2_backward_score[j1][j2]; 
+                break;          
+            default:
+                backward_score = aln_backward_score[j1][j2];
+                break;
+        }
+        alignscore = xlog_mul(alignscore, backward_score);
 #endif
-            // folding score
-            foldingscore = cand.seq1foldscore + cand.seq2foldscore;
-            // folding heuristic
-            foldingscore += seq1_outside[j1][i1] + seq2_outside[j2][i2];
-            
-            // seq1_out = VALUE_MIN;
-            // seq2_out = VALUE_MIN;
-            // if ((seq1_outside[j1].find(i1) != seq1_outside[j1].end())) {
-            //     seq1_out = seq1_outside[j1][i1];
-            // } else {
-            //     cout << i1 << " " << j1 << " seq1 single seq score not exists" << endl; 
-            // }
-            // if ((seq2_outside[j2].find(i2) != seq2_outside[j2].end())) {
-            //     seq2_out = seq2_outside[j2][i2];
-            // } else {
-            //     cout << i2 << " " << j2 << " seq2 single seq score not exists" << endl; 
-            // }
-            // if (alignscore <= LOG_OF_ZERO || seq1_out == VALUE_MIN || seq2_out == VALUE_MIN) {
-            //     invalid_pos.push_back(item.first);
-            //     continue;
-            // } else {
-            //     foldingscore += seq1_out + seq2_out;
-            // }
-            //////////////////
+        // folding score
+        foldingscore = cand.seq1foldscore + cand.seq2foldscore;
+        // folding heuristic
+        assert (seq1_outside[j1].find(i1) != seq1_outside[j1].end());
+        assert (seq2_outside[j2].find(i2) != seq2_outside[j2].end());
+        foldingscore += seq1_outside[j1][i1] + seq2_outside[j2][i2];
 
-            // final score
+        // final score
+        float newscore;
+        if (alignscore <= LOG_OF_ZERO)
+            newscore = LOG_OF_ZERO;
+        else
             newscore = foldingscore + weight * alignscore;
-        }
 
-        // debug tmRNA
-        // if (verbose) { // && s == 238 54 125 55 113
-        //     cout << i1 << " " << j1 << " " << i2 << " " << j2 << " " << newscore << ": ";
-        //     cout << alignscore << " (" << bestC[k1+k2][k1].alignscore << " + " << cand.alignscore << " + " <<  backward_score << ") ";
-        //     cout << foldingscore << " (" << cand.seq1foldscore + cand.seq2foldscore << " + " << seq1_out << " + " << seq2_out << ") " << endl;
-        // }
         scores.push_back(make_pair(newscore, item.first));
-    }
-
-    // remove invalid positions first
-    if (invalid_pos.size() > 0) {
-        for (auto &p : invalid_pos) {
-            beamstep.erase(p);
-        }
     }
 
     if (scores.size() <= beam) return VALUE_FMIN;
@@ -2359,20 +2280,20 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 #else
     bestC[0][0].set(0, 0, 0, 0, 0, MANNER_NONE, MANNER_NONE, xlog(1.0), weight*xlog(1.0), MANNER_ALN, MANNER_ALN);
 
-    float alignscore = hmmalign.get_trans_emit_prob0(MANNER_ALN, MANNER_INS1, 1, 0, true);
-    bestC[1][1].set(1, 0, 0, -v_score_external_unpaired(0, 0), 0, MANNER_NONE, MANNER_C_eq_C_plus_U_INS1, alignscore, weight*alignscore, MANNER_ALN, MANNER_INS1);
-  
-    alignscore = hmmalign.get_trans_emit_prob0(MANNER_ALN, MANNER_INS2, 0, 1, true);
-    bestC[1][0].set(0, 0, 0, 0, -v_score_external_unpaired(0, 0), MANNER_NONE, MANNER_C_eq_C_plus_U_INS2, alignscore, weight*alignscore, MANNER_ALN, MANNER_INS2);
-
-    alignscore = hmmalign.get_trans_emit_prob0(MANNER_ALN, MANNER_ALN, 1, 1, true);
-    bestC[2][1].set(1, 0, 0, -v_score_external_unpaired(0, 0), -v_score_external_unpaired(0, 0), MANNER_NONE, MANNER_C_eq_C_plus_U_ALN, alignscore, weight*alignscore, MANNER_ALN, MANNER_ALN);
+    if (0 >= hmmalign.low_bounds[1] && 0 <= hmmalign.up_bounds[1]) {
+        float alignscore = hmmalign.get_trans_emit_prob0(MANNER_ALN, MANNER_INS1, 1, 0, true);
+        bestC[1][1].set(1, 0, 0, -v_score_external_unpaired(0, 0), 0, MANNER_NONE, MANNER_C_eq_C_plus_U_INS1, alignscore, weight*alignscore, MANNER_ALN, MANNER_INS1);
+    }
+    if (1 >= hmmalign.low_bounds[0] && 1 <= hmmalign.up_bounds[0]) {
+        float alignscore = hmmalign.get_trans_emit_prob0(MANNER_ALN, MANNER_INS2, 0, 1, true);
+        bestC[1][0].set(0, 0, 0, 0, -v_score_external_unpaired(0, 0), MANNER_NONE, MANNER_C_eq_C_plus_U_INS2, alignscore, weight*alignscore, MANNER_ALN, MANNER_INS2);
+    }
+    if (1 >= hmmalign.low_bounds[1] && 1 <= hmmalign.up_bounds[1]) {
+        float alignscore = hmmalign.get_trans_emit_prob0(MANNER_ALN, MANNER_ALN, 1, 1, true);
+        bestC[2][1].set(1, 0, 0, -v_score_external_unpaired(0, 0), -v_score_external_unpaired(0, 0), MANNER_NONE, MANNER_C_eq_C_plus_U_ALN, alignscore, weight*alignscore, MANNER_ALN, MANNER_ALN);
+    }
 #endif
 
-// #else
-//     if(seq_length > 0) bestC[0].set(score_external_unpaired(0, 0), MANNER_C_eq_C_plus_U);
-//     if(seq_length > 1) bestC[1].set(score_external_unpaired(0, 1), MANNER_C_eq_C_plus_U);
-// #endif
 
     // from left to right
     // processMem_t mem = GetProcessMemory();
@@ -2395,55 +2316,64 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
         // hairpin candidates
         // for nucj push H(j, j_next)
         if (verbose) cout << "push H" << endl;
-        for (int j1 = max(1, s-seq2_len+1); j1 < min(s, seq1_len); ++j1){ // TODO: bous
+        for (int j1=hmmalign.min_j1[s]; j1<=hmmalign.max_j1[s]; j1++) {
             int j2 = s - j1;
-            if (j2 < 1 || j2 >= seq2->seq_len - 1) continue; // boundary case
+            if (j1 < 1 || j2 < 1 || j2 >= seq2->seq_len - 1) continue; // boundary case
 
             // hmm constraint, left bracket
             if (j2 > hmmalign.up_bounds[j1] || j2 < hmmalign.low_bounds[j1]) continue;
 
-            pair<int, int> newscore1 = hairpinScore(j1, j1, seq1);
-            pair<int, int> newscore2 = hairpinScore(j2, j2, seq2);
-            int j1next = newscore1.first;
-            int j2next = newscore2.first;
+            int j1next = j1, j2next;
+            pair<int, int> newscore1, newscore2;
+            while (j1next != -1) {
+                newscore1 = hairpinScore(j1, j1next, seq1);
+                j1next = newscore1.first;
+                if (j1next == -1) break;
 
-            if (j1next <= -1 || j2next <= -1) continue;
+                // single seq folding 
+                if (seq1_out_H[j1next].find(j1) == seq1_out_H[j1next].end()) continue;
 
-            // hmm constraint    
-            if (j2next > hmmalign.up_bounds[j1next] || j2next < hmmalign.low_bounds[j1next]) continue;
+                j2next = j2;
+                while (j2next != -1) {
+                    newscore2 = hairpinScore(j2, j2next, seq2);
+                    j2next = newscore2.first;
+                    if (j2next == -1) break;
 
-            // single seq folding 
-            if (seq1_out_H[j1next].find(j1) == seq1_out_H[j1next].end()) continue;
-            if (seq2_out_H[j2next].find(j2) == seq2_out_H[j2next].end()) continue;
-            
-            if (verbose) cout << "hairpin candidates: " << j1 << " " << j1next << " " << j2 << " " << j2next << endl;
+                    // single seq folding subopt
+                    if (seq2_out_H[j2next].find(j2) == seq2_out_H[j2next].end()) continue;
+
+                    // hmm constraint, right bracket   
+                    if (j2next > hmmalign.up_bounds[j1next] || j2next < hmmalign.low_bounds[j1next]) continue;
+
+                    if (verbose) cout << "hairpin candidates: " << j1 << " " << j1next << " " << j2 << " " << j2next << endl;
 
 #ifdef dynalign
-            aln_value_type alignscore = abs(j1next - j1 - j2next + j2); // do not apply alignment constraint on right side
+                    aln_value_type alignscore = abs(j1next - j1 - j2next + j2); // do not apply alignment constraint on right side
 #else
-            float alignscore = get_hmm_score(j1, j1next, j2, j2next, 2); // true
+                    float alignscore = get_hmm_score(j1, j1next, j2, j2next, 2);
 #endif
-            // ALN/INS1/INS2 three start/end states
-            update_if_better(j1, j1next, j2, j2next,
-                             bestH[j1next+j2next][get_keys(j1next, j1, j2)].alnobj, // bestHALN[j1next+j2next][get_keys(j1next, j1, j2)],
-                             newscore1.second, newscore2.second, MANNER_NONE, MANNER_H_ALN, 
-                             alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
-
+                    if (alignscore > LOG_OF_ZERO)
+                        update_if_better(j1, j1next, j2, j2next,
+                                        bestH[j1next+j2next][get_keys(j1next, j1, j2)].alnobj,
+                                        newscore1.second, newscore2.second, MANNER_NONE, MANNER_H_ALN, 
+                                        alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
 #ifndef dynalign
-            alignscore = get_hmm_score(j1, j1next, j2+1, j2next-1, 0); // true
-            // alignscores = get_hmm_score(j1, j1next, j2+1, j2next-1, 0);
-            update_if_better(j1, j1next, j2, j2next,
-                             bestH[j1next+j2next][get_keys(j1next, j1, j2)].ins1obj, // bestHINS1[j1next+j2next][get_keys(j1next, j1, j2)],
-                             newscore1.second, newscore2.second, MANNER_NONE, MANNER_H_INS1, 
-                             alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);            
-            
-            alignscore = get_hmm_score(j1+1, j1next-1, j2, j2next, 1); // true
-            // alignscores = get_hmm_score(j1+1, j1next-1, j2, j2next, 1);
-            update_if_better(j1, j1next, j2, j2next,
-                             bestH[j1next+j2next][get_keys(j1next, j1, j2)].ins2obj, // bestHINS2[j1next+j2next][get_keys(j1next, j1, j2)], 
-                             newscore1.second, newscore2.second, MANNER_NONE, MANNER_H_INS2, 
-                             alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+                    float ins1score = get_hmm_score(j1, j1next, j2+1, j2next-1, 0);
+                    if (ins1score > LOG_OF_ZERO)
+                        update_if_better(j1, j1next, j2, j2next,
+                                        bestH[j1next+j2next][get_keys(j1next, j1, j2)].ins1obj,
+                                        newscore1.second, newscore2.second, MANNER_NONE, MANNER_H_INS1, 
+                                        ins1score, MANNER_INS1, MANNER_INS1, weight, verbose);
+
+                    float ins2score = get_hmm_score(j1+1, j1next-1, j2, j2next, 1);
+                    if (ins2score > LOG_OF_ZERO)
+                        update_if_better(j1, j1next, j2, j2next,
+                                        bestH[j1next+j2next][get_keys(j1next, j1, j2)].ins2obj,
+                                        newscore1.second, newscore2.second, MANNER_NONE, MANNER_H_INS2, 
+                                        ins2score, MANNER_INS2, MANNER_INS2, weight, verbose);
 #endif
+                }
+            }
         }
 
         // beam of H
@@ -2479,160 +2409,170 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                         default:
                             break;
                     }
+                    if (state.manner == MANNER_NONE) continue;
+
                     // State state = item.second;
                     int j1 = state.j1;
                     int i1 = state.i1;
                     int i2 = state.i2;
                     int j2 = s - j1;
-                    if (i1 <= 0) continue; // lisiz TODO: DEBUG
+
+                    // assert (j1 > 0); // lisiz TODO: DEBUG
+                    // assert (i1 > 0); // lisiz TODO: DEBUG
+                    // assert (i2 > 0); // lisiz TODO: DEBUG
                         
                     // 2. generate p(i, j)
                     // single seq folding 
-                    if (seq1_out_P[j1].find(i1) != seq1_out_P[j1].end() && seq2_out_P[j2].find(i2) != seq2_out_P[j2].end()) {
+                    {
+                        if (seq1_out_P[j1].find(i1) != seq1_out_P[j1].end() && seq2_out_P[j2].find(i2) != seq2_out_P[j2].end()) {
 #ifdef multilign
-                        if (!limited || allowed_pairs.find(make_pair(i1, j1)) != allowed_pairs.end()) {
+                            if (!limited || allowed_pairs.find(make_pair(i1, j1)) != allowed_pairs.end()) {
 #else
-                        {
+                            {
 #endif
-                            if (verbose) cout << "H to P: " << i1 << " " << j1 << " " << i2 << " " << j2 << endl; 
+                                if (verbose) cout << "H to P: " << i1 << " " << j1 << " " << i2 << " " << j2 << endl; 
 
-                            switch(m){
-                                case 0:
-                                    update_if_better(i1, j1, i2, j2,
-                                                    beamP[item.first].ins1obj,  // beamPINS1[get_keys(j1, i1, i2)], 
-                                                    state.seq1foldscore, state.seq2foldscore, state.manner, MANNER_HAIRPIN_INS1, 
-                                                    state.alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
-                                    break;
-                                case 1:
-                                    update_if_better(i1, j1, i2, j2,
-                                                    beamP[item.first].ins2obj, // beamPINS2[get_keys(j1, i1, i2)],
-                                                    state.seq1foldscore, state.seq2foldscore, state.manner, MANNER_HAIRPIN_INS2, 
-                                                    state.alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
-                                    break;
-                                case 2:
-                                    update_if_better(i1, j1, i2, j2,
-                                                    beamP[item.first].alnobj, // beamPALN[get_keys(j1, i1, i2)],
-                                                    state.seq1foldscore, state.seq2foldscore, state.manner, MANNER_HAIRPIN_ALN, 
-                                                    state.alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
-                                    break;
-                                default:
-                                    cout << "error H->P" << endl;
-                                    assert(false);
+                                switch(m){
+                                    case 0:
+                                        update_if_better(i1, j1, i2, j2,
+                                                        beamP[item.first].ins1obj,  // beamPINS1[get_keys(j1, i1, i2)], 
+                                                        state.seq1foldscore, state.seq2foldscore, state.manner, MANNER_HAIRPIN_INS1, 
+                                                        state.alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
+                                        break;
+                                    case 1:
+                                        update_if_better(i1, j1, i2, j2,
+                                                        beamP[item.first].ins2obj, // beamPINS2[get_keys(j1, i1, i2)],
+                                                        state.seq1foldscore, state.seq2foldscore, state.manner, MANNER_HAIRPIN_INS2, 
+                                                        state.alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+                                        break;
+                                    case 2:
+                                        update_if_better(i1, j1, i2, j2,
+                                                        beamP[item.first].alnobj, // beamPALN[get_keys(j1, i1, i2)],
+                                                        state.seq1foldscore, state.seq2foldscore, state.manner, MANNER_HAIRPIN_ALN, 
+                                                        state.alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+                                        break;
+                                    default:
+                                        cout << "error H->P" << endl;
+                                        assert(false);
+                                }
                             }
                         }
                     } // H->P(i, j)
 
                     //   1. extend h(i, j) to h(i, jnext)
-                    { 
-                        pair<int, int> newscore1 = hairpinScore(i1, j1, seq1);
-                        pair<int, int> newscore2 = hairpinScore(i2, j2, seq2);
+//                     { 
+//                         pair<int, int> newscore1 = hairpinScore(i1, j1, seq1);
+//                         pair<int, int> newscore2 = hairpinScore(i2, j2, seq2);
 
-                        int j1next = newscore1.first;
-                        int j2next = newscore2.first;   
+//                         int j1next = newscore1.first;
+//                         int j2next = newscore2.first;   
 
-                        // h(i1, j1; i2, j2; si, sj) -> h(i1, j1next; i2, j2next; si, sjnext)
-                        // sjnext = aln/ins1/ins2  
-                        if (j1next != -1 && j2next != -1 && j2next >= hmmalign.low_bounds[j1next] && j2next <= hmmalign.up_bounds[j1next]) {
-                            if (seq1_out_H[j1next].find(i1) != seq1_out_H[j1next].end() && seq2_out_H[j2next].find(i2) != seq2_out_H[j2next].end()) {
+//                         // h(i1, j1; i2, j2; si, sj) -> h(i1, j1next; i2, j2next; si, sjnext)
+//                         // sjnext = aln/ins1/ins2  
+//                         // if (j1next != -1 && j2next != -1 && j2next >= hmmalign.low_bounds[j1next] && j2next <= hmmalign.up_bounds[j1next]) {
+//                         if (j1next != -1 && j2next != -1) {
+//                             if (seq1_out_H[j1next].find(i1) != seq1_out_H[j1next].end() && seq2_out_H[j2next].find(i2) != seq2_out_H[j2next].end()) {
 
-                                if (verbose) cout << "hairpin candidates jump: " << i1 << " " << j1 << " " << i2 << " " << j2  << " to "  << j1next << " " << j2next << " " << newscore1.second << " " << newscore2.second << endl; 
+//                                 if (verbose) cout << "hairpin candidates jump: " << i1 << " " << j1 << " " << i2 << " " << j2  << " to "  << j1next << " " << j2next << " " << newscore1.second << " " << newscore2.second << endl; 
 
-#ifdef dynalign
-                                aln_value_type alignscore = abs(j1next - i1 - j2next + i2);
-#else
-                                float alignscore = get_hmm_score(i1, j1next, i2, j2next, 2, true);
-#endif
-                                update_if_better(i1, j1next, i2, j2next,
-                                                bestH[j1next+j2next][get_keys(j1next, i1, i2)].alnobj,
-                                                newscore1.second, newscore2.second, 
-                                                MANNER_NONE, MANNER_H_ALN, 
-                                                alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
-#ifndef dynalign
-                                alignscore = get_hmm_score(i1, j1next, i2+1, j2next-1, 0, true);
-                                update_if_better(i1, j1next, i2, j2next,
-                                                bestH[j1next+j2next][get_keys(j1next, i1, i2)].ins1obj,
-                                                newscore1.second, newscore2.second, 
-                                                MANNER_NONE, MANNER_H_INS1,
-                                                alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
+// #ifdef dynalign
+//                                 aln_value_type alignscore = abs(j1next - i1 - j2next + i2);
+// #else
+//                                 float alignscore = get_hmm_score(i1, j1next, i2, j2next, 2, true);
+// #endif
+//                                 update_if_better(i1, j1next, i2, j2next,
+//                                                 bestH[j1next+j2next][get_keys(j1next, i1, i2)].alnobj,
+//                                                 newscore1.second, newscore2.second, 
+//                                                 MANNER_NONE, MANNER_H_ALN, 
+//                                                 alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+// #ifndef dynalign
+//                                 alignscore = get_hmm_score(i1, j1next, i2+1, j2next-1, 0, true);
+//                                 update_if_better(i1, j1next, i2, j2next,
+//                                                 bestH[j1next+j2next][get_keys(j1next, i1, i2)].ins1obj,
+//                                                 newscore1.second, newscore2.second, 
+//                                                 MANNER_NONE, MANNER_H_INS1,
+//                                                 alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
                             
-                                alignscore = get_hmm_score(i1+1, j1next-1, i2, j2next, 1, true);
-                                update_if_better(i1, j1next, i2, j2next,
-                                                bestH[j1next+j2next][get_keys(j1next, i1, i2)].ins2obj,
-                                                newscore1.second, newscore2.second, 
-                                                MANNER_NONE, MANNER_H_INS2, 
-                                                alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
-                            }
-#endif
-                        }
+//                                 alignscore = get_hmm_score(i1+1, j1next-1, i2, j2next, 1, true);
+//                                 update_if_better(i1, j1next, i2, j2next,
+//                                                 bestH[j1next+j2next][get_keys(j1next, i1, i2)].ins2obj,
+//                                                 newscore1.second, newscore2.second, 
+//                                                 MANNER_NONE, MANNER_H_INS2, 
+//                                                 alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+//                             }
+// #endif
+//                         }
 
-                        // h(i1, j1; i2, j2; si, sj) -> h(i1, j1next; i2, j2; si, sjnext)
-                        // sjnext = aln/ins1/ins2
-                        if (j1next != -1 && j2 >= hmmalign.low_bounds[j1next] && j2 <= hmmalign.up_bounds[j1next]) {
-                            if (seq1_out_H[j1next].find(i1) != seq1_out_H[j1next].end()) {
-                                if (verbose) cout << "hairpin candidates jump: " << i1 << " " << j1 << " " << i2 << " " << j2  << " to "  << j1next << " " << j2 << " " << newscore1.second << " " << newscore2.second << endl; 
-#ifdef dynalign
-                                aln_value_type alignscore = abs(j1next - i1 - j2 + i2);
-    #else
-                                float alignscore = get_hmm_score(i1, j1next, i2, j2, 2, true);
-    #endif
-                                update_if_better(i1, j1next, i2, j2,
-                                                bestH[j1next+j2][get_keys(j1next, i1, i2)].alnobj,
-                                                newscore1.second, state.seq2foldscore, 
-                                                MANNER_NONE, MANNER_H_ALN, 
-                                                alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
-#ifndef dynalign
-                                alignscore = get_hmm_score(i1, j1next, i2+1, j2-1, 0, true);
-                                update_if_better(i1, j1next, i2, j2,
-                                                bestH[j1next+j2][get_keys(j1next, i1, i2)].ins1obj,
-                                                newscore1.second, state.seq2foldscore, 
-                                                MANNER_NONE, MANNER_H_INS1, 
-                                                alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
+//                         // h(i1, j1; i2, j2; si, sj) -> h(i1, j1next; i2, j2; si, sjnext)
+//                         // sjnext = aln/ins1/ins2
+//                         // if (j1next != -1 && j2 >= hmmalign.low_bounds[j1next] && j2 <= hmmalign.up_bounds[j1next]) {
+//                         if (j1next != -1) {
+//                             if (seq1_out_H[j1next].find(i1) != seq1_out_H[j1next].end()) {
+//                                 if (verbose) cout << "hairpin candidates jump: " << i1 << " " << j1 << " " << i2 << " " << j2  << " to "  << j1next << " " << j2 << " " << newscore1.second << " " << newscore2.second << endl; 
+// #ifdef dynalign
+//                                 aln_value_type alignscore = abs(j1next - i1 - j2 + i2);
+//     #else
+//                                 float alignscore = get_hmm_score(i1, j1next, i2, j2, 2, true);
+//     #endif
+//                                 update_if_better(i1, j1next, i2, j2,
+//                                                 bestH[j1next+j2][get_keys(j1next, i1, i2)].alnobj,
+//                                                 newscore1.second, state.seq2foldscore, 
+//                                                 MANNER_NONE, MANNER_H_ALN, 
+//                                                 alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+// #ifndef dynalign
+//                                 alignscore = get_hmm_score(i1, j1next, i2+1, j2-1, 0, true);
+//                                 update_if_better(i1, j1next, i2, j2,
+//                                                 bestH[j1next+j2][get_keys(j1next, i1, i2)].ins1obj,
+//                                                 newscore1.second, state.seq2foldscore, 
+//                                                 MANNER_NONE, MANNER_H_INS1, 
+//                                                 alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
                                 
-                                alignscore = get_hmm_score(i1+1, j1next-1, i2, j2, 1, true);
-                                update_if_better(i1, j1next, i2, j2,
-                                                bestH[j1next+j2][get_keys(j1next, i1, i2)].ins2obj,
-                                                newscore1.second, state.seq2foldscore, 
-                                                MANNER_NONE, MANNER_H_INS2, 
-                                                alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
-                            }
-#endif
-                        }
+//                                 alignscore = get_hmm_score(i1+1, j1next-1, i2, j2, 1, true);
+//                                 update_if_better(i1, j1next, i2, j2,
+//                                                 bestH[j1next+j2][get_keys(j1next, i1, i2)].ins2obj,
+//                                                 newscore1.second, state.seq2foldscore, 
+//                                                 MANNER_NONE, MANNER_H_INS2, 
+//                                                 alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+//                             }
+// #endif
+//                         }
 
-                        // h(i1, j1; i2, j2; si, sj) -> h(i1, j1; i2, j2next; si, sjnext)
-                        // sjnext = aln/ins1/ins2
-                        if (j2next != -1 && j2next >= hmmalign.low_bounds[j1] && j2next <= hmmalign.up_bounds[j1]) {
-                            if (seq2_out_H[j2next].find(i2) != seq2_out_H[j2next].end()) {
-                                if (verbose) cout << "hairpin candidates jump: " << i1 << " " << j1 << " " << i2 << " " << j2  << " to "  << j1 << " " << j2next << " " << newscore1.second << " " << newscore2.second << endl; 
+//                         // h(i1, j1; i2, j2; si, sj) -> h(i1, j1; i2, j2next; si, sjnext)
+//                         // sjnext = aln/ins1/ins2
+//                         // if (j2next != -1 && j2next >= hmmalign.low_bounds[j1] && j2next <= hmmalign.up_bounds[j1]) {
+//                         if (j2next != -1) {
+//                             if (seq2_out_H[j2next].find(i2) != seq2_out_H[j2next].end()) {
+//                                 if (verbose) cout << "hairpin candidates jump: " << i1 << " " << j1 << " " << i2 << " " << j2  << " to "  << j1 << " " << j2next << " " << newscore1.second << " " << newscore2.second << endl; 
                             
-#ifdef dynalign
-                                aln_value_type alignscore = abs(j1 - i1 - j2next + i2);
-#else
-                                float alignscore = get_hmm_score(i1, j1, i2, j2next, 2, true);
-#endif
-                                update_if_better(i1, j1, i2, j2next, 
-                                                bestH[j1+j2next][get_keys(j1, i1, i2)].alnobj,
-                                                state.seq1foldscore, newscore2.second, 
-                                                MANNER_NONE, MANNER_H_ALN, 
-                                             alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
-#ifndef dynalign
-                                alignscore = get_hmm_score(i1, j1, i2+1, j2next-1, 0, true);
-                                update_if_better(i1, j1, i2, j2next, 
-                                                bestH[j1+j2next][get_keys(j1, i1, i2)].ins1obj,
-                                                state.seq1foldscore, newscore2.second, 
-                                                MANNER_NONE, MANNER_H_INS1, 
-                                                alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
+// #ifdef dynalign
+//                                 aln_value_type alignscore = abs(j1 - i1 - j2next + i2);
+// #else
+//                                 float alignscore = get_hmm_score(i1, j1, i2, j2next, 2, true);
+// #endif
+//                                 update_if_better(i1, j1, i2, j2next, 
+//                                                 bestH[j1+j2next][get_keys(j1, i1, i2)].alnobj,
+//                                                 state.seq1foldscore, newscore2.second, 
+//                                                 MANNER_NONE, MANNER_H_ALN, 
+//                                              alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+// #ifndef dynalign
+//                                 alignscore = get_hmm_score(i1, j1, i2+1, j2next-1, 0, true);
+//                                 update_if_better(i1, j1, i2, j2next, 
+//                                                 bestH[j1+j2next][get_keys(j1, i1, i2)].ins1obj,
+//                                                 state.seq1foldscore, newscore2.second, 
+//                                                 MANNER_NONE, MANNER_H_INS1, 
+//                                                 alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
 
-                                alignscore = get_hmm_score(i1+1, j1-1, i2, j2next, 1, true);
-                                update_if_better(i1, j1, i2, j2next, 
-                                                bestH[j1+j2next][get_keys(j1, i1, i2)].ins2obj,
-                                                state.seq1foldscore, newscore2.second, 
-                                                MANNER_NONE, MANNER_H_INS2, 
-                                                alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+//                                 alignscore = get_hmm_score(i1+1, j1-1, i2, j2next, 1, true);
+//                                 update_if_better(i1, j1, i2, j2next, 
+//                                                 bestH[j1+j2next][get_keys(j1, i1, i2)].ins2obj,
+//                                                 state.seq1foldscore, newscore2.second, 
+//                                                 MANNER_NONE, MANNER_H_INS2, 
+//                                                 alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
 
-                            }
-#endif
-                        } 
-                    } // h(i, j) -> h(i, jnext)
+//                             }
+// #endif
+//                         } 
+//                     } // h(i, j) -> h(i, jnext)
                 } // end loop ALN/INS1/INS2 H
             } // end beamH
         } // beam of H
@@ -2670,12 +2610,17 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                         default:
                             break;
                     }
+                    if (state.manner == MANNER_NONE) continue;
+
                     // State state = item.second;
                     int j1 = state.j1;
                     int i1 = state.i1;
                     int i2 = state.i2;
                     int j2 = s - j1; 
-                    if (i1 < 0) continue; // TODO: debug
+                    
+                    // assert (j1 > 0); // lisiz TODO: DEBUG
+                    // assert (i1 > 0); // lisiz TODO: DEBUG
+                    // assert (i2 > 0); // lisiz TODO: DEBUG
                    
                     // 1. extend (i, j) to (i, jnext)
                     if (false) {
@@ -2705,13 +2650,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                 alignscore = get_hmm_score_right(j1, j1next, j2, j2next, 2, 2, true); // true
                                 alignscore = xlog_mul(state.alignscore, alignscore);
 #endif
-                                update_if_better(i1, j1next, i2, j2next,  bestMulti[j1next+j2next][get_keys(j1next, i1, i2)].alnobj,  // bestMultiALN[j1next+j2next][get_keys(j1next, i1, i2)], 
-                                                state.seq1foldscore + get<1>(result1),
-                                                state.seq2foldscore + get<1>(result2),
-                                                state.manner, MANNER_MULTI_eq_MULTI_plus_U_ALN,
-                                                state.trace1.paddings.l1, get<3>(result1),
-                                                state.trace2.paddings.l1, get<3>(result2),
-                                                alignscore, MANNER_ALN, MANNER_ALN, weight, verbose); 
+                                if (alignscore > LOG_OF_ZERO)
+                                    update_if_better(i1, j1next, i2, j2next,  bestMulti[j1next+j2next][get_keys(j1next, i1, i2)].alnobj,  // bestMultiALN[j1next+j2next][get_keys(j1next, i1, i2)], 
+                                                    state.seq1foldscore + get<1>(result1),
+                                                    state.seq2foldscore + get<1>(result2),
+                                                    state.manner, MANNER_MULTI_eq_MULTI_plus_U_ALN,
+                                                    state.trace1.paddings.l1, get<3>(result1),
+                                                    state.trace2.paddings.l1, get<3>(result2),
+                                                    alignscore, MANNER_ALN, MANNER_ALN, weight, verbose); 
                             }
                             if (j1next != -1 && j2 >= hmmalign.low_bounds[j1next] && j2 <= hmmalign.up_bounds[j1next]) { // TODO: only the first sequence jump towards right
 
@@ -2722,13 +2668,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                 alignscore = get_hmm_score_right(j1, j1next, j2, j2, 2, 2, true); // true
                                 alignscore = xlog_mul(state.alignscore, alignscore);
 #endif
-                                update_if_better(i1, j1next, i2, j2,  bestMulti[j1next+j2][get_keys(j1next, i1, i2)].alnobj,  // bestMultiALN[j1next+j2next][get_keys(j1next, i1, i2)], 
-                                                state.seq1foldscore + get<1>(result1),
-                                                state.seq2foldscore,
-                                                state.manner, MANNER_MULTI_eq_MULTI_plus_U_ALN,
-                                                state.trace1.paddings.l1, new_seq1_l2,
-                                                state.trace2.paddings.l1, state.trace2.paddings.l2,
-                                                alignscore, MANNER_ALN, MANNER_ALN, weight, verbose); 
+                                if (alignscore > LOG_OF_ZERO)
+                                    update_if_better(i1, j1next, i2, j2,  bestMulti[j1next+j2][get_keys(j1next, i1, i2)].alnobj,  // bestMultiALN[j1next+j2next][get_keys(j1next, i1, i2)], 
+                                                    state.seq1foldscore + get<1>(result1),
+                                                    state.seq2foldscore,
+                                                    state.manner, MANNER_MULTI_eq_MULTI_plus_U_ALN,
+                                                    state.trace1.paddings.l1, new_seq1_l2,
+                                                    state.trace2.paddings.l1, state.trace2.paddings.l2,
+                                                    alignscore, MANNER_ALN, MANNER_ALN, weight, verbose); 
                             }
                             if (j2next != -1 && j2next >= hmmalign.low_bounds[j1] && j2next <= hmmalign.up_bounds[j1]) { // only the second sequence jump towards right
 #ifdef dynalign
@@ -2738,13 +2685,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                 alignscore = get_hmm_score_right(j1, j1, j2, j2next, 2, 2, true); // true
                                 alignscore = xlog_mul(state.alignscore, alignscore);
 #endif
-                                update_if_better(i1, j1, i2, j2next, bestMulti[j1+j2next][get_keys(j1, i1, i2)].alnobj,  // bestMultiALN[j1next+j2next][get_keys(j1next, i1, i2)], 
-                                                state.seq1foldscore,
-                                                state.seq2foldscore + get<1>(result2),
-                                                state.manner, MANNER_MULTI_eq_MULTI_plus_U_ALN,
-                                                state.trace1.paddings.l1, state.trace1.paddings.l2,
-                                                state.trace2.paddings.l1, new_seq2_l2,
-                                                alignscore, MANNER_ALN, MANNER_ALN, weight, verbose); 
+                                if (alignscore > LOG_OF_ZERO)
+                                    update_if_better(i1, j1, i2, j2next, bestMulti[j1+j2next][get_keys(j1, i1, i2)].alnobj,  // bestMultiALN[j1next+j2next][get_keys(j1next, i1, i2)], 
+                                                    state.seq1foldscore,
+                                                    state.seq2foldscore + get<1>(result2),
+                                                    state.manner, MANNER_MULTI_eq_MULTI_plus_U_ALN,
+                                                    state.trace1.paddings.l1, state.trace1.paddings.l2,
+                                                    state.trace2.paddings.l1, new_seq2_l2,
+                                                    alignscore, MANNER_ALN, MANNER_ALN, weight, verbose); 
                             }
                         }
                                 
@@ -2754,40 +2702,40 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 
                                 alignscore = get_hmm_score_right(j1, j1next, j2, j2next-1, 0, 0, true); // true
                                 alignscore = xlog_mul(state.alignscore, alignscore);
-
-                                update_if_better(i1, j1next, i2, j2next, bestMulti[j1next+j2next][get_keys(j1next, i1, i2)].ins1obj, // bestMultiINS1[j1next+j2][get_keys(j1next, i1, i2)],
-                                                state.seq1foldscore + get<1>(result1),
-                                                state.seq2foldscore + get<1>(result2),
-                                                state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS1,
-                                                state.trace1.paddings.l1, new_seq1_l2,
-                                                state.trace2.paddings.l1, new_seq2_l2,
-                                                alignscore, MANNER_INS1, MANNER_INS1, weight, verbose); 
+                                if (alignscore > LOG_OF_ZERO)
+                                    update_if_better(i1, j1next, i2, j2next, bestMulti[j1next+j2next][get_keys(j1next, i1, i2)].ins1obj, // bestMultiINS1[j1next+j2][get_keys(j1next, i1, i2)],
+                                                    state.seq1foldscore + get<1>(result1),
+                                                    state.seq2foldscore + get<1>(result2),
+                                                    state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS1,
+                                                    state.trace1.paddings.l1, new_seq1_l2,
+                                                    state.trace2.paddings.l1, new_seq2_l2,
+                                                    alignscore, MANNER_INS1, MANNER_INS1, weight, verbose); 
                             }
                             if (j1next != -1 && j2 >= hmmalign.low_bounds[j1next] && j2 <= hmmalign.up_bounds[j1next]) { // TODO: only the first sequence jump towards right
 
                                 alignscore = get_hmm_score_right(j1, j1next, j2, j2-1, 0, 0, true); // true
                                 alignscore = xlog_mul(state.alignscore, alignscore);
-
-                                update_if_better(i1, j1next, i2, j2, bestMulti[j1next+j2][get_keys(j1next, i1, i2)].ins1obj, // bestMultiINS1[j1next+j2][get_keys(j1next, i1, i2)],
-                                                state.seq1foldscore + get<1>(result1),
-                                                state.seq2foldscore,
-                                                state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS1,
-                                                state.trace1.paddings.l1, new_seq1_l2,
-                                                state.trace2.paddings.l1, state.trace2.paddings.l2,
-                                                alignscore, MANNER_INS1, MANNER_INS1, weight, verbose); 
+                                if (alignscore > LOG_OF_ZERO)
+                                    update_if_better(i1, j1next, i2, j2, bestMulti[j1next+j2][get_keys(j1next, i1, i2)].ins1obj, // bestMultiINS1[j1next+j2][get_keys(j1next, i1, i2)],
+                                                    state.seq1foldscore + get<1>(result1),
+                                                    state.seq2foldscore,
+                                                    state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS1,
+                                                    state.trace1.paddings.l1, new_seq1_l2,
+                                                    state.trace2.paddings.l1, state.trace2.paddings.l2,
+                                                    alignscore, MANNER_INS1, MANNER_INS1, weight, verbose); 
                             }
                             if (j2next != -1 && j2next >= hmmalign.low_bounds[j1] && j2next <= hmmalign.up_bounds[j1]) { // only the second sequence jump towards right
 
                                 alignscore = get_hmm_score_right(j1, j1, j2, j2next-1, 0, 0, true); // true
                                 alignscore = xlog_mul(state.alignscore, alignscore);
-
-                                update_if_better(i1, j1, i2, j2next, bestMulti[j1+j2next][get_keys(j1, i1, i2)].ins1obj, // bestMultiINS1[j1next+j2][get_keys(j1next, i1, i2)],
-                                                state.seq1foldscore,
-                                                state.seq2foldscore + get<1>(result2),
-                                                state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS1,
-                                                state.trace1.paddings.l1, state.trace1.paddings.l2,
-                                                state.trace2.paddings.l1, new_seq2_l2,
-                                                alignscore, MANNER_INS1, MANNER_INS1, weight, verbose); 
+                                if (alignscore > LOG_OF_ZERO)
+                                    update_if_better(i1, j1, i2, j2next, bestMulti[j1+j2next][get_keys(j1, i1, i2)].ins1obj, // bestMultiINS1[j1next+j2][get_keys(j1next, i1, i2)],
+                                                    state.seq1foldscore,
+                                                    state.seq2foldscore + get<1>(result2),
+                                                    state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS1,
+                                                    state.trace1.paddings.l1, state.trace1.paddings.l2,
+                                                    state.trace2.paddings.l1, new_seq2_l2,
+                                                    alignscore, MANNER_INS1, MANNER_INS1, weight, verbose); 
                             }
                         }
                                 
@@ -2797,42 +2745,42 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 
                                 alignscore = get_hmm_score_right(j1, j1next-1, j2, j2next, 1, 1, true); // true
                                 alignscore = xlog_mul(state.alignscore, alignscore);
-
-                                update_if_better(i1, j1next, i2, j2next, bestMulti[j1next+j2next][get_keys(j1next, i1, i2)].ins2obj, // bestMultiINS1[j1next+j2][get_keys(j1next, i1, i2)],
-                                                state.seq1foldscore + get<1>(result1),
-                                                state.seq2foldscore + get<1>(result2),
-                                                state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS2,
-                                                state.trace1.paddings.l1, new_seq1_l2,
-                                                state.trace2.paddings.l1, new_seq2_l2,
-                                                alignscore, MANNER_INS2, MANNER_INS2, weight, verbose); 
+                                if (alignscore > LOG_OF_ZERO)
+                                    update_if_better(i1, j1next, i2, j2next, bestMulti[j1next+j2next][get_keys(j1next, i1, i2)].ins2obj, // bestMultiINS1[j1next+j2][get_keys(j1next, i1, i2)],
+                                                    state.seq1foldscore + get<1>(result1),
+                                                    state.seq2foldscore + get<1>(result2),
+                                                    state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS2,
+                                                    state.trace1.paddings.l1, new_seq1_l2,
+                                                    state.trace2.paddings.l1, new_seq2_l2,
+                                                    alignscore, MANNER_INS2, MANNER_INS2, weight, verbose); 
                             }
 
                             if (j1next != -1 && j2 >= hmmalign.low_bounds[j1next] && j2 <= hmmalign.up_bounds[j1next]) { // TODO: only the first sequence jump towards right
 
                                 alignscore = get_hmm_score_right(j1, j1next-1, j2, j2, 1, 1, true); // true
                                 alignscore = xlog_mul(state.alignscore, alignscore);
-
-                                update_if_better(i1, j1next, i2, j2,  bestMulti[j1next+j2][get_keys(j1next, i1, i2)].ins2obj, // bestMultiINS1[j1next+j2][get_keys(j1next, i1, i2)],
-                                                state.seq1foldscore + get<1>(result1),
-                                                state.seq2foldscore,
-                                                state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS2,
-                                                state.trace1.paddings.l1, new_seq1_l2,
-                                                state.trace2.paddings.l1, state.trace2.paddings.l2,
-                                                alignscore, MANNER_INS2, MANNER_INS2, weight, verbose); 
+                                if (alignscore > LOG_OF_ZERO)
+                                    update_if_better(i1, j1next, i2, j2,  bestMulti[j1next+j2][get_keys(j1next, i1, i2)].ins2obj, // bestMultiINS1[j1next+j2][get_keys(j1next, i1, i2)],
+                                                    state.seq1foldscore + get<1>(result1),
+                                                    state.seq2foldscore,
+                                                    state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS2,
+                                                    state.trace1.paddings.l1, new_seq1_l2,
+                                                    state.trace2.paddings.l1, state.trace2.paddings.l2,
+                                                    alignscore, MANNER_INS2, MANNER_INS2, weight, verbose); 
                             }
 
                             if (j2next != -1 && j2next >= hmmalign.low_bounds[j1] && j2next <= hmmalign.up_bounds[j1]) { // only the second sequence jump towards right
 
                                 alignscore = get_hmm_score_right(j1, j1-1, j2, j2next, 1, 1, true); // true
                                 alignscore = xlog_mul(state.alignscore, alignscore);
-
-                                update_if_better(i1, j1, i2, j2next, bestMulti[j1+j2next][get_keys(j1, i1, i2)].ins2obj, // bestMultiINS1[j1next+j2][get_keys(j1next, i1, i2)],
-                                                state.seq1foldscore,
-                                                state.seq2foldscore + get<1>(result2),
-                                                state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS2,
-                                                state.trace1.paddings.l1, state.trace1.paddings.l2,
-                                                state.trace2.paddings.l1, new_seq2_l2,
-                                                alignscore, MANNER_INS2, MANNER_INS2, weight, verbose); 
+                                if (alignscore > LOG_OF_ZERO)
+                                    update_if_better(i1, j1, i2, j2next, bestMulti[j1+j2next][get_keys(j1, i1, i2)].ins2obj, // bestMultiINS1[j1next+j2][get_keys(j1next, i1, i2)],
+                                                    state.seq1foldscore,
+                                                    state.seq2foldscore + get<1>(result2),
+                                                    state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS2,
+                                                    state.trace1.paddings.l1, state.trace1.paddings.l2,
+                                                    state.trace2.paddings.l1, new_seq2_l2,
+                                                    alignscore, MANNER_INS2, MANNER_INS2, weight, verbose); 
                             }
                         }
                     } // 1. extend (i, j) to (i, jnext)
@@ -2905,7 +2853,10 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                         int i1 = alnstate.i1;
                         int i2 = alnstate.i2;
                         int j2 = s - j1;
-                        if (j1 < 0 || i1 < 0 || i2 < 0) continue; // lisiz TODO: DEBUG
+                        
+                        // assert (j1 > 0); // lisiz TODO: DEBUG
+                        // assert (i1 > 0); // lisiz TODO: DEBUG
+                        // assert (i2 > 0); // lisiz TODO: DEBUG
 
                         int m = 2;
 
@@ -2999,13 +2950,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                                 alignscore = xlog_mul(alignscore, post_align_trans);
 
 #endif                                        
-                                                update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].alnobj, // bestPALN[q1+q2][get_keys(q1, p1, p2)],  // helix, one branch using one state MANNER_SINGLE
-                                                                    alnstate.seq1foldscore + p2p1,
-                                                                    alnstate.seq2foldscore + p2p2,
-                                                                    alnstate.manner, MANNER_SINGLE_ALN, 
-                                                                    static_cast<char>(i1 - p1), q1 - j1,
-                                                                    static_cast<char>(i2 - p2), q2 - j2,
-                                                                    alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+                                                if (alignscore > LOG_OF_ZERO)
+                                                    update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].alnobj, // bestPALN[q1+q2][get_keys(q1, p1, p2)],  // helix, one branch using one state MANNER_SINGLE
+                                                                        alnstate.seq1foldscore + p2p1,
+                                                                        alnstate.seq2foldscore + p2p2,
+                                                                        alnstate.manner, MANNER_SINGLE_ALN, 
+                                                                        static_cast<char>(i1 - p1), q1 - j1,
+                                                                        static_cast<char>(i2 - p2), q2 - j2,
+                                                                        alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
                                             }
                                 
 #ifdef dynalign
@@ -3026,13 +2978,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                                 alignscore = xlog_mul(alignscore, post_align_trans); 
 
 #endif   
-                                                update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].ins1obj, // bestPINS1[q1+q2][get_keys(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
-                                                                alnstate.seq1foldscore + p2p1,
-                                                                alnstate.seq2foldscore + p2p2,
-                                                                alnstate.manner, MANNER_SINGLE_INS1, 
-                                                                static_cast<char>(i1 - p1), q1 - j1,
-                                                                static_cast<char>(i2 - p2), q2 - j2,
-                                                                alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
+                                                if (alignscore > LOG_OF_ZERO)
+                                                    update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].ins1obj, // bestPINS1[q1+q2][get_keys(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
+                                                                    alnstate.seq1foldscore + p2p1,
+                                                                    alnstate.seq2foldscore + p2p2,
+                                                                    alnstate.manner, MANNER_SINGLE_INS1, 
+                                                                    static_cast<char>(i1 - p1), q1 - j1,
+                                                                    static_cast<char>(i2 - p2), q2 - j2,
+                                                                    alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
                                             }
                                             
                                             
@@ -3054,13 +3007,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                                 alignscore = xlog_mul(alignscore, post_align_trans);
 
 #endif 
-                                                update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].ins2obj, // bestPINS2[q1+q2][get_keys(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
-                                                                alnstate.seq1foldscore + p2p1,
-                                                                alnstate.seq2foldscore + p2p2,
-                                                                alnstate.manner, MANNER_SINGLE_INS2, 
-                                                                static_cast<char>(i1 - p1), q1 - j1, // char?? int?? 
-                                                                static_cast<char>(i2 - p2), q2 - j2,
-                                                                alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+                                                if (alignscore > LOG_OF_ZERO)
+                                                    update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].ins2obj, // bestPINS2[q1+q2][get_keys(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
+                                                                    alnstate.seq1foldscore + p2p1,
+                                                                    alnstate.seq2foldscore + p2p2,
+                                                                    alnstate.manner, MANNER_SINGLE_INS2, 
+                                                                    static_cast<char>(i1 - p1), q1 - j1, // char?? int?? 
+                                                                    static_cast<char>(i2 - p2), q2 - j2,
+                                                                    alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
                                             }
                                             q2 = seq2->next_pair[nucp2][q2];
                                         } // while loop enumerate q2
@@ -3114,12 +3068,12 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                         float alignscore = xlog_mul(mstate.alignscore, hmmalign.trans_probs[mstate.endHMMstate-1][MANNER_ALN-1]); 
                                         alignscore = xlog_mul(alignscore, alnstate.alignscore);
 #endif 
-
-                                        update_if_better(newi1, j1, newi2, j2, beamM2[get_keys(j1, newi1, newi2)], // bestM2[get_keys(newi1, j1)][mnewi2][newj2], // beamM2[j2][make_pair(newi1, newi2)], // Note: not i1 i2 but newi1 newi2new
-                                                        mstate.seq1foldscore + newscore1 + alnstate.seq1foldscore,
-                                                        mstate.seq2foldscore + newscore2 + alnstate.seq2foldscore,
-                                                        mstate.manner, MANNER_M2_eq_M_plus_P, k1, k2,
-                                                        alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);     
+                                        if (alignscore > LOG_OF_ZERO)
+                                            update_if_better(newi1, j1, newi2, j2, beamM2[get_keys(j1, newi1, newi2)], // bestM2[get_keys(newi1, j1)][mnewi2][newj2], // beamM2[j2][make_pair(newi1, newi2)], // Note: not i1 i2 but newi1 newi2new
+                                                            mstate.seq1foldscore + newscore1 + alnstate.seq1foldscore,
+                                                            mstate.seq2foldscore + newscore2 + alnstate.seq2foldscore,
+                                                            mstate.manner, MANNER_M2_eq_M_plus_P, k1, k2,
+                                                            alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);     
                                     }                     
                                 }
 #else 
@@ -3173,13 +3127,13 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                 alignscore = xlog_mul(alignscore, alnstate.alignscore); 
                                 // cout << alignscore << endl;
 #endif 
-
-                                update_if_better(0, j1, 0, j2, beamC[j1], // bestC[j1][j2],
-                                                prefix_C.seq1foldscore + alnstate.seq1foldscore + newscore1,
-                                                prefix_C.seq2foldscore + alnstate.seq2foldscore + newscore2, 
-                                                prefix_C.manner, MANNER_C_eq_C_plus_P,
-                                                k1, k2,
-                                                alignscore, prefix_C.startHMMstate, alnstate.endHMMstate, weight, verbose);                     
+                                if (alignscore > LOG_OF_ZERO)
+                                    update_if_better(0, j1, 0, j2, beamC[j1], // bestC[j1][j2],
+                                                    prefix_C.seq1foldscore + alnstate.seq1foldscore + newscore1,
+                                                    prefix_C.seq2foldscore + alnstate.seq2foldscore + newscore2, 
+                                                    prefix_C.manner, MANNER_C_eq_C_plus_P,
+                                                    k1, k2,
+                                                    alignscore, prefix_C.startHMMstate, alnstate.endHMMstate, weight, verbose);                     
                             }
                         } // 4. C = C + P
                     } 
@@ -3192,7 +3146,10 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                     int i1 = ins2state.i1;
                     int i2 = ins2state.i2;
                     int j2 = s - j1;
-                    if (j1 < 0 || i1 < 0 || i2 < 0) continue; // lisiz TODO: DEBUG
+                    
+                    // assert (j1 > 0); // lisiz TODO: DEBUG
+                    // assert (i1 > 0); // lisiz TODO: DEBUG
+                    // assert (i2 > 0); // lisiz TODO: DEBUG
 
                     int m = 1;
 
@@ -3262,13 +3219,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                             alignscore = xlog_mul(pre_align_trans, ins2state.alignscore);
                             alignscore = xlog_mul(alignscore, post_align_trans);
 #endif                                        
-                            update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].alnobj, // bestPALN[q1+q2][get_keys(q1, p1, p2)],  // helix, one branch using one state MANNER_SINGLE
-                                                ins2state.seq1foldscore + p2p1,
-                                                ins2state.seq2foldscore + p2p2,
-                                                ins2state.manner, MANNER_SINGLE_ALN, 
-                                                static_cast<char>(i1 - p1), q1 - j1,
-                                                static_cast<char>(i2 - p2), q2 - j2,
-                                                alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+                            if (alignscore > LOG_OF_ZERO)
+                                update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].alnobj, // bestPALN[q1+q2][get_keys(q1, p1, p2)],  // helix, one branch using one state MANNER_SINGLE
+                                                    ins2state.seq1foldscore + p2p1,
+                                                    ins2state.seq2foldscore + p2p2,
+                                                    ins2state.manner, MANNER_SINGLE_ALN, 
+                                                    static_cast<char>(i1 - p1), q1 - j1,
+                                                    static_cast<char>(i2 - p2), q2 - j2,
+                                                    alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
 
                             // si == sj == INS1
                             // align cost = (p, i) + (i, j) + (j, q); p2+1, q2-1
@@ -3276,13 +3234,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                             post_align_trans = get_hmm_score_right(j1, q1, j2, q2-1, m, 0);
                             alignscore = xlog_mul(pre_align_trans, ins2state.alignscore);
                             alignscore = xlog_mul(alignscore, post_align_trans); 
-                            update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].ins1obj, // bestPINS1[q1+q2][get_keys(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
-                                            ins2state.seq1foldscore + p2p1,
-                                            ins2state.seq2foldscore + p2p2,
-                                            ins2state.manner, MANNER_SINGLE_INS1, 
-                                            static_cast<char>(i1 - p1), q1 - j1,
-                                            static_cast<char>(i2 - p2), q2 - j2,
-                                            alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
+                            if (alignscore > LOG_OF_ZERO)
+                                update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].ins1obj, // bestPINS1[q1+q2][get_keys(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
+                                                ins2state.seq1foldscore + p2p1,
+                                                ins2state.seq2foldscore + p2p2,
+                                                ins2state.manner, MANNER_SINGLE_INS1, 
+                                                static_cast<char>(i1 - p1), q1 - j1,
+                                                static_cast<char>(i2 - p2), q2 - j2,
+                                                alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
 
                             // si == sj == INS2
                             // align cost = (p, i) + (i, j) + (j, q);
@@ -3290,13 +3249,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                             post_align_trans = get_hmm_score_right(j1, q1-1, j2, q2, m, 1);
                             alignscore = xlog_mul(pre_align_trans, ins2state.alignscore);
                             alignscore = xlog_mul(alignscore, post_align_trans);
-                            update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].ins2obj, // bestPINS2[q1+q2][get_keys(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
-                                            ins2state.seq1foldscore + p2p1,
-                                            ins2state.seq2foldscore + p2p2,
-                                            ins2state.manner, MANNER_SINGLE_INS2, 
-                                            static_cast<char>(i1 - p1), q1 - j1, // char?? int?? 
-                                            static_cast<char>(i2 - p2), q2 - j2,
-                                            alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+                            if (alignscore > LOG_OF_ZERO)
+                                update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].ins2obj, // bestPINS2[q1+q2][get_keys(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
+                                                ins2state.seq1foldscore + p2p1,
+                                                ins2state.seq2foldscore + p2p2,
+                                                ins2state.manner, MANNER_SINGLE_INS2, 
+                                                static_cast<char>(i1 - p1), q1 - j1, // char?? int?? 
+                                                static_cast<char>(i2 - p2), q2 - j2,
+                                                alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
                         
                             q2 = seq2->next_pair[nucp2][q2];
                         } // while loop enumerate q2
@@ -3310,7 +3270,10 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                     int i1 = ins1state.i1;
                     int i2 = ins1state.i2;
                     int j2 = s - j1;
-                    if (j1 < 0 || i1 < 0 || i2 < 0) continue; // lisiz TODO: DEBUG
+                    
+                    // assert (j1 > 0); // lisiz TODO: DEBUG
+                    // assert (i1 > 0); // lisiz TODO: DEBUG
+                    // assert (i2 > 0); // lisiz TODO: DEBUG
 
                     int m = 0;
 
@@ -3385,13 +3348,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                 alignscore = xlog_mul(alignscore, post_align_trans);
 
 #endif                                        
-                                update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].alnobj, // bestPALN[q1+q2][get_keys(q1, p1, p2)],  // helix, one branch using one state MANNER_SINGLE
-                                                    ins1state.seq1foldscore + p2p1,
-                                                    ins1state.seq2foldscore + p2p2,
-                                                    ins1state.manner, MANNER_SINGLE_ALN, 
-                                                    static_cast<char>(i1 - p1), q1 - j1,
-                                                    static_cast<char>(i2 - p2), q2 - j2,
-                                                    alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+                                if (alignscore > LOG_OF_ZERO)
+                                    update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].alnobj, // bestPALN[q1+q2][get_keys(q1, p1, p2)],  // helix, one branch using one state MANNER_SINGLE
+                                                        ins1state.seq1foldscore + p2p1,
+                                                        ins1state.seq2foldscore + p2p2,
+                                                        ins1state.manner, MANNER_SINGLE_ALN, 
+                                                        static_cast<char>(i1 - p1), q1 - j1,
+                                                        static_cast<char>(i2 - p2), q2 - j2,
+                                                        alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
                             }
                         
 
@@ -3401,13 +3365,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                             post_align_trans = get_hmm_score_right(j1, q1, j2, q2-1, m, 0);
                             alignscore = xlog_mul(pre_align_trans, ins1state.alignscore);
                             alignscore = xlog_mul(alignscore, post_align_trans);   
-                            update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].ins1obj, // bestPINS1[q1+q2][get_keys(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
-                                            ins1state.seq1foldscore + p2p1,
-                                            ins1state.seq2foldscore + p2p2,
-                                            ins1state.manner, MANNER_SINGLE_INS1, 
-                                            static_cast<char>(i1 - p1), q1 - j1,
-                                            static_cast<char>(i2 - p2), q2 - j2,
-                                            alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
+                            if (alignscore > LOG_OF_ZERO)
+                                update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].ins1obj, // bestPINS1[q1+q2][get_keys(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
+                                                ins1state.seq1foldscore + p2p1,
+                                                ins1state.seq2foldscore + p2p2,
+                                                ins1state.manner, MANNER_SINGLE_INS1, 
+                                                static_cast<char>(i1 - p1), q1 - j1,
+                                                static_cast<char>(i2 - p2), q2 - j2,
+                                                alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
                     
                             // si == sj == INS2
                             // align cost = (p, i) + (i, j) + (j, q);
@@ -3415,13 +3380,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                             post_align_trans = get_hmm_score_right(j1, q1-1, j2, q2, m, 1);
                             alignscore = xlog_mul(pre_align_trans, ins1state.alignscore);
                             alignscore = xlog_mul(alignscore, post_align_trans);
-                            update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].ins2obj, // bestPINS2[q1+q2][get_keys(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
-                                            ins1state.seq1foldscore + p2p1,
-                                            ins1state.seq2foldscore + p2p2,
-                                            ins1state.manner, MANNER_SINGLE_INS2, 
-                                            static_cast<char>(i1 - p1), q1 - j1, // char?? int?? 
-                                            static_cast<char>(i2 - p2), q2 - j2,
-                                            alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+                            if (alignscore > LOG_OF_ZERO)
+                                update_if_better(p1, q1, p2, q2, bestP[q1+q2][get_keys(q1, p1, p2)].ins2obj, // bestPINS2[q1+q2][get_keys(q1, p1, p2)], // helix, one branch using one state MANNER_SINGLE
+                                                ins1state.seq1foldscore + p2p1,
+                                                ins1state.seq2foldscore + p2p2,
+                                                ins1state.manner, MANNER_SINGLE_INS2, 
+                                                static_cast<char>(i1 - p1), q1 - j1, // char?? int?? 
+                                                static_cast<char>(i2 - p2), q2 - j2,
+                                                alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
                             
                             q1 = seq1->next_pair[nucp1][q1];
                         } // while loop enumerate q1
@@ -3592,8 +3558,11 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                 int i1 = state.i1;
                 int i2 = state.i2;
                 int j2 = s - j1;
-                if (i1 < 0 || j1 < 0 || i2 < 0) continue;
-
+                
+                // assert (j1 > 0); // lisiz TODO: DEBUG
+                // assert (i1 > 0); // lisiz TODO: DEBUG
+                // assert (i2 > 0); // lisiz TODO: DEBUG
+                
                 // 1. multi-loop
                 {
                     for (int p1 = i1-1; p1 >= max(i1 - SINGLE_MAX_LEN - 1, 1); --p1) {
@@ -3655,21 +3624,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 
 #endif 
 
-                                        // debug M2 to Multi: 103 182 113 177 95 194 100 189"
-                                        // if (p1==95 && q1==194 && p2==100 && q2==189) {
-                                        //     cout << "M2 to Multi: " << i1 << " " << j1 << " " << i2 << " " << j2  << " " << p1 << " " << q1 << " " << p2 << " " << q2 << endl;
-                                        //     cout << bestMulti[q1+q2][get_keys(q1, p1, p2)].alnobj.score << " " << bestMulti[q1+q2][get_keys(q1, p1, p2)].alnobj.seq1foldscore << " " << bestMulti[q1+q2][get_keys(q1, p1, p2)].alnobj.seq2foldscore << " " << bestMulti[q1+q2][get_keys(q1, p1, p2)].alnobj.alignscore << " ";
-                                        //     cout << bestMulti[q1+q2][get_keys(q1, p1, p2)].alnobj.manner << " " << (int)bestMulti[q1+q2][get_keys(q1, p1, p2)].alnobj.trace1.paddings.l1 << " " << bestMulti[q1+q2][get_keys(q1, p1, p2)].alnobj.trace1.paddings.l2 << " " << (int)bestMulti[q1+q2][get_keys(q1, p1, p2)].alnobj.trace2.paddings.l1 << " " << bestMulti[q1+q2][get_keys(q1, p1, p2)].alnobj.trace2.paddings.l2 << " ";
-                                        //     cout << state.seq1foldscore+state.seq2foldscore+weight*alignscore << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << alignscore << endl;
-                                        // }
-
-                                        update_if_better(p1, q1, p2, q2, bestMulti[q1+q2][get_keys(q1, p1, p2)].alnobj, // bestMultiALN[q1+q2][get_keys(q1, p1, p2)], 
-                                                         state.seq1foldscore + newscore1,
-                                                         state.seq2foldscore + newscore2, 
-                                                         state.manner, MANNER_MULTI_ALN,
-                                                         static_cast<char>(i1 - p1), q1 - j1,
-                                                         static_cast<char>(i2 - p2), q2 - j2,
-                                                         alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
+                                        if (alignscore > LOG_OF_ZERO)
+                                            update_if_better(p1, q1, p2, q2, bestMulti[q1+q2][get_keys(q1, p1, p2)].alnobj, // bestMultiALN[q1+q2][get_keys(q1, p1, p2)], 
+                                                            state.seq1foldscore + newscore1,
+                                                            state.seq2foldscore + newscore2, 
+                                                            state.manner, MANNER_MULTI_ALN,
+                                                            static_cast<char>(i1 - p1), q1 - j1,
+                                                            static_cast<char>(i2 - p2), q2 - j2,
+                                                            alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);
                                     }
                                     // update bestMultiINS1
                                     // align cost = (p, i) + (i, j) + (j, q); p2+1, q2-1
@@ -3682,13 +3644,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                         alignscore = xlog_mul(pre_align_trans, state.alignscore);
                                         alignscore = xlog_mul(alignscore, post_align_trans);
 
-                                        update_if_better(p1, q1, p2, q2, bestMulti[q1+q2][get_keys(q1, p1, p2)].ins1obj, // bestMultiINS1[q1+q2][get_keys(q1, p1, p2)], 
-                                                         state.seq1foldscore + newscore1,
-                                                         state.seq2foldscore + newscore2, 
-                                                         state.manner, MANNER_MULTI_INS1,
-                                                         static_cast<char>(i1 - p1), q1 - j1,
-                                                         static_cast<char>(i2 - p2), q2 - j2,
-                                                         alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
+                                        if (alignscore > LOG_OF_ZERO)
+                                            update_if_better(p1, q1, p2, q2, bestMulti[q1+q2][get_keys(q1, p1, p2)].ins1obj, // bestMultiINS1[q1+q2][get_keys(q1, p1, p2)], 
+                                                            state.seq1foldscore + newscore1,
+                                                            state.seq2foldscore + newscore2, 
+                                                            state.manner, MANNER_MULTI_INS1,
+                                                            static_cast<char>(i1 - p1), q1 - j1,
+                                                            static_cast<char>(i2 - p2), q2 - j2,
+                                                            alignscore, MANNER_INS1, MANNER_INS1, weight, verbose);
                                     }
                                     // update bestMultiINS2
                                     // align cost = (p, i) + (i, j) + (j, q); p1+1, q1-1
@@ -3700,13 +3663,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                         alignscore = xlog_mul(pre_align_trans, state.alignscore);
                                         alignscore = xlog_mul(alignscore, post_align_trans);
 
-                                        update_if_better(p1, q1, p2, q2, bestMulti[q1+q2][get_keys(q1, p1, p2)].ins2obj, // bestMultiINS2[q1+q2][get_keys(q1, p1, p2)],
-                                                         state.seq1foldscore + newscore1,
-                                                         state.seq2foldscore + newscore2, 
-                                                         state.manner, MANNER_MULTI_INS2,
-                                                         static_cast<char>(i1 - p1), q1 - j1,
-                                                         static_cast<char>(i2 - p2), q2 - j2,
-                                                         alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
+                                        if (alignscore > LOG_OF_ZERO)
+                                            update_if_better(p1, q1, p2, q2, bestMulti[q1+q2][get_keys(q1, p1, p2)].ins2obj, // bestMultiINS2[q1+q2][get_keys(q1, p1, p2)],
+                                                            state.seq1foldscore + newscore1,
+                                                            state.seq2foldscore + newscore2, 
+                                                            state.manner, MANNER_MULTI_INS2,
+                                                            static_cast<char>(i1 - p1), q1 - j1,
+                                                            static_cast<char>(i2 - p2), q2 - j2,
+                                                            alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
                                     }
 #endif
                                     q2 = seq2->next_pair[nucp2][q2];
@@ -3750,7 +3714,10 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                 int i1 = state.i1;
                 int i2 = state.i2;
                 int j2 = s - j1;
-                if (i1 < 0 || j1 < 0 || i2 < 0) continue;
+                
+                // assert (j1 > 0); // lisiz TODO: DEBUG
+                // assert (i1 > 0); // lisiz TODO: DEBUG
+                // assert (i2 > 0); // lisiz TODO: DEBUG
 
                 float trans_emit_prob; //  alignscore;
                 if (j1 < seq1->seq_len - 1 && j2 < seq2->seq_len - 1){
@@ -3764,12 +3731,12 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                             trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_ALN, j1+1, j2+1, true);
                             float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
 #endif 
-                    
-                            update_if_better(i1, j1+1, i2, j2+1, bestM[s+2][get_keys(j1+1, i1, i2)], // bestM[key1p1][newi2][newj2p1], // [s+2][j2+1][make_pair(i1, i2)],
-                                            state.seq1foldscore,
-                                            state.seq2foldscore,
-                                            state.manner, MANNER_M_eq_M_plus_U_ALN,
-                                            alignscore, state.startHMMstate, MANNER_ALN, weight, verbose);
+                            if (alignscore > LOG_OF_ZERO)
+                                update_if_better(i1, j1+1, i2, j2+1, bestM[s+2][get_keys(j1+1, i1, i2)], // bestM[key1p1][newi2][newj2p1], // [s+2][j2+1][make_pair(i1, i2)],
+                                                state.seq1foldscore,
+                                                state.seq2foldscore,
+                                                state.manner, MANNER_M_eq_M_plus_U_ALN,
+                                                alignscore, state.startHMMstate, MANNER_ALN, weight, verbose);
                         }
                     }
                 }
@@ -3785,12 +3752,12 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                             trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS1, j1+1, j2, true);
                             float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
     #endif 
-
-                            update_if_better(i1, j1+1, i2, j2, bestM[s+1][get_keys(j1+1, i1, i2)], // bestM[key1p1][newi2][newj2p1], // [s+1][j2][make_pair(i1, i2)],
-                                            state.seq1foldscore,
-                                            state.seq2foldscore,
-                                            state.manner, MANNER_M_eq_M_plus_U_INS1,
-                                            alignscore, state.startHMMstate, MANNER_INS1, weight, verbose);
+                            if (alignscore > LOG_OF_ZERO)
+                                update_if_better(i1, j1+1, i2, j2, bestM[s+1][get_keys(j1+1, i1, i2)], // bestM[key1p1][newi2][newj2p1], // [s+1][j2][make_pair(i1, i2)],
+                                                state.seq1foldscore,
+                                                state.seq2foldscore,
+                                                state.manner, MANNER_M_eq_M_plus_U_INS1,
+                                                alignscore, state.startHMMstate, MANNER_INS1, weight, verbose);
                         }
                     }
                 }
@@ -3806,12 +3773,12 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                             trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS2, j1, j2+1, true);
                             float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
 #endif 
-
-                            update_if_better(i1, j1, i2, j2+1, bestM[s+1][get_keys(j1, i1, i2)], // bestM[key1][newi2][newj2p1], //s+1][j2+1][make_pair(i1, i2)],
-                                            state.seq1foldscore,
-                                            state.seq2foldscore,
-                                            state.manner, MANNER_M_eq_M_plus_U_INS2,
-                                            alignscore, state.startHMMstate, MANNER_INS2, weight, verbose);
+                            if (alignscore > LOG_OF_ZERO)
+                                update_if_better(i1, j1, i2, j2+1, bestM[s+1][get_keys(j1, i1, i2)], // bestM[key1][newi2][newj2p1], //s+1][j2+1][make_pair(i1, i2)],
+                                                state.seq1foldscore,
+                                                state.seq2foldscore,
+                                                state.manner, MANNER_M_eq_M_plus_U_INS2,
+                                                alignscore, state.startHMMstate, MANNER_INS2, weight, verbose);
                         }
                     }
                 }
@@ -3847,11 +3814,12 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                         float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
 #endif 
 
-                        update_if_better(0, j1+1, 0, j2+1, bestC[s+2][j1+1], // bestC[j1+1][j2+1],
-                                        state.seq1foldscore + newscore1,
-                                        state.seq2foldscore + newscore2,
-                                        state.manner, MANNER_C_eq_C_plus_U_ALN,
-                                        alignscore, state.startHMMstate, MANNER_ALN, weight, verbose); // seqs start from 0, j start from 1
+                        if (alignscore > LOG_OF_ZERO)
+                            update_if_better(0, j1+1, 0, j2+1, bestC[s+2][j1+1], // bestC[j1+1][j2+1],
+                                            state.seq1foldscore + newscore1,
+                                            state.seq2foldscore + newscore2,
+                                            state.manner, MANNER_C_eq_C_plus_U_ALN,
+                                            alignscore, state.startHMMstate, MANNER_ALN, weight, verbose); // seqs start from 0, j start from 1
                     }
                 } 
                 if (j1 < seq1->seq_len - 1 && j2 <= seq2->seq_len - 1) { // INS1
@@ -3864,12 +3832,12 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                         trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS1, j1+1, j2, true);
                         float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
 #endif 
-
-                        update_if_better(0, j1+1, 0, j2, bestC[s+1][j1+1], // bestC[j1+1][j2],
-                                        state.seq1foldscore + newscore1,
-                                        state.seq2foldscore,
-                                        state.manner, MANNER_C_eq_C_plus_U_INS1,
-                                        alignscore, state.startHMMstate, MANNER_INS1, weight, verbose);
+                        if (alignscore > LOG_OF_ZERO)
+                            update_if_better(0, j1+1, 0, j2, bestC[s+1][j1+1], // bestC[j1+1][j2],
+                                            state.seq1foldscore + newscore1,
+                                            state.seq2foldscore,
+                                            state.manner, MANNER_C_eq_C_plus_U_INS1,
+                                            alignscore, state.startHMMstate, MANNER_INS1, weight, verbose);
                     }
                 } 
                 if (j2 < seq2->seq_len - 1 && j1 <= seq1->seq_len - 1) { // INS2
@@ -3882,12 +3850,13 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                         trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS2, j1, j2+1, true);
                         float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
 #endif 
-                   
-                        update_if_better(0, j1, 0, j2+1, bestC[s+1][j1], // bestC[j1][j2+1],
-                                        state.seq1foldscore,
-                                        state.seq2foldscore + newscore2,
-                                        state.manner, MANNER_C_eq_C_plus_U_INS2,
-                                        alignscore, state.startHMMstate, MANNER_INS2, weight, verbose);
+
+                        if (alignscore > LOG_OF_ZERO)
+                            update_if_better(0, j1, 0, j2+1, bestC[s+1][j1], // bestC[j1][j2+1],
+                                            state.seq1foldscore,
+                                            state.seq2foldscore + newscore2,
+                                            state.manner, MANNER_C_eq_C_plus_U_INS2,
+                                            alignscore, state.startHMMstate, MANNER_INS2, weight, verbose);
                     }
                 }
             } // for loop j1

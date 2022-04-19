@@ -397,24 +397,24 @@ inline int multiloop2Pscore(int i, int j, SeqObject *seq){
 
 
 inline int P2PScore(int p, int q, int i, int j, int nucp, int nucp1, int nucq_1, int nucq, int nuci_1, int nuci, int nucj, int nucj1){
-    int newscore;
-    if (p == i - 1 && q == j + 1) { // helix
-// #ifdef lv
-        newscore = -v_score_single(p, q, i, j, nucp, nucp1, nucq_1, nucq, nuci_1, nuci, nucj, nucj1);
-// #else
-//     newscore = score_helix(nucp, nucp1, nucq_1, nucq) + state.score;
-// #endif
-    } else { // single branch
-// #ifdef lv
-        newscore = -v_score_single(p, q, i, j, nucp, nucp1, nucq_1, nucq, nuci_1, nuci, nucj, nucj1);
-// #else
-    // newscore = score_junction_B(p, q, nucp, nucp1, nucq_1, nucq) +
-    //     precomputed +
-    //     score_single_without_junctionB(p, q, i, j,
-    //                                    nuci_1, nuci, nucj, nucj1) +
-    //     state.score;
-// #endif
-    }
+    int newscore = -v_score_single(p, q, i, j, nucp, nucp1, nucq_1, nucq, nuci_1, nuci, nucj, nucj1);
+//     if (p == i - 1 && q == j + 1) { // helix
+// // #ifdef lv
+//         newscore = -v_score_single(p, q, i, j, nucp, nucp1, nucq_1, nucq, nuci_1, nuci, nucj, nucj1);
+// // #else
+// //     newscore = score_helix(nucp, nucp1, nucq_1, nucq) + state.score;
+// // #endif
+//     } else { // single branch
+// // #ifdef lv
+//         newscore = -v_score_single(p, q, i, j, nucp, nucp1, nucq_1, nucq, nuci_1, nuci, nucj, nucj1);
+// // #else
+//     // newscore = score_junction_B(p, q, nucp, nucp1, nucq_1, nucq) +
+//     //     precomputed +
+//     //     score_single_without_junctionB(p, q, i, j,
+//     //                                    nuci_1, nuci, nucj, nucj1) +
+//     //     state.score;
+// // #endif
+//     }
     return newscore; // / -100.0;
 }
 
@@ -497,50 +497,56 @@ inline int multi_unpaired_score(int j, SeqObject *seq){
 }
 
 inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int seq1foldscore, int seq2foldscore, Manner premanner, Manner manner, float alignscore, HMMManner start_manner, HMMManner end_manner, float wegiht, bool verbose) {
-    if (alignscore <= VALUE_FMIN || alignscore <= LOG_OF_ZERO) return; // TODO
-    if (seq1foldscore <= VALUE_MIN || seq2foldscore <= VALUE_MIN) return;
-
-    assert (j1 >= 0);
-    assert (i1 >= 0);
-    assert (i2 >= 0);
-    
-    // if (verbose) cout << "update_if_better: "  << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
+    // if (alignscore <= VALUE_FMIN || alignscore <= LOG_OF_ZERO) return; // TODO
+    // if (seq1foldscore <= VALUE_MIN || seq2foldscore <= VALUE_MIN) return;
+    // assert (alignscore > LOG_OF_ZERO);
+    // assert (j1 >= 0);
+    // assert (i1 >= 0);
+    // assert (i2 >= 0);
     
     if (state.score <= seq1foldscore + seq2foldscore + wegiht * alignscore) {
         if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
         state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, alignscore, wegiht * alignscore, start_manner, end_manner);
-    }
+    } 
+    // else {
+    //     cout << "update_if_better: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
+    // }
 }
 
 inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int seq1foldscore, int seq2foldscore, Manner premanner, Manner manner, int seq1_split, int seq2_split, float alignscore, HMMManner start_manner, HMMManner end_manner, float wegiht, bool verbose) {
-    if (alignscore <= VALUE_FMIN || alignscore <= LOG_OF_ZERO) return; // TODO
-    if (seq1foldscore <= VALUE_MIN || seq2foldscore <= VALUE_MIN) return;
+    // if (alignscore <= LOG_OF_ZERO) return; // TODO
+    // if (seq1foldscore <= VALUE_MIN || seq2foldscore <= VALUE_MIN) return;
+    // assert (alignscore > LOG_OF_ZERO);
+    // assert (j1 >= 0);
+    // assert (i1 >= 0);
+    // assert (i2 >= 0);
 
-    assert (j1 >= 0);
-    assert (i1 >= 0);
-    assert (i2 >= 0);
-
-    // if (verbose) cout << "update_if_better: "  << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
 
     if (state.score <= seq1foldscore + seq2foldscore + wegiht * alignscore) {
         if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
         state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, seq1_split, seq2_split, alignscore, wegiht * alignscore, start_manner, end_manner);
     } 
+    // else {
+    //     cout << "update_if_better: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
+    // }
 
 }
 
 inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int seq1foldscore, int seq2foldscore, Manner premanner, Manner manner, char seq1_l1, int seq1_l2, char seq2_l1, int seq2_l2, float alignscore, HMMManner start_manner, HMMManner end_manner, float wegiht, bool verbose) {
-    if (alignscore <= VALUE_FMIN || alignscore <= LOG_OF_ZERO) return; // TODO
-    if (seq1foldscore <= VALUE_MIN || seq2foldscore <= VALUE_MIN) return;
-
-    assert (j1 >= 0);
-    assert (i1 >= 0);
-    assert (i2 >= 0);
-    // if (verbose) cout << "update_if_better"  << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
+    // if (alignscore <= VALUE_FMIN || alignscore <= LOG_OF_ZERO) return; // TODO
+    // if (seq1foldscore <= VALUE_MIN || seq2foldscore <= VALUE_MIN) return;
+    // assert (alignscore > LOG_OF_ZERO);
+    // assert (j1 >= 0);
+    // assert (i1 >= 0);
+    // assert (i2 >= 0);
+ 
     if (state.score <= seq1foldscore + seq2foldscore + wegiht * alignscore) {
         if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << " " << premanner << " " << manner << endl;
         state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, seq1_l1, seq1_l2, seq2_l1, seq2_l2, alignscore, wegiht * alignscore, start_manner, end_manner);
-    }
+    } 
+    // else {
+    //     cout << "update_if_better: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << " " << premanner << " " << manner << endl;
+    // }
 }
 
 // temporary: save structures
