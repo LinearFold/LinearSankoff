@@ -2562,7 +2562,7 @@ void SankoffParser::prepare(const vector<string> &seqs){
                 short j1_upbound = hmmalign.up_bounds[j1];
                 short j1_range = j1_upbound - j1_lowbound + 1;
 
-                cout << i1 << " " << j1  << " " << i2 << " " << j1_lowbound << " " <<  j1_upbound << " " << j1_range << endl;
+                // cout << i1 << " " << j1  << " " << i2 << " " << j1_lowbound << " " <<  j1_upbound << " " << j1_range << endl;
 
                 if (seq1_H_pairs[j1][i1]) {
                     bestH[i1][j1][i2] = new State3[j1_range];
@@ -2709,10 +2709,10 @@ void SankoffParser::parse(const vector<string> &seqs){
 #endif
 
     // from left to right
+    mem = GetProcessMemory();
     for(int s = 1; s < seq1_len + seq2_len - 1; ++s) {
-        mem = GetProcessMemory();
-        // if (s%100 == 1)
-        cout << "s: " << s << " VmPeak: " << mem.VmPeak  / 1024.0 / 1024.0 << endl;
+        if (s%10 == 1)
+            cout << "s: " << s << " VmPeak: " << mem.VmPeak  / 1024.0 / 1024.0 << endl;
 
         if (hmmalign.max_j1[s] == -1) continue;
 
@@ -3517,7 +3517,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                                 int q1 = seq1->next_pair[nucp1][j1];
                                 
                                 int i1_p1 = i1 - p1;
-                                while (q1 != -1 && (i1_p1 + (q1 - j1) - 2 <= 50)) {
+                                while (q1 != -1 && (i1_p1 + (q1 - j1) - 2 <= SINGLE_MAX_LEN)) {
                                 // while (q1 != -1 && (q1 - j1 - 1 <= SINGLE_MAX_LEN)) {
                                     // single seq folding subopt
                                     if (!seq1_Multi_pairs[q1][p1]) {
@@ -3534,12 +3534,12 @@ void SankoffParser::parse(const vector<string> &seqs){
 
                                         // speed up
                                         int i2_p2 = i2 - p2;
-                                        if (q2 == -1 || q2 > hmmalign.up_bounds[q1] || (i2_p2 + (q2 - j2) - 2 > 50)) continue;
+                                        if (q2 == -1 || q2 > hmmalign.up_bounds[q1] || (i2_p2 + (q2 - j2) - 2 > SINGLE_MAX_LEN)) continue;
                                         if (q2 <= hmmalign.low_bounds[q1]-1)
                                             q2 = seq2->next_pair[nucp2][hmmalign.low_bounds[q1]-1]; 
                                         
-                                        while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (i2_p2 + (q2 - j2) - 2 <= 50)) {
-                                        // while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (q2 - j2 - 1 <= MAX_LOOP_LEN)) {
+                                        while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (i2_p2 + (q2 - j2) - 2 <= SINGLE_MAX_LEN)) {
+                                        // while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (q2 - j2 - 1 <= SINGLE_MAX_LEN)) {
                                             // single seq folding subopt
                                             if (seq2_Multi_pairs[q2][p2]) {
                                                 int newscore1 = multi_unpaired_score2(i1, j1, p1, q1, seq1);
