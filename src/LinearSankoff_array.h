@@ -23,6 +23,13 @@
 
 using namespace std;
 
+struct BoolState {
+    bool valid;
+
+    BoolState(): valid(false) {};
+};
+
+
 class SankoffParser {
 public:
     int beam;
@@ -59,10 +66,19 @@ private:
     State ****bestM, ****bestM2;
     State **bestC;
 
+    // save internal loops score 
+    // unordered_map<int, int>*** seq1_internal; 
+    // unordered_map<int, int>*** seq2_internal; 
+    short ****seq1_internal;
+    short ****seq2_internal;
+
     vector<int> accumulated_regions;
 
-    bool **seq1_H_pairs, **seq1_P_pairs, **seq1_M_pairs, **seq1_M2_pairs, **seq1_Multi_pairs;
-    bool **seq2_H_pairs, **seq2_P_pairs, **seq2_M_pairs, **seq2_M2_pairs, **seq2_Multi_pairs;
+    // bool **seq1_H_pairs, **seq1_P_pairs, **seq1_M_pairs, **seq1_M2_pairs, **seq1_Multi_pairs;
+    // bool **seq2_H_pairs, **seq2_P_pairs, **seq2_M_pairs, **seq2_M2_pairs, **seq2_Multi_pairs;
+
+    vector<unordered_map<int, BoolState>> seq1_H_pairs, seq1_P_pairs, seq1_M_pairs, seq1_M2_pairs, seq1_Multi_pairs;
+    vector<unordered_map<int, BoolState>> seq2_H_pairs, seq2_P_pairs, seq2_M_pairs, seq2_M2_pairs, seq2_Multi_pairs;
 
     pair<string, string> get_hmm_aln(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2);
     pair<string, string> get_hmm_aln_left(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2);

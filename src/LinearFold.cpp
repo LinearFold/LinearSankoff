@@ -780,8 +780,8 @@ bool BeamCKYParser::allow_paired(int i, int j, vector<int>* cons, char nuci, cha
     return ((*cons)[i] == -1 || (*cons)[i] == j) && ((*cons)[j] == -1 || (*cons)[j] == i) && _allowed_pairs[nuci][nucj];
 }
 
-int BeamCKYParser::parse(const string& seq, vector<int>* cons) {
-
+int BeamCKYParser::parse(const string& seq, short**** internal_score, vector<int>* cons) {
+    cout << "LF beam: " << beam << endl; 
     struct timeval parse_starttime, parse_endtime;
 
     // number of states
@@ -1156,7 +1156,8 @@ int BeamCKYParser::parse(const string& seq, vector<int>* cons) {
 #else
                         precomputed = score_junction_B(j, i, nucj, nucj1, nuci_1, nuci);
 #endif
-                    for (int p = i - 1; p >= max(i - SINGLE_MAX_LEN, 0); --p) {
+                    // for (int p = i - 1; p >= max(i - SINGLE_MAX_LEN, 0); --p) {
+                    for (int p = i - 1; p >= max(i - MAX_LOOP_LEN - 1, 0); --p) {
                         int nucp = nucs[p];
                         int nucp1 = nucs[p + 1]; // hzhang: move here
                         int q = next_pair[nucp][j];
@@ -1171,7 +1172,8 @@ int BeamCKYParser::parse(const string& seq, vector<int>* cons) {
                             }
                         }
 
-                        while (q != -1 && ((i - p) + (q - j) - 2 <= SINGLE_MAX_LEN)) {
+                        // while (q != -1 && ((i - p) + (q - j) - 2 <= SINGLE_MAX_LEN)) {
+                        while (q != -1 && (q - j - 1 <= MAX_LOOP_LEN)) {
                             int nucq = nucs[q];
 
                             // lisiz constraints
@@ -1187,29 +1189,35 @@ int BeamCKYParser::parse(const string& seq, vector<int>* cons) {
                                 // helix
                                 value_type newscore;
 #ifdef lv
-                                    newscore = -v_score_single(p,q,i,j, nucp, nucp1, nucq_1, nucq, nuci_1, nuci, nucj, nucj1)
-                                        + state.score;
+                                    newscore = -v_score_single(p,q,i,j, nucp, nucp1, nucq_1, nucq, nuci_1, nuci, nucj, nucj1);
                                     // SHAPE for Vienna only
                                     if (use_shape)
                                         newscore += -(pseudo_energy_stack[p] + pseudo_energy_stack[i] + pseudo_energy_stack[j] + pseudo_energy_stack[q]);
 #else
                                     newscore = score_helix(nucp, nucp1, nucq_1, nucq) + state.score;
 #endif
-                                update_if_better(bestP[q][p], newscore, LFMANNER_HELIX);
+                                if (internal_score) {
+                                    internal_score[i+1][j+1][p+1][q+1] = newscore;
+                                }
+                                
+                                update_if_better(bestP[q][p], newscore + state.score, LFMANNER_HELIX);
                                 ++nos_P;
                             } else {
                                 // single branch
                                 value_type newscore;
 #ifdef lv
-                                    newscore = - v_score_single(p,q,i,j, nucp, nucp1, nucq_1, nucq, nuci_1, nuci, nucj, nucj1)
-                                        + state.score;
+                                    newscore = - v_score_single(p,q,i,j, nucp, nucp1, nucq_1, nucq, nuci_1, nuci, nucj, nucj1);
 #else
                                     newscore = score_junction_B(p, q, nucp, nucp1, nucq_1, nucq) +
                                         precomputed +
                                         score_single_without_junctionB(p, q, i, j, nuci_1, nuci, nucj, nucj1) +
                                         state.score;
 #endif
-                                update_if_better(bestP[q][p], newscore, LFMANNER_SINGLE,
+                                if (internal_score) {
+                                    internal_score[i+1][j+1][p+1][q+1] = newscore;
+                                }
+                                
+                                update_if_better(bestP[q][p], newscore + state.score, LFMANNER_SINGLE,
                                                  static_cast<char>(i - p),
                                                  q - j);
                                 ++nos_P;

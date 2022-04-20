@@ -1067,7 +1067,7 @@ float BeamSankoffParser::beam_prune(unordered_map<int, State> &beamstep, int s, 
     return threshold;
 }
 
-
+/*
 void BeamSankoffParser::outside(bool limited, const set<pair<int, int>> &allowed_pairs){
     SeqObject* seq1 = &sequences[0];
     SeqObject* seq2 = &sequences[1];
@@ -2024,7 +2024,7 @@ void BeamSankoffParser::outside(bool limited, const set<pair<int, int>> &allowed
     } // end of s
 
 }
-
+*/
 
 void BeamSankoffParser::prepare(const vector<string> &seqs){
     // get number of sequences and sequence length
@@ -2163,7 +2163,7 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
 
     for (int i_seq=0; i_seq<2; i_seq++) {
         // single sequence folding
-        int seq_viterbi = cky_parser->parse(seqs[i_seq], NULL);
+        int seq_viterbi = cky_parser->parse(seqs[i_seq], NULL, NULL);
         
         // only keep suboptimal base pairs
         // the maximum % change in free energy from the lowest free energy structure

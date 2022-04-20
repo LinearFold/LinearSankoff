@@ -145,7 +145,7 @@ public:
     //Zuker subopt
     vector<unordered_map<int, LFState>> bestH_beta, bestP_beta, bestM2_beta, bestMulti_beta, bestM_beta;
 
-    int parse(const string& seq, vector<int>* cons);
+    int parse(const string& seq, short**** internal_score, vector<int>* cons);
                 
     void outside(vector<int> next_pair[]); //for zuker subopt
 

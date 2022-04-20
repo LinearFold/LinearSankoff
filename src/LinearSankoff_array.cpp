@@ -2383,50 +2383,131 @@ void SankoffParser::prepare(const vector<string> &seqs){
     BeamCKYParser* cky_parser = new BeamCKYParser();
     cky_parser->beam = -1;
 
-    seq1_H_pairs = new bool*[seq1_len+1];
-    seq1_P_pairs = new bool*[seq1_len+1];
-    seq1_Multi_pairs = new bool*[seq1_len+1];
-    seq1_M_pairs = new bool*[seq1_len+1];
-    seq1_M2_pairs = new bool*[seq1_len+1];
-    for (int j=1; j<=seq1_len; j++) {
-        seq1_H_pairs[j] = new bool[j];
-        seq1_P_pairs[j] = new bool[j];
-        seq1_Multi_pairs[j] = new bool[j];
-        seq1_M_pairs[j] = new bool[j];
-        seq1_M2_pairs[j] = new bool[j];
-        for (int i=0; i<j; i++) {
-            seq1_H_pairs[j][i] = false;
-            seq1_P_pairs[j][i] = false;
-            seq1_Multi_pairs[j][i] = false;
-            seq1_M_pairs[j][i] = false;
-            seq1_M2_pairs[j][i] = false;
+    // seq1_H_pairs = new bool*[seq1_len+1];
+    // seq1_P_pairs = new bool*[seq1_len+1];
+    // seq1_Multi_pairs = new bool*[seq1_len+1];
+    // seq1_M_pairs = new bool*[seq1_len+1];
+    // seq1_M2_pairs = new bool*[seq1_len+1];
+    // for (int j=1; j<=seq1_len; j++) {
+    //     seq1_H_pairs[j] = new bool[j];
+    //     seq1_P_pairs[j] = new bool[j];
+    //     seq1_Multi_pairs[j] = new bool[j];
+    //     seq1_M_pairs[j] = new bool[j];
+    //     seq1_M2_pairs[j] = new bool[j];
+    //     for (int i=0; i<j; i++) {
+    //         seq1_H_pairs[j][i] = false;
+    //         seq1_P_pairs[j][i] = false;
+    //         seq1_Multi_pairs[j][i] = false;
+    //         seq1_M_pairs[j][i] = false;
+    //         seq1_M2_pairs[j][i] = false;
+    //     }
+    // }
+    // seq2_H_pairs = new bool*[seq2_len+1];
+    // seq2_P_pairs = new bool*[seq2_len+1];
+    // seq2_Multi_pairs = new bool*[seq2_len+1];
+    // seq2_M_pairs = new bool*[seq2_len+1];
+    // seq2_M2_pairs = new bool*[seq2_len+1];
+    // for (int j=1; j<=seq2_len; j++) {
+    //     seq2_H_pairs[j] = new bool[j];
+    //     seq2_P_pairs[j] = new bool[j];
+    //     seq2_Multi_pairs[j] = new bool[j];
+    //     seq2_M_pairs[j] = new bool[j];
+    //     seq2_M2_pairs[j] = new bool[j];
+    //     for (int i=0; i<j; i++) {
+    //         seq2_H_pairs[j][i] = false;
+    //         seq2_P_pairs[j][i] = false;
+    //         seq2_Multi_pairs[j][i] = false;
+    //         seq2_M_pairs[j][i] = false;
+    //         seq2_M2_pairs[j][i] = false;
+    //     }
+    // }
+
+
+    seq1_H_pairs.clear();
+    seq1_H_pairs.resize(seq1_len);
+    seq1_P_pairs.clear();
+    seq1_P_pairs.resize(seq1_len);
+    seq1_M_pairs.clear();
+    seq1_M_pairs.resize(seq1_len);
+    seq1_M2_pairs.clear();
+    seq1_M2_pairs.resize(seq1_len);
+    seq1_Multi_pairs.clear();
+    seq1_Multi_pairs.resize(seq1_len);
+
+    seq2_H_pairs.clear();
+    seq2_H_pairs.resize(seq2_len);
+    seq2_P_pairs.clear();
+    seq2_P_pairs.resize(seq2_len);
+    seq2_M_pairs.clear();
+    seq2_M_pairs.resize(seq2_len);
+    seq2_M2_pairs.clear();
+    seq2_M2_pairs.resize(seq2_len);
+    seq2_Multi_pairs.clear();
+    seq2_Multi_pairs.resize(seq2_len);
+
+    // internal loop score
+    seq1_internal = new short***[seq1_len];
+    seq2_internal = new short***[seq2_len];
+    for (int i1=2; i1<seq1_len-3; i1++) {
+        seq1_internal[i1] = new short**[seq1_len - i1 - 3];
+        seq1_internal[i1] = seq1_internal[i1] - (i1+3);
+        int nuci = sequences[0].nucs[i1];
+
+        short mini = max(1, i1-MAX_LOOP_LEN-1);
+        for (int j1 = i1+4; j1<seq1_len-1; j1++) {
+            int nucj = sequences[0].nucs[j1];
+            if (_allowed_pairs[nuci][nucj]) {
+                seq1_internal[i1][j1] = new short*[i1-mini+1];
+                seq1_internal[i1][j1] = seq1_internal[i1][j1] - mini;
+
+                short minj = j1+1;
+                short maxj = min(minj+MAX_LOOP_LEN+1, seq1_len);
+                for (int k=mini; k<i1; k++) {
+                    seq1_internal[i1][j1][k] = new short[maxj-minj+1];
+                    seq1_internal[i1][j1][k] = seq1_internal[i1][j1][k] - minj; 
+
+                    for (int l=minj; l<maxj; l++) {
+                        seq1_internal[i1][j1][k][l] = -1;
+                    }
+
+                }
+            }            
         }
     }
+    for (int i2=2; i2<seq2_len-3; i2++) {
+        seq2_internal[i2] = new short**[seq2_len - i2 - 3];
+        seq2_internal[i2] = seq2_internal[i2] - (i2+3); 
+        int nuci = sequences[1].nucs[i2];
 
-    seq2_H_pairs = new bool*[seq2_len+1];
-    seq2_P_pairs = new bool*[seq2_len+1];
-    seq2_Multi_pairs = new bool*[seq2_len+1];
-    seq2_M_pairs = new bool*[seq2_len+1];
-    seq2_M2_pairs = new bool*[seq2_len+1];
-    for (int j=1; j<=seq2_len; j++) {
-        seq2_H_pairs[j] = new bool[j];
-        seq2_P_pairs[j] = new bool[j];
-        seq2_Multi_pairs[j] = new bool[j];
-        seq2_M_pairs[j] = new bool[j];
-        seq2_M2_pairs[j] = new bool[j];
-        for (int i=0; i<j; i++) {
-            seq2_H_pairs[j][i] = false;
-            seq2_P_pairs[j][i] = false;
-            seq2_Multi_pairs[j][i] = false;
-            seq2_M_pairs[j][i] = false;
-            seq2_M2_pairs[j][i] = false;
+        short mini = max(1, i2-MAX_LOOP_LEN-1);
+        for (int j2 = i2+4; j2<seq2_len-1; j2++) {
+            int nucj = sequences[1].nucs[j2];
+            if (_allowed_pairs[nuci][nucj]) {
+                seq2_internal[i2][j2] = new short*[i2-mini+1];
+                seq2_internal[i2][j2] = seq2_internal[i2][j2] - mini;
+                
+                short minj = j2+1;
+                short maxj = min(minj+MAX_LOOP_LEN+1, seq2_len);
+                for (int k=mini; k<i2; k++) {
+                    seq2_internal[i2][j2][k] = new short[maxj-minj+1];
+                    seq2_internal[i2][j2][k] = seq2_internal[i2][j2][k] - minj;
+
+                    for (int l=minj; l<maxj; l++) {
+                        seq2_internal[i2][j2][k][l] = -1;
+                    }
+                }
+            }
         }
     }
 
     // int max_range = -1;
     for (int i_seq=0; i_seq<2; i_seq++) {
         // single sequence folding
-        int seq_viterbi = cky_parser->parse(seqs[i_seq], NULL);
+        int seq_viterbi;
+        if (i_seq == 0)
+            seq_viterbi = cky_parser->parse(seqs[i_seq], seq1_internal, NULL);
+        else
+            seq_viterbi = cky_parser->parse(seqs[i_seq], seq2_internal, NULL);
         
         // the maximum % change in free energy from the lowest free energy structure
         float min_score = seq_viterbi * (1 - max_energy_diff); // max_score must be positive
@@ -2439,7 +2520,7 @@ void SankoffParser::prepare(const vector<string> &seqs){
             vector<unordered_map<int, LFState>*> seq_in{&cky_parser->bestH[j], &cky_parser->bestP[j], &cky_parser->bestM[j], &cky_parser->bestM2[j], &cky_parser->bestMulti[j]};
             vector<unordered_map<int, LFState>*> seq_out{&cky_parser->bestH_beta[j], &cky_parser->bestP_beta[j], &cky_parser->bestM_beta[j], &cky_parser->bestM2_beta[j], &cky_parser->bestMulti_beta[j]};
             
-            vector<bool**> valid_pairs;
+            vector<unordered_map<int, BoolState>*> valid_pairs;
             if (i_seq==0)
                 valid_pairs = {&seq1_H_pairs[j+1], &seq1_P_pairs[j+1], &seq1_M_pairs[j+1], &seq1_M2_pairs[j+1], &seq1_Multi_pairs[j+1]};
             else
@@ -2459,10 +2540,8 @@ void SankoffParser::prepare(const vector<string> &seqs){
                     }
                         
                     if (in_score + out_score >= min_score) {
-                        (*valid_pairs[k])[i+1] = true;
+                        (*valid_pairs[k])[i+1].valid = true;
                     }
-                    
-        
                 }
             }            
         }
@@ -2505,30 +2584,35 @@ void SankoffParser::prepare(const vector<string> &seqs){
         bestM2[i1] = new State**[seq1_len - i1 + 1];
         bestM2[i1] = bestM2[i1] - i1;
 
+        int nuci1 = sequences[0].nucs[i1];
         for (int j1 = i1+1; j1<seq1_len; j1++) {
             short i1_lowbound = hmmalign.low_bounds[i1];
             short i1_upbound = hmmalign.up_bounds[i1];
             short i1_range = i1_upbound - i1_lowbound + 1;
+            
+            int nucj1 = sequences[0].nucs[j1];
 
             // if (verbose) cout << i1 << " " << j1 << " " << i1_lowbound << " " <<  i1_upbound << " " << i1_range << endl;
 
-            if (seq1_H_pairs[j1][i1]) {
-                bestH[i1][j1] = new State3*[i1_range];
-                bestH[i1][j1] = bestH[i1][j1] - i1_lowbound; // shift pointer
+            if (_allowed_pairs[nuci1][nucj1]) {
+                if (seq1_H_pairs[j1].find(i1) != seq1_H_pairs[j1].end()) {
+                    bestH[i1][j1] = new State3*[i1_range];
+                    bestH[i1][j1] = bestH[i1][j1] - i1_lowbound; // shift pointer
+                }
+                if (seq1_P_pairs[j1].find(i1) != seq1_P_pairs[j1].end()) {
+                    bestP[i1][j1] = new State3*[i1_range];
+                    bestP[i1][j1] = bestP[i1][j1] - i1_lowbound;
+                }
+                if (seq1_Multi_pairs[j1].find(i1) != seq1_Multi_pairs[j1].end()) {
+                    bestMulti[i1][j1] = new State3*[i1_range];
+                    bestMulti[i1][j1] = bestMulti[i1][j1] - i1_lowbound;
+                }
             }
-            if (seq1_P_pairs[j1][i1]) {
-                bestP[i1][j1] = new State3*[i1_range];
-                bestP[i1][j1] = bestP[i1][j1] - i1_lowbound;
-            }
-            if (seq1_Multi_pairs[j1][i1]) {
-                bestMulti[i1][j1] = new State3*[i1_range];
-                bestMulti[i1][j1] = bestMulti[i1][j1] - i1_lowbound;
-            }
-            if (seq1_M_pairs[j1][i1]) {
+            if (seq1_M_pairs[j1].find(i1) != seq1_M_pairs[j1].end()) {
                 bestM[i1][j1] = new State*[i1_range];
                 bestM[i1][j1] = bestM[i1][j1] - i1_lowbound;
             }
-            if (seq1_M2_pairs[j1][i1]) {
+            if (seq1_M2_pairs[j1].find(i1) != seq1_M2_pairs[j1].end()) {
                 bestM2[i1][j1] = new State*[i1_range];
                 bestM2[i1][j1] = bestM2[i1][j1] - i1_lowbound;
             }
@@ -2540,53 +2624,61 @@ void SankoffParser::prepare(const vector<string> &seqs){
 
                 // cout << i1 << " " << j1  << " " << i2 << " " << j1_lowbound << " " <<  j1_upbound << " " << j1_range << endl;
 
-                if (seq1_H_pairs[j1][i1]) {
-                    bestH[i1][j1][i2] = new State3[j1_range];
-                    bestH[i1][j1][i2] = bestH[i1][j1][i2] - j1_lowbound;
-                    // initialize
-                    for (int j2 = j1_lowbound; j2 <= j1_upbound; j2++) {
-                        
-                        bestH[i1][j1][i2][j2].alnobj.init();
-                        bestH[i1][j1][i2][j2].ins1obj.init();
-                        bestH[i1][j1][i2][j2].ins2obj.init();
+                if (_allowed_pairs[nuci1][nucj1]) {
+                    if (seq1_H_pairs[j1].find(i1) != seq1_H_pairs[j1].end()) {
+                        bestH[i1][j1][i2] = new State3[j1_range];
+                        bestH[i1][j1][i2] = bestH[i1][j1][i2] - j1_lowbound;
+                        // initialize
+                        for (int j2 = j1_lowbound; j2 <= j1_upbound; j2++) {
+                            if (seq2_H_pairs[j2].find(i2) != seq2_H_pairs[j2].end()) {
+                                bestH[i1][j1][i2][j2].init();
+                            }
+                        }
+                    }
+                    if (seq1_P_pairs[j1].find(i1) != seq1_P_pairs[j1].end()) {
+                        bestP[i1][j1][i2] = new State3[j1_range];
+                        bestP[i1][j1][i2] = bestP[i1][j1][i2] - j1_lowbound;
+                        // initialize
+                        for (int j2 = j1_lowbound; j2 <= j1_upbound; j2++) {
+                            if (seq2_P_pairs[j2].find(i2) != seq2_P_pairs[j2].end()) {
+                                bestP[i1][j1][i2][j2].init();
+                            }
+                        }
+                    }
+                    if (seq1_Multi_pairs[j1].find(i1) != seq1_Multi_pairs[j1].end()) {
+                        bestMulti[i1][j1][i2] = new State3[j1_range];
+                        bestMulti[i1][j1][i2] = bestMulti[i1][j1][i2] - j1_lowbound;
+                        // initialize
+                        for (int j2 = j1_lowbound; j2 <= j1_upbound; j2++) {
+                            if (seq2_Multi_pairs[j2].find(i2) != seq2_Multi_pairs[j2].end()) {
+                                bestMulti[i1][j1][i2][j2].init();
+                            }
+                        }
                     }
                 }
-                if (seq1_P_pairs[j1][i1]) {
-                    bestP[i1][j1][i2] = new State3[j1_range];
-                    bestP[i1][j1][i2] = bestP[i1][j1][i2] - j1_lowbound;
-                    // initialize
-                    for (int j2 = j1_lowbound; j2 <= j1_upbound; j2++) {
-                       bestP[i1][j1][i2][j2].init();
-                    }
-                }
-                if (seq1_Multi_pairs[j1][i1]) {
-                    bestMulti[i1][j1][i2] = new State3[j1_range];
-                    bestMulti[i1][j1][i2] = bestMulti[i1][j1][i2] - j1_lowbound;
-                    // initialize
-                    for (int j2 = j1_lowbound; j2 <= j1_upbound; j2++) {
-                       bestMulti[i1][j1][i2][j2].init();
-                    }
-                }
-                if (seq1_M_pairs[j1][i1]) {
+                if (seq1_M_pairs[j1].find(i1) != seq1_M_pairs[j1].end()) {
                     bestM[i1][j1][i2] = new State[j1_range];
                     bestM[i1][j1][i2] = bestM[i1][j1][i2] - j1_lowbound;
                     // initialize
                     for (int j2 = j1_lowbound; j2 <= j1_upbound; j2++) {
-                       bestM[i1][j1][i2][j2].init();
+                        if (seq2_M_pairs[j2].find(i2) != seq2_M_pairs[j2].end()) {
+                            bestM[i1][j1][i2][j2].init();
+                        }
                     }
                 }
-                if (seq1_M2_pairs[j1][i1]) {
+                if (seq1_M2_pairs[j1].find(i1) != seq1_M2_pairs[j1].end()) {
                     bestM2[i1][j1][i2] = new State[j1_range];
                     bestM2[i1][j1][i2] = bestM2[i1][j1][i2] - j1_lowbound;
                     // initialize
                     for (int j2 = j1_lowbound; j2 <= j1_upbound; j2++) {
-                       bestM2[i1][j1][i2][j2].init();
+                        if (seq2_M2_pairs[j2].find(i2) != seq2_M2_pairs[j2].end()) {
+                            bestM2[i1][j1][i2][j2].init();
+                        }
                     }
                 }
             }
         }
     } 
-
 }
 
 
@@ -2714,7 +2806,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                 if (j1next == -1) break;
 
                 // single seq folding subopt
-                if (!seq1_H_pairs[j1next][j1]) continue;
+                if (!seq1_H_pairs[j1next][j1].valid) continue;
 
                 j2next = j2;
                 while (j2next != -1) {
@@ -2723,7 +2815,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                     if (j2next == -1) break;
 
                     // single seq folding subopt
-                    if (!seq2_H_pairs[j2next][j2]) continue;
+                    if (!seq2_H_pairs[j2next][j2].valid) continue;
 
                     // hmm constraint, right bracket   
                     if (j2next > hmmalign.up_bounds[j1next] || j2next < hmmalign.low_bounds[j1next]) continue;
@@ -2754,7 +2846,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                     // 2. generate p(i, j)
                     // only check hmm constraints for right side when convert to P
                     // if (j2 >= hmmalign.low_bounds[j1] && j2 <= hmmalign.up_bounds[j1])
-                    if (seq1_P_pairs[j1next][j1] && seq2_P_pairs[j2next][j2]) {
+                    if (seq1_P_pairs[j1next][j1].valid && seq2_P_pairs[j2next][j2].valid) {
                         if (verbose) cout << "H to P: " << j1 << " " << j1next << " " << j2 << " " << j2next << endl; 
 
                         if (alignscore > LOG_OF_ZERO)
@@ -2793,7 +2885,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                 int i1 = seq1->next_pair[nucj1][0];
                 while (i1 != -1 && i1 < j1) { // only consider positions where (i1, j1) can form pairs
                     // single seq folding subopt
-                    if (!seq1_Multi_pairs[j1][i1]) {
+                    if (!seq1_Multi_pairs[j1][i1].valid) {
                         i1 = seq1->next_pair[nucj1][i1];
                         continue;
                     }
@@ -2803,7 +2895,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                     int max_i2 = min(j2-1, hmmalign.up_bounds[i1]);
                     while (i2 != -1 && i2 <= max_i2) { // only consider positions where (i2, j2) can form pairs
                         // single seq folding subopt
-                        if (!seq2_Multi_pairs[j2][i2]) {
+                        if (!seq2_Multi_pairs[j2][i2].valid) {
                             i2 = seq2->next_pair[nucj2][i2];
                             continue;
                         }
@@ -2812,7 +2904,7 @@ void SankoffParser::parse(const vector<string> &seqs){
 
                         // 2. generate P (i, j)
                         // single seq folding subopt
-                        if (seq1_P_pairs[j1][i1] && seq2_P_pairs[j2][i2]){
+                        if (seq1_P_pairs[j1][i1].valid && seq2_P_pairs[j2][i2].valid){
                             if (verbose) cout << "Multi to P: " << i1 << " " << j1 << " " << i2 << " " << j2 << endl;                            
 
                             int score1 = multiloop2Pscore(i1, j1, seq1);
@@ -3081,7 +3173,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                 int i1 = seq1->next_pair[nucj1][0];
                 while (i1 != -1 && i1 < j1) { // only consider positions where (i1, j1) can form pairs
                     // single seq folding subopt
-                    if (!seq1_P_pairs[j1][i1]) {
+                    if (!seq1_P_pairs[j1][i1].valid) {
                         i1 = seq1->next_pair[nucj1][i1];
                         continue;
                     }
@@ -3091,7 +3183,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                     int max_i2 = min(j2-1, hmmalign.up_bounds[i1]);
                     while (i2 != -1 && i2 <= max_i2) { // only consider positions where (i2, j2) can form pairs
                         // single seq folding subopt
-                        if (!seq2_P_pairs[j2][i2]) {
+                        if (!seq2_P_pairs[j2][i2].valid) {
                             i2 = seq2->next_pair[nucj2][i2];
                             continue;
                         }
@@ -3127,14 +3219,16 @@ void SankoffParser::parse(const vector<string> &seqs){
                                     // while (q1 != -1 && (i1_p1 + (q1 - j1) - 2 <= SINGLE_MAX_LEN)) {
                                     while (q1 != -1 && (q1 - j1 - 1 <= MAX_LOOP_LEN)) {
                                         // single seq folding subopt
-                                        if (!seq1_P_pairs[q1][p1]) {
+                                        if (!seq1_P_pairs[q1][p1].valid) {
                                             q1 = seq1->next_pair[nucp1][q1];
                                             continue;
                                         }
 
                                         int nucq1 = seq1->nucs[q1];
                                         int nucq1_1 = seq1->nucs[q1 - 1];
-                                        int p2p1 = P2PScore(p1,q1,i1,j1,nucp1,nucp1p1,nucq1_1,nucq1,nuci1_1,nuci1,nucj1,nucj1p1); 
+                                        // int p2p1 = P2PScore(p1,q1,i1,j1,nucp1,nucp1p1,nucq1_1,nucq1,nuci1_1,nuci1,nucj1,nucj1p1); 
+                                        // assert (p2p1 == seq1_internal[i1][j1][p1][q1]);
+                                        int p2p1 = seq1_internal[i1][j1][p1][q1];
 
                                         int max_p2 = min(i2-1, hmmalign.up_bounds[p1]);
                                         int min_p2 = max(hmmalign.low_bounds[p1], max(1, i2 - MAX_LOOP_LEN - 1));
@@ -3152,7 +3246,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                                             // while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (i2_p2 + (q2 - j2) - 2 <= SINGLE_MAX_LEN)) {
                                             while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (q2 - j2 - 1 <= MAX_LOOP_LEN)) {
                                                 // single seq folding subopt
-                                                if (!seq2_P_pairs[q2][p2]){
+                                                if (!seq2_P_pairs[q2][p2].valid) {
                                                     q2 = seq2->next_pair[nucp2][q2];
                                                     continue;
                                                 }
@@ -3161,7 +3255,9 @@ void SankoffParser::parse(const vector<string> &seqs){
                                                 int nucq2_1 = seq2->nucs[q2 - 1];
                                                 int q2_q1 = q2-hmmalign.low_bounds[q1];
 
-                                                int p2p2 = P2PScore(p2,q2,i2,j2,nucp2,nucp2p1,nucq2_1,nucq2,nuci2_1,nuci2,nucj2,nucj2p1);
+                                                // int p2p2 = P2PScore(p2,q2,i2,j2,nucp2,nucp2p1,nucq2_1,nucq2,nuci2_1,nuci2,nucj2,nucj2p1);
+                                                // assert (p2p2 == seq2_internal[i2][j2][p2][q2]);
+                                                int p2p2 = seq2_internal[i2][j2][p2][q2];
 
                                                 if (verbose) cout << "P2P: " << m << " " << i1 << " " << j1 << " " << i2 << " " << j2 << " " << p1 << " " << q1 << " " << p2 << " " << q2 << " " <<  p2p1 << " " << p2p2 << endl;
 
@@ -3231,7 +3327,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                                 // 2. M = P
                                 // accessible pairs in multiloop must be aligned
                                 // single seq folding subopt
-                                if (seq1_M_pairs[j1][i1] && seq2_M_pairs[j2][i2]) {
+                                if (seq1_M_pairs[j1][i1].valid && seq2_M_pairs[j2][i2].valid) {
                                     if (verbose) cout << "P to M: " << i1 << " " << j1 << " " << i2 << " " << j2 << endl;
                                     int newscore1 = branch_score(i1, j1, seq1);
                                     int newscore2 = branch_score(i2, j2, seq2);
@@ -3253,12 +3349,12 @@ void SankoffParser::parse(const vector<string> &seqs){
 
                                         for (int newi1 = 1; newi1 < k1; newi1++) { // TODO: k1 - 3, no sharp turn
                                             // single seq folding subopt
-                                            if (!seq1_M_pairs[k1][newi1] || !seq1_M2_pairs[j1][newi1]) continue;
+                                            if (!seq1_M_pairs[k1][newi1].valid || !seq1_M2_pairs[j1][newi1].valid) continue;
 
                                             for (int newi2 = hmmalign.low_bounds[newi1]; newi2 <= min(k2-1, hmmalign.up_bounds[newi1]); newi2++) {
                                                 
                                                 // single seq folding subopt
-                                                if (!seq2_M_pairs[k2][newi2] || !seq2_M2_pairs[j2][newi2]) continue;
+                                                if (!seq2_M_pairs[k2][newi2].valid || !seq2_M2_pairs[j2][newi2].valid) continue;
 
                                                 State& mstate = bestM[newi1][k1][newi2][k2];
                                                 if (mstate.endHMMstate == HMMMANNER_NONE) continue;
@@ -3333,14 +3429,16 @@ void SankoffParser::parse(const vector<string> &seqs){
                                     // while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (i2_p2 + (q2 - j2) - 2 <= SINGLE_MAX_LEN)) {
                                     while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (q2 - j2 - 1 <= MAX_LOOP_LEN)) {
                                         // single seq folding subopt
-                                        if (!seq2_P_pairs[q2][p2]){
+                                        if (!seq2_P_pairs[q2][p2].valid){
                                             q2 = seq2->next_pair[nucp2][q2];
                                             continue;
                                         }
 
                                         int nucq2 = seq2->nucs[q2];
                                         int nucq2_1 = seq2->nucs[q2 - 1];
-                                        int p2p2 = P2PScore(p2,q2,i2,j2,nucp2,nucp2p1,nucq2_1,nucq2,nuci2_1,nuci2,nucj2,nucj2p1);
+                                        // int p2p2 = P2PScore(p2,q2,i2,j2,nucp2,nucp2p1,nucq2_1,nucq2,nuci2_1,nuci2,nucj2,nucj2p1);
+                                        // assert (p2p2 == seq2_internal[i2][j2][p2][q2]);
+                                        int p2p2 = seq2_internal[i2][j2][p2][q2];
 
                                         if (verbose) cout << "P2P: " << m << " " << i1 << " " << j1 << " " << i2 << " " << j2 << " " << p1 << " " << q1 << " " << p2 << " " << q2 << " " <<  p2p1 << " " << p2p2 << endl;
 
@@ -3435,14 +3533,16 @@ void SankoffParser::parse(const vector<string> &seqs){
                                         }
 
                                         // single seq folding subopt
-                                        if (!seq1_P_pairs[q1][p1]) {
+                                        if (!seq1_P_pairs[q1][p1].valid) {
                                             q1 = seq1->next_pair[nucp1][q1];
                                             continue;
                                         }
 
                                         int nucq1 = seq1->nucs[q1];
                                         int nucq1_1 = seq1->nucs[q1 - 1];
-                                        int p2p1 = P2PScore(p1,q1,i1,j1,nucp1,nucp1p1,nucq1_1,nucq1,nuci1_1,nuci1,nucj1,nucj1p1); 
+                                        // int p2p1 = P2PScore(p1,q1,i1,j1,nucp1,nucp1p1,nucq1_1,nucq1,nuci1_1,nuci1,nucj1,nucj1p1); 
+                                        // assert (p2p1 == seq1_internal[i1][j1][p1][q1]);
+                                        int p2p1 = seq1_internal[i1][j1][p1][q1];
 
                                         if (verbose) cout << "P2P: " << m << " " << i1 << " " << j1 << " " << i2 << " " << j2 << " " << p1 << " " << q1 << " " << p2 << " " << q2 << " " <<  p2p1 << " " << p2p2 << endl;
 
@@ -3522,11 +3622,11 @@ void SankoffParser::parse(const vector<string> &seqs){
 
                 for (int i1 = 1; i1 < j1; i1++) {
                     // single seq folding subopt
-                    if (!seq1_M2_pairs[j1][i1]) continue;
+                    if (!seq1_M2_pairs[j1][i1].valid) continue;
 
                     for (int i2 = hmmalign.low_bounds[i1]; i2 <= min(j2-1, hmmalign.up_bounds[i1]); i2++) {
                         // single seq folding subopt
-                        if (!seq2_M2_pairs[j2][i2]) continue;
+                        if (!seq2_M2_pairs[j2][i2].valid) continue;
 
                         if (verbose) cout << i1 << " " << j1 << " " << i2 << " " << j2 << " " << hmmalign.low_bounds[i1] << " " << hmmalign.up_bounds[i1] << " " << hmmalign.low_bounds[j1] << " " << hmmalign.up_bounds[j1] << endl ;
 
@@ -3543,7 +3643,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                                 while (q1 != -1 && (i1_p1 + (q1 - j1) - 2 <= SINGLE_MAX_LEN)) {
                                 // while (q1 != -1 && (q1 - j1 - 1 <= SINGLE_MAX_LEN)) {
                                     // single seq folding subopt
-                                    if (!seq1_Multi_pairs[q1][p1]) {
+                                    if (!seq1_Multi_pairs[q1][p1].valid) {
                                         q1 = seq1->next_pair[nucp1][q1];
                                         continue;
                                     }
@@ -3564,7 +3664,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                                         while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (i2_p2 + (q2 - j2) - 2 <= SINGLE_MAX_LEN)) {
                                         // while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (q2 - j2 - 1 <= SINGLE_MAX_LEN)) {
                                             // single seq folding subopt
-                                            if (seq2_Multi_pairs[q2][p2]) {
+                                            if (seq2_Multi_pairs[q2][p2].valid) {
                                                 int newscore1 = multi_unpaired_score2(i1, j1, p1, q1, seq1);
                                                 int newscore2 = multi_unpaired_score2(i2, j2, p2, q2, seq2);
 
@@ -3632,7 +3732,7 @@ void SankoffParser::parse(const vector<string> &seqs){
 
                         // 2. M = M2
                         // single seq folding subopt
-                        if (seq1_M_pairs[j1][i1] && seq2_M_pairs[j2][i2]){
+                        if (seq1_M_pairs[j1][i1].valid && seq2_M_pairs[j2][i2].valid){
                             if (verbose) cout << "M2 to M: " << i1 << " " << j1 << " " << i2 << " " << j2 << endl;
                             update_if_better(i1, j1, i2, j2, bestM[i1][j1][i2][j2], // bestM[key1][newi2][newj2], //beamM[j2][make_pair(i1, i2)], 
                                             state.seq1foldscore,
@@ -3657,11 +3757,11 @@ void SankoffParser::parse(const vector<string> &seqs){
 
                 for (int i1 = 1; i1 < j1; i1++) {
                     // single seq folding subopt
-                    if (!seq1_M_pairs[j1][i1]) continue;
+                    if (!seq1_M_pairs[j1][i1].valid) continue;
 
                     for (int i2 = hmmalign.low_bounds[i1]; i2 <= min(j2-1, hmmalign.up_bounds[i1]); i2++) {
                         // single seq folding subopt
-                        if (!seq2_M_pairs[j2][i2]) continue;
+                        if (!seq2_M_pairs[j2][i2].valid) continue;
 
                         State& state = bestM[i1][j1][i2][j2];
                         if (state.manner == MANNER_NONE) continue;
@@ -3674,7 +3774,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                             // hmm constraint
                             if (j2+1 >= hmmalign.low_bounds[j1+1] && j2+1 <= hmmalign.up_bounds[j1+1]){
                                 // single seq folding subopt
-                                if (seq1_M_pairs[j1+1][i1] && seq2_M_pairs[j2+1][i2]){
+                                if (seq1_M_pairs[j1+1][i1].valid && seq2_M_pairs[j2+1][i2].valid){
                                     trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_ALN, j1+1, j2+1, true);
                                     float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
                                     if (alignscore > LOG_OF_ZERO)
@@ -3690,7 +3790,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                             // hmm constraint
                             if (j2 >= hmmalign.low_bounds[j1+1] && j2 <= hmmalign.up_bounds[j1+1]) {
                                 // single seq folding subopt
-                                if (seq1_M_pairs[j1+1][i1]){
+                                if (seq1_M_pairs[j1+1][i1].valid){
                                     trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS1, j1+1, j2, true);
                                     float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
                                     if (alignscore > LOG_OF_ZERO)
@@ -3706,7 +3806,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                             // hmm constraint
                             if (j2+1 >= hmmalign.low_bounds[j1] && j2+1 <= hmmalign.up_bounds[j1]) {
                                 // single seq folding subopt
-                                if (seq2_M_pairs[j2+1][i2]){
+                                if (seq2_M_pairs[j2+1][i2].valid){
                                     trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS2, j1, j2+1, true);
                                     float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
                                     if (alignscore > LOG_OF_ZERO)
@@ -3903,53 +4003,59 @@ void SankoffParser::parse(const vector<string> &seqs){
     /*************************/
     // clear allocated space
     for (int i1=1; i1<seq1_len; i1++) {
+        int nuci1 = sequences[0].nucs[i1];
         for (int j1 = i1+1; j1<seq1_len; j1++) {
             short i1_lowbound = hmmalign.low_bounds[i1];
             short i1_upbound = hmmalign.up_bounds[i1];
-            // short i1_range = i1_upbound - i1_lowbound + 1;
+            short i1_range = i1_upbound - i1_lowbound + 1;
+            
+            int nucj1 = sequences[0].nucs[j1];
 
             for (int i2 = i1_lowbound; i2 <= i1_upbound; i2++) {
                 short j1_lowbound = hmmalign.low_bounds[j1];
                 
-                if (seq1_H_pairs[j1][i1]) {
-                    bestH[i1][j1][i2] = bestH[i1][j1][i2] + j1_lowbound;
-                    delete[] bestH[i1][j1][i2];   
+                if (_allowed_pairs[nuci1][nucj1]) {
+                    if (seq1_H_pairs[j1].find(i1) != seq1_H_pairs[j1].end()) {
+                        bestH[i1][j1][i2] = bestH[i1][j1][i2] + j1_lowbound;
+                        delete[] bestH[i1][j1][i2];   
+                    }
+                    if (seq1_P_pairs[j1].find(i1) != seq1_P_pairs[j1].end()) {
+                        bestP[i1][j1][i2] = bestP[i1][j1][i2] + j1_lowbound;
+                        delete[] bestP[i1][j1][i2];
+                    }
+                    if (seq1_Multi_pairs[j1].find(i1) != seq1_Multi_pairs[j1].end()) {
+                        bestMulti[i1][j1][i2] = bestMulti[i1][j1][i2] + j1_lowbound;
+                        delete[] bestMulti[i1][j1][i2];
+                    }
                 }
-                if (seq1_P_pairs[j1][i1]) {
-                    bestP[i1][j1][i2] = bestP[i1][j1][i2] + j1_lowbound;
-                    delete[] bestP[i1][j1][i2];
-                }
-                if (seq1_Multi_pairs[j1][i1]) {
-                    bestMulti[i1][j1][i2] = bestMulti[i1][j1][i2] + j1_lowbound;
-                    delete[] bestMulti[i1][j1][i2];
-                }
-                if (seq1_M_pairs[j1][i1]) {
+                if (seq1_M_pairs[j1][i1].valid) {
                     bestM[i1][j1][i2] = bestM[i1][j1][i2] + j1_lowbound;
                     delete[] bestM[i1][j1][i2];
                 }
-                if (seq1_M2_pairs[j1][i1]) {
+                if (seq1_M2_pairs[j1][i1].valid) {
                     bestM2[i1][j1][i2] = bestM2[i1][j1][i2] + j1_lowbound;
                     delete[] bestM2[i1][j1][i2];
                 }
             }
-
-            if (seq1_H_pairs[j1][i1]) {
-                bestH[i1][j1] = bestH[i1][j1] + i1_lowbound; // shift pointer
-                delete[] bestH[i1][j1];
+            if (_allowed_pairs[nuci1][nucj1]) {
+                if (seq1_H_pairs[j1].find(i1) != seq1_H_pairs[j1].end()) {
+                    bestH[i1][j1] = bestH[i1][j1] + i1_lowbound; // shift pointer
+                    delete[] bestH[i1][j1];
+                }
+                if (seq1_P_pairs[j1].find(i1) != seq1_P_pairs[j1].end()) {
+                    bestP[i1][j1] = bestP[i1][j1] + i1_lowbound;
+                    delete[] bestP[i1][j1];
+                }
+                if (seq1_Multi_pairs[j1].find(i1) != seq1_Multi_pairs[j1].end()) {
+                    bestMulti[i1][j1] = bestMulti[i1][j1] + i1_lowbound;
+                    delete[] bestMulti[i1][j1];
+                }
             }
-            if (seq1_P_pairs[j1][i1]) {
-                bestP[i1][j1] = bestP[i1][j1] + i1_lowbound;
-                delete[] bestP[i1][j1];
-            }
-            if (seq1_Multi_pairs[j1][i1]) {
-                bestMulti[i1][j1] = bestMulti[i1][j1] + i1_lowbound;
-                delete[] bestMulti[i1][j1];
-            }
-            if (seq1_M_pairs[j1][i1]) {
+            if (seq1_M_pairs[j1][i1].valid) {
                 bestM[i1][j1] = bestM[i1][j1] + i1_lowbound;
                 delete[] bestM[i1][j1];
             }
-            if (seq1_M2_pairs[j1][i1]) {
+            if (seq1_M2_pairs[j1][i1].valid) {
                 bestM2[i1][j1] = bestM2[i1][j1] + i1_lowbound;
                 delete[] bestM2[i1][j1];
             }
@@ -3980,31 +4086,67 @@ void SankoffParser::parse(const vector<string> &seqs){
     delete[] bestC;
 
     
-    for (int j=1; j<=seq1_len; j++) {
-        delete[] seq1_H_pairs[j];
-        delete[] seq1_P_pairs[j];
-        delete[] seq1_Multi_pairs[j];
-        delete[] seq1_M_pairs[j];
-        delete[] seq1_M2_pairs[j];
-    }
-    delete[] seq1_H_pairs;
-    delete[] seq1_P_pairs;
-    delete[] seq1_Multi_pairs;
-    delete[] seq1_M_pairs;
-    delete[] seq1_M2_pairs;
+    // for (int j=1; j<=seq1_len; j++) {
+    //     delete[] seq1_H_pairs[j];
+    //     delete[] seq1_P_pairs[j];
+    //     delete[] seq1_Multi_pairs[j];
+    //     delete[] seq1_M_pairs[j];
+    //     delete[] seq1_M2_pairs[j];
+    // }
+    // delete[] seq1_H_pairs;
+    // delete[] seq1_P_pairs;
+    // delete[] seq1_Multi_pairs;
+    // delete[] seq1_M_pairs;
+    // delete[] seq1_M2_pairs;
 
-    for (int j=1; j<=seq1_len; j++) {
-        delete[] seq2_H_pairs[j];
-        delete[] seq2_P_pairs[j];
-        delete[] seq2_Multi_pairs[j];
-        delete[] seq2_M_pairs[j];
-        delete[] seq2_M2_pairs[j];
+    // for (int j=1; j<=seq1_len; j++) {
+    //     delete[] seq2_H_pairs[j];
+    //     delete[] seq2_P_pairs[j];
+    //     delete[] seq2_Multi_pairs[j];
+    //     delete[] seq2_M_pairs[j];
+    //     delete[] seq2_M2_pairs[j];
+    // }
+    // delete[] seq2_H_pairs;
+    // delete[] seq2_P_pairs;
+    // delete[] seq2_Multi_pairs;
+    // delete[] seq2_M_pairs;
+    // delete[] seq2_M2_pairs;
+
+    // internal loop score
+    for (int i1=2; i1<seq1_len-3; i1++) {
+        short mini = max(1, i1-MAX_LOOP_LEN);
+        for (int j1 = i1+4; j1<seq1_len-1; j1++) {
+            short minj = j1+1;
+            short maxj = min(minj+MAX_LOOP_LEN, seq1_len);
+            for (int k=mini; k<i1; k++) {
+                seq1_internal[i1][j1][k] = seq1_internal[i1][j1][k] + minj; 
+                delete[] seq1_internal[i1][j1][k];
+            }
+            seq1_internal[i1][j1] = seq1_internal[i1][j1] + mini;
+            delete[] seq1_internal[i1][j1];
+        }
+        seq1_internal[i1] = seq1_internal[i1] + (i1+3);
+        delete[] seq1_internal[i1];
     }
-    delete[] seq2_H_pairs;
-    delete[] seq2_P_pairs;
-    delete[] seq2_Multi_pairs;
-    delete[] seq2_M_pairs;
-    delete[] seq2_M2_pairs;
+    delete[] seq1_internal;
+
+    for (int i2=2; i2<seq2_len-3; i2++) {
+        short mini = max(1, i2-MAX_LOOP_LEN);
+        for (int j2 = i2+4; j2<seq2_len-1; j2++) {
+            short minj = j2+1;
+            short maxj = min(minj+MAX_LOOP_LEN, seq2_len);
+            for (int k=mini; k<i2; k++) {
+                seq2_internal[i2][j2][k] = seq2_internal[i2][j2][k] + minj;
+                delete[]  seq2_internal[i2][j2][k];
+            }
+            seq2_internal[i2][j2] = seq2_internal[i2][j2] + mini;
+            delete[] seq2_internal[i2][j2];       
+        }
+        seq2_internal[i2] = seq2_internal[i2] + (i2+3); 
+        delete[] seq2_internal[i2];
+       
+    }
+    delete[] seq2_internal;
 
     // cout << "clear allocated space in alignment" << endl;
     hmmalign.clear(true);
