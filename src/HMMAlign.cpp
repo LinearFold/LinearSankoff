@@ -271,11 +271,11 @@ float BeamAlign::get_trans_emit_prob0(int prev_state, int current_state, int i, 
     // There are also emission of start and end symbols. These correspond to 25th and 26th indices in the emission probability table.
     int sym_index = i_sym * 5 + k_sym;
 
-    // The indices correspond to the end symbol?
-	// if(i == seq1_len && k == seq2_len)
-	// {
-	// 	sym_index = 26;
-	// }
+    // The indices correspond to the end symbol
+	if(i == seq1_len && k == seq2_len)
+	{
+		sym_index = 26;
+	}
 
     float emit_prob;
     if (new_pars)
@@ -721,7 +721,7 @@ void BeamAlign::cal_align_prob(float threshold){
             up_bounds[i] = upbound;
         }
 
-        cout << i << " " << low_bounds[i] << " " << up_bounds[i] << endl;
+        // cout << i << " " << low_bounds[i] << " " << up_bounds[i] << endl;
         for (int k = low_bounds[i]; k <= up_bounds[i]; k++) {
             max_j1[i+k] = max(max_j1[i+k], i);
             min_j1[i+k] = min(min_j1[i+k], i);
@@ -2392,10 +2392,6 @@ void BeamAlign::viterbi_path_local_right22(int i1, int j1, int i2, int j2, HMMMa
                 ml = state.ml;
                 if (ml <= xlog(0)) continue; // invalid state
                 if ((i >= seq1len) || (k >= seq2len)) continue; // boundary case
-
-                // debug 1386 2 1370
-                if (org_i1 == 1386 && org_i2 == 1370)
-                    cout << s << " " << start1 << " " << start2 << " " << i << " " << k << " " << start1 + i << " " << start2 + k << endl;
 
                 HMMManner next_manner;
                 int next_i, next_k, next_step;

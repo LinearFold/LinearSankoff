@@ -61,7 +61,7 @@ private:
     State3 ****bestH, ****bestP, ****bestMulti;
     // unordered_map<int, State3> *bestH, *bestP, *bestMulti;
     State ****bestM, ****bestM2;
-    State **bestC;
+    State3 **bestC;
 
     // save internal loops score 
     // unordered_map<int, int>*** seq1_internal; 

@@ -850,11 +850,25 @@ tuple<string, string, string, string> SankoffParser::get_parentheses_C(SeqObject
                     if (verbose) cout <<  "MANNER_C_eq_C_plus_P " << k1 << " " << k2 << endl;
 
                     // stk.push(make_tuple(i1, k1, i2, k2, bestC[k1+k2][k1])); // push C
-                    stk.push(make_tuple(i1, k1, i2, k2, bestC[k1][k2])); // push C
+                    HMMManner pre_manner = state.startHMMstate;
+                    switch (pre_manner)
+                    {
+                        case MANNER_ALN:
+                            stk.push(make_tuple(i1, k1, i2, k2, bestC[k1][k2].alnobj)); // push C
+                            break;
+                        case MANNER_INS1:
+                            stk.push(make_tuple(i1, k1, i2, k2, bestC[k1][k2].ins1obj)); // push C
+                            break;
+                        case MANNER_INS2:
+                            stk.push(make_tuple(i1, k1, i2, k2, bestC[k1][k2].ins2obj)); // push C
+                            break;
+                        
+                        default:
+                            break;
+                    }
                     tuple<string, string, string, string> pre_result = get_parentheses_C(seq1, seq2, stk, hmmalign);
 
                     stack<tuple<int, int, int, int, State>> stk2; // push P
-                    // stk2.push(make_tuple(k1+1, j1, k2+1, j2, bestP[j1+j2][get_keys(j1, k1+1, k2+1)].alnobj)); 
                     stk2.push(make_tuple(k1+1, j1, k2+1, j2, bestP[k1+1][j1][k2+1][j2].alnobj)); 
                     tuple<string, string, string, string> result = get_parentheses_P(seq1, seq2, stk2, hmmalign);
 
@@ -865,7 +879,6 @@ tuple<string, string, string, string> SankoffParser::get_parentheses_C(SeqObject
             case MANNER_C_eq_P:
                 {
                     if (verbose) cout <<  "MANNER_C_eq_P" << endl;
-                    // stk.push(make_tuple(i1+1, j1, i2+1, j2, bestP[j1+j2][get_keys(j1, i1+1, i2+1)].alnobj)); // N.B.
                     stk.push(make_tuple(i1+1, j1, i2+1, j2, bestP[i1+1][j1][i2+1][j2].alnobj)); // N.B.
                     
                     return get_parentheses_P(seq1, seq2, stk, hmmalign);
@@ -874,8 +887,23 @@ tuple<string, string, string, string> SankoffParser::get_parentheses_C(SeqObject
             case MANNER_C_eq_C_plus_U_ALN:
                 {
                     if (verbose) cout <<  "MANNER_C_eq_C_plus_U_ALN" << endl;
-                    // stk.push(make_tuple(i1, j1-1, i2, j2-1, bestC[j1-1+j2-1][j1-1]));
-                    stk.push(make_tuple(i1, j1-1, i2, j2-1, bestC[j1-1][j2-1])); // push C
+                    // stk.push(make_tuple(i1, j1-1, i2, j2-1, bestC[j1-1][j2-1].alnobj)); // push C
+                    HMMManner pre_manner = state.startHMMstate;
+                    switch (pre_manner)
+                    {
+                        case MANNER_ALN:
+                            stk.push(make_tuple(i1, j1-1, i2, j2-1, bestC[j1-1][j2-1].alnobj)); // push C
+                            break;
+                        case MANNER_INS1:
+                            stk.push(make_tuple(i1, j1-1, i2, j2-1, bestC[j1-1][j2-1].ins1obj)); // push C
+                            break;
+                        case MANNER_INS2:
+                            stk.push(make_tuple(i1, j1-1, i2, j2-1, bestC[j1-1][j2-1].ins2obj)); // push C
+                            break;
+                        
+                        default:
+                            break;
+                    }
                     tuple<string, string, string, string> result = get_parentheses_C(seq1, seq2, stk, hmmalign);
                     return make_tuple(get<0>(result)+".", get<1>(result)+".", get<2>(result)+seq1.raw_seq.at(j1), get<3>(result)+seq2.raw_seq.at(j2));
                     break;
@@ -883,8 +911,23 @@ tuple<string, string, string, string> SankoffParser::get_parentheses_C(SeqObject
             case MANNER_C_eq_C_plus_U_INS1:
                 {
                     if (verbose) cout <<  "MANNER_C_eq_C_plus_U_INS1" << endl;
-                    // stk.push(make_tuple(i1, j1-1, i2, j2, bestC[j1-1+j2][j1-1]));
-                    stk.push(make_tuple(i1, j1-1, i2, j2, bestC[j1-1][j2])); // push C
+                    // stk.push(make_tuple(i1, j1-1, i2, j2, bestC[j1-1][j2].ins1obj)); // push C
+                    HMMManner pre_manner = state.startHMMstate;
+                    switch (pre_manner)
+                    {
+                        case MANNER_ALN:
+                            stk.push(make_tuple(i1, j1-1, i2, j2, bestC[j1-1][j2].alnobj)); // push C
+                            break;
+                        case MANNER_INS1:
+                            stk.push(make_tuple(i1, j1-1, i2, j2, bestC[j1-1][j2].ins1obj)); // push C
+                            break;
+                        case MANNER_INS2:
+                            stk.push(make_tuple(i1, j1-1, i2, j2, bestC[j1-1][j2].ins2obj)); // push C
+                            break;
+                        
+                        default:
+                            break;
+                    }
                     tuple<string, string, string, string> result = get_parentheses_C(seq1, seq2, stk, hmmalign);
                     return make_tuple(get<0>(result)+".", get<1>(result), get<2>(result)+seq1.raw_seq.at(j1), get<3>(result)+"-");
                     break;
@@ -892,8 +935,23 @@ tuple<string, string, string, string> SankoffParser::get_parentheses_C(SeqObject
             case MANNER_C_eq_C_plus_U_INS2:
                 {
                     if (verbose) cout <<  "MANNER_C_eq_C_plus_U_INS2" << endl;
-                    // stk.push(make_tuple(i1, j1, i2, j2-1, bestC[j1+j2-1][j1]));
-                    stk.push(make_tuple(i1, j1, i2, j2-1, bestC[j1][j2-1])); // push C
+                    // stk.push(make_tuple(i1, j1, i2, j2-1, bestC[j1][j2-1].ins2obj)); // push C
+                    HMMManner pre_manner = state.startHMMstate;
+                    switch (pre_manner)
+                    {
+                        case MANNER_ALN:
+                            stk.push(make_tuple(i1, j1, i2, j2-1, bestC[j1][j2-1].alnobj)); // push C
+                            break;
+                        case MANNER_INS1:
+                            stk.push(make_tuple(i1, j1, i2, j2-1, bestC[j1][j2-1].ins1obj)); // push C
+                            break;
+                        case MANNER_INS2:
+                            stk.push(make_tuple(i1, j1, i2, j2-1, bestC[j1][j2-1].ins2obj)); // push C
+                            break;
+                        
+                        default:
+                            break;
+                    }
                     tuple<string, string, string, string> result = get_parentheses_C(seq1, seq2, stk, hmmalign);
                     return make_tuple(get<0>(result), get<1>(result)+".", get<2>(result)+"-", get<3>(result)+seq2.raw_seq.at(j2)); 
                     break;
@@ -910,9 +968,23 @@ tuple<string, string, string, string> SankoffParser::get_parentheses_C(SeqObject
 
 tuple<string, string, string, string> SankoffParser::get_parentheses(SeqObject& seq1, SeqObject& seq2, BeamAlign &hmmalign) {
     stack<tuple<int, int, int, int, State>> stk;
-    // stk.push(make_tuple(0, seq1.seq_len-1, 0, seq2.seq_len-1, bestC[seq1.seq_len - 1][seq2.seq_len-1]));
-    stk.push(make_tuple(0, seq1.seq_len-1, 0, seq2.seq_len-1, bestC[seq1_len-1][seq2_len-1]));
-
+    
+    HMMManner premanner = bestC[seq1_len][seq2_len].alnobj.startHMMstate;
+    switch (premanner)
+    {
+        case MANNER_ALN:
+            stk.push(make_tuple(0, seq1.seq_len-1, 0, seq2.seq_len-1, bestC[seq1_len-1][seq2_len-1].alnobj));
+            break;
+        case MANNER_INS1:
+            stk.push(make_tuple(0, seq1.seq_len-1, 0, seq2.seq_len-1, bestC[seq1_len-1][seq2_len-1].ins1obj));
+            break;
+        case MANNER_INS2:
+            stk.push(make_tuple(0, seq1.seq_len-1, 0, seq2.seq_len-1, bestC[seq1_len-1][seq2_len-1].ins2obj));
+            break;
+        
+        default:
+            break;
+    }
     return get_parentheses_C(seq1, seq2, stk, hmmalign);
 }
 
@@ -2208,16 +2280,19 @@ void SankoffParser::prepare(const vector<string> &seqs){
 
     // allocate memory
     // allocate space for bestC
-    bestC = new State*[seq1_len];
+    bestC = new State3*[seq1_len + 1];
     for (int j1 = 0; j1 < seq1_len; j1++) {
         short low_bound = hmmalign.low_bounds[j1];
         short range = hmmalign.up_bounds[j1] - low_bound + 1;
-        bestC[j1] = new State[range];
+        bestC[j1] = new State3[range];
         bestC[j1] = bestC[j1] - low_bound;
 
         for (int j2 = low_bound; j2 <=  hmmalign.up_bounds[j1]; j2++)
             bestC[j1][j2].init();
     }
+    bestC[seq1_len] = new State3[1];
+    bestC[seq1_len] = bestC[seq1_len] - seq2_len;
+    bestC[seq1_len][seq2_len].init();
 
     // allocate space for bestH/P/Multi/M/M2/
     bestH = new State3***[seq1_len];
@@ -2418,19 +2493,19 @@ void SankoffParser::parse(const vector<string> &seqs){
     // bestC[2][1].set(1, 0, 0, -v_score_external_unpaired(0, 0), -v_score_external_unpaired(0, 0), MANNER_NONE, MANNER_C_eq_C_plus_U_ALN, 0.0, 0.0, MANNER_ALN, MANNER_ALN);
 
 #else
-    bestC[0][0].set(0, 0, 0, 0, 0, MANNER_NONE, MANNER_NONE, xlog(1.0), weight*xlog(1.0), MANNER_ALN, MANNER_ALN);
+    bestC[0][0].alnobj.set(0, 0, 0, 0, 0, MANNER_NONE, MANNER_NONE, xlog(1.0), weight*xlog(1.0), MANNER_ALN, MANNER_ALN);
 
     if (0 >= hmmalign.low_bounds[1] && 0 <= hmmalign.up_bounds[1]) {
         float alignscore = hmmalign.get_trans_emit_prob0(MANNER_ALN, MANNER_INS1, 1, 0, true);
-        bestC[1][0].set(1, 0, 0, -v_score_external_unpaired(0, 0), 0, MANNER_NONE, MANNER_C_eq_C_plus_U_INS1, alignscore, weight*alignscore, MANNER_ALN, MANNER_INS1);
+        bestC[1][0].ins1obj.set(1, 0, 0, -v_score_external_unpaired(0, 0), 0, MANNER_NONE, MANNER_C_eq_C_plus_U_INS1, alignscore, weight*alignscore, MANNER_ALN, MANNER_INS1);
     }
     if (1 >= hmmalign.low_bounds[0] && 1 <= hmmalign.up_bounds[0]) {
         float alignscore = hmmalign.get_trans_emit_prob0(MANNER_ALN, MANNER_INS2, 0, 1, true);
-        bestC[0][1].set(0, 0, 0, 0, -v_score_external_unpaired(0, 0), MANNER_NONE, MANNER_C_eq_C_plus_U_INS2, alignscore, weight*alignscore, MANNER_ALN, MANNER_INS2);
+        bestC[0][1].ins2obj.set(0, 0, 0, 0, -v_score_external_unpaired(0, 0), MANNER_NONE, MANNER_C_eq_C_plus_U_INS2, alignscore, weight*alignscore, MANNER_ALN, MANNER_INS2);
     }
     if (1 >= hmmalign.low_bounds[1] && 1 <= hmmalign.up_bounds[1]) {
         float alignscore = hmmalign.get_trans_emit_prob0(MANNER_ALN, MANNER_ALN, 1, 1, true);
-        bestC[1][1].set(1, 0, 0, -v_score_external_unpaired(0, 0), -v_score_external_unpaired(0, 0), MANNER_NONE, MANNER_C_eq_C_plus_U_ALN, alignscore, weight*alignscore, MANNER_ALN, MANNER_ALN);
+        bestC[1][1].alnobj.set(1, 0, 0, -v_score_external_unpaired(0, 0), -v_score_external_unpaired(0, 0), MANNER_NONE, MANNER_C_eq_C_plus_U_ALN, alignscore, weight*alignscore, MANNER_ALN, MANNER_ALN);
     }
 #endif
 
@@ -2884,10 +2959,6 @@ void SankoffParser::parse(const vector<string> &seqs){
                                             continue;
                                         }
 
-                                        // debug
-                                        if (q1 - j1 - 1 > 20)
-                                            cout << "P2P: " << m << " " << i1 << " " << j1 << " " << i2 << " " << j2 << " " << p1 << " " << q1 << endl;
-
                                         int nucq1 = seq1->nucs[q1];
                                         int nucq1_1 = seq1->nucs[q1 - 1];
                                         // int p2p1 = P2PScore(p1,q1,i1,j1,nucp1,nucp1p1,nucq1_1,nucq1,nuci1_1,nuci1,nucj1,nucj1p1); 
@@ -3041,24 +3112,67 @@ void SankoffParser::parse(const vector<string> &seqs){
                                     // 4. C = C + P
                                     // external pairs must be aligned
                                     if (k1 >= 0 && k2 >= 0) {
-                                        State& prefix_C = bestC[k1][k2];
-                                        if (prefix_C.endHMMstate != HMMMANNER_NONE) {
-                                            int newscore1 = external_paired_score(k1, j1, seq1);
-                                            int newscore2 = external_paired_score(k2, j2, seq2);
+                                        {
+                                            State& prefix_C = bestC[k1][k2].alnobj;
+                                            if (prefix_C.endHMMstate != HMMMANNER_NONE) {
+                                                int newscore1 = external_paired_score(k1, j1, seq1);
+                                                int newscore2 = external_paired_score(k2, j2, seq2);
 
-                                            if (verbose) cout << "C+P: "<< i1 << " " << j1 << " "  << i2 << " " << j2  <<  " " << state.manner << " " << state.premanner << " " << newscore1 << " " << newscore2 << endl;
+                                                if (verbose) cout << "C+P: "<< i1 << " " << j1 << " "  << i2 << " " << j2  <<  " " << state.manner << " " << state.premanner << " " << newscore1 << " " << newscore2 << endl;
 
-                                            float alignscore = xlog_mul(prefix_C.alignscore, hmmalign.trans_probs[prefix_C.endHMMstate-1][MANNER_ALN-1]); 
-                                            alignscore = xlog_mul(alignscore, state.alignscore); 
+                                                float alignscore = xlog_mul(prefix_C.alignscore, hmmalign.trans_probs[2][2]); 
+                                                alignscore = xlog_mul(alignscore, state.alignscore); 
 
-                                            if (alignscore > LOG_OF_ZERO)
-                                                update_if_better(0, j1, 0, j2, bestC[j1][j2],
-                                                                prefix_C.seq1foldscore + state.seq1foldscore + newscore1,
-                                                                prefix_C.seq2foldscore + state.seq2foldscore + newscore2, 
-                                                                prefix_C.manner, MANNER_C_eq_C_plus_P,
-                                                                k1, k2,
-                                                                alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);  
-                                        }             
+                                                if (alignscore > LOG_OF_ZERO)
+                                                    update_if_better(0, j1, 0, j2, bestC[j1][j2].alnobj,
+                                                                    prefix_C.seq1foldscore + state.seq1foldscore + newscore1,
+                                                                    prefix_C.seq2foldscore + state.seq2foldscore + newscore2, 
+                                                                    prefix_C.manner, MANNER_C_eq_C_plus_P,
+                                                                    k1, k2,
+                                                                    alignscore, MANNER_ALN, MANNER_ALN, weight, verbose);  
+                                            }
+                                        }
+                                        {
+                                            State& prefix_C = bestC[k1][k2].ins1obj;
+                                            if (prefix_C.endHMMstate != HMMMANNER_NONE) {
+                                                int newscore1 = external_paired_score(k1, j1, seq1);
+                                                int newscore2 = external_paired_score(k2, j2, seq2);
+
+                                                if (verbose) cout << "C+P: "<< i1 << " " << j1 << " "  << i2 << " " << j2  <<  " " << state.manner << " " << state.premanner << " " << newscore1 << " " << newscore2 << endl;
+
+                                                float alignscore = xlog_mul(prefix_C.alignscore, hmmalign.trans_probs[0][2]); 
+                                                alignscore = xlog_mul(alignscore, state.alignscore); 
+
+                                                if (alignscore > LOG_OF_ZERO)
+                                                    update_if_better(0, j1, 0, j2, bestC[j1][j2].alnobj,
+                                                                    prefix_C.seq1foldscore + state.seq1foldscore + newscore1,
+                                                                    prefix_C.seq2foldscore + state.seq2foldscore + newscore2, 
+                                                                    prefix_C.manner, MANNER_C_eq_C_plus_P,
+                                                                    k1, k2,
+                                                                    alignscore, MANNER_INS1, MANNER_ALN, weight, verbose);  
+                                            }
+                                        }
+                                        {
+                                            State& prefix_C = bestC[k1][k2].ins2obj;
+                                            if (prefix_C.endHMMstate != HMMMANNER_NONE) {
+                                                int newscore1 = external_paired_score(k1, j1, seq1);
+                                                int newscore2 = external_paired_score(k2, j2, seq2);
+
+                                                if (verbose) cout << "C+P: "<< i1 << " " << j1 << " "  << i2 << " " << j2  <<  " " << state.manner << " " << state.premanner << " " << newscore1 << " " << newscore2 << endl;
+
+                                                float alignscore = xlog_mul(prefix_C.alignscore, hmmalign.trans_probs[1][2]); 
+                                                alignscore = xlog_mul(alignscore, state.alignscore); 
+
+                                                if (alignscore > LOG_OF_ZERO)
+                                                    update_if_better(0, j1, 0, j2, bestC[j1][j2].alnobj,
+                                                                    prefix_C.seq1foldscore + state.seq1foldscore + newscore1,
+                                                                    prefix_C.seq2foldscore + state.seq2foldscore + newscore2, 
+                                                                    prefix_C.manner, MANNER_C_eq_C_plus_P,
+                                                                    k1, k2,
+                                                                    alignscore, MANNER_INS2, MANNER_ALN, weight, verbose);  
+                                            }
+                                        }
+                                                 
                                     } // 4. C = C + P
                                 } // 3. M2 = M + P and 4. C = C + P
                             } // ALN state 
@@ -3201,9 +3315,6 @@ void SankoffParser::parse(const vector<string> &seqs){
                                             q1 = seq1->next_pair[nucp1][q1];
                                             continue;
                                         }
-
-                                        if (q1 - j1 - 1 > 20)
-                                            cout << "P2P: " << m << " " << i1 << " " << j1 << " " << i2 << " " << j2 << " " << p1 << " " << q1 << endl;
 
                                         int nucq1 = seq1->nucs[q1];
                                         int nucq1_1 = seq1->nucs[q1 - 1];
@@ -3498,67 +3609,93 @@ void SankoffParser::parse(const vector<string> &seqs){
                 int j2 = s - j1;
                 if (j2 < hmmalign.low_bounds[j1] || j2 > hmmalign.up_bounds[j1]) continue;
 
-                State& state = bestC[j1][j2];
-                if (state.endHMMstate == HMMMANNER_NONE) continue;
-
                 int newscore1 = external_unpaired_score(j1 + 1, seq1);
                 int newscore2 = external_unpaired_score(j2 + 1, seq2);
 
-                // if (j1 >= 1447 && j2 >= 1400) 
-                    // if (verbose) 
-                cout << "C+U: " << j1 << " "  << j2  << " "<<  j1 << " "  << j2  << " " << state.endHMMstate << endl;
+                State3& state3 = bestC[j1][j2];
+                for (int m=0; m<3; m++){
+                    State state;
+                    HMMManner pre_manner;
+                    switch (m)
+                    {
+                        case 0:
+                            state = state3.ins1obj;
+                            pre_manner = MANNER_INS1;
+                            break;
+                        case 1:
+                            state = state3.ins2obj;
+                            pre_manner = MANNER_INS2;
+                            break;
+                        case 2:
+                            state = state3.alnobj;
+                            pre_manner = MANNER_ALN;
+                            break;
+                        
+                        default:
+                            break;
+                    }
+                    if (state.endHMMstate == HMMMANNER_NONE) continue;
+                    assert (state.endHMMstate == pre_manner);
 
-                float trans_emit_prob; //  alignscore;
-                if (j1 < seq1->seq_len - 1 && j2 < seq2->seq_len - 1){ // ALN
-                    // hmm constraint
-                    if (j2+1 >= hmmalign.low_bounds[j1+1] && j2+1 <= hmmalign.up_bounds[j1+1]) {
+                    if (verbose) cout << "C+U: " << m << " " << j1 << " "  << j2  << " "<<  j1 << " "  << j2  << " " << state.endHMMstate << endl;
 
+                    float trans_emit_prob; //  alignscore;
+                    if (j1 == seq1->seq_len - 1 && j2 == seq2->seq_len - 1) {
                         trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_ALN, j1+1, j2+1, true);
                         float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
-                        if (j1 >= 1440 && j2 >= 1400) 
-                            cout << "toaln: " <<  state.score << " " << state.seq1foldscore + newscore1 << " " << state.seq2foldscore << " " << state.alignscore << " " << alignscore << endl;
-
                         if (alignscore > LOG_OF_ZERO)
-                            update_if_better(0, j1+1, 0, j2+1, bestC[j1+1][j2+1], 
-                                            state.seq1foldscore + newscore1,
-                                            state.seq2foldscore + newscore2,
-                                            state.manner, MANNER_C_eq_C_plus_U_ALN,
-                                            alignscore, state.startHMMstate, MANNER_ALN, weight, verbose);
-                    }
-                } 
-                if (j1 < seq1->seq_len - 1 && j2 <= seq2->seq_len - 1) { // INS1
-                    // hmm constraint
-                    if (j2 >= hmmalign.low_bounds[j1+1] && j2 <= hmmalign.up_bounds[j1+1]) {
-
-                        trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS1, j1+1, j2, true);
-                        float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
-
-                        // debug:
-                        if (j1 >= 1440 && j2 == 1401) 
-                            cout << state.score << " " << state.seq1foldscore + newscore1 << " " << state.seq2foldscore << " " << alignscore << endl;
-
-                        if (alignscore > LOG_OF_ZERO)
-                            update_if_better(0, j1+1, 0, j2, bestC[j1+1][j2],
-                                            state.seq1foldscore + newscore1,
-                                            state.seq2foldscore,
-                                            state.manner, MANNER_C_eq_C_plus_U_INS1,
-                                            alignscore, state.startHMMstate, MANNER_INS1, weight, verbose);
-                    }
-                } 
-                if (j2 < seq2->seq_len - 1 && j1 <= seq1->seq_len - 1) { // INS2
-                    // hmm constraint
-                    if (j2+1 >= hmmalign.low_bounds[j1] && j2+1 <= hmmalign.up_bounds[j1]) {
-
-                        trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS2, j1, j2+1, true);
-                        float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
-                        if (alignscore > LOG_OF_ZERO)
-                            update_if_better(0, j1, 0, j2+1, bestC[j1][j2+1],
+                            update_if_better(0, j1+1, 0, j2+1, bestC[j1+1][j2+1].alnobj, 
                                             state.seq1foldscore,
-                                            state.seq2foldscore + newscore2,
-                                            state.manner, MANNER_C_eq_C_plus_U_INS2,
-                                            alignscore, state.startHMMstate, MANNER_INS2, weight, verbose);
+                                            state.seq2foldscore,
+                                            state.manner, MANNER_C_eq_C_plus_U_ALN,
+                                            alignscore, state.endHMMstate, MANNER_ALN, weight, verbose);
+                        continue;
                     }
-                }
+
+                    if ((j1 < seq1->seq_len - 1 && j2 < seq2->seq_len - 1)){ // ALN
+                        // hmm constraint
+                        if (j2+1 >= hmmalign.low_bounds[j1+1] && j2+1 <= hmmalign.up_bounds[j1+1]) {
+
+                            trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_ALN, j1+1, j2+1, true);
+                            float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
+                            if (alignscore > LOG_OF_ZERO)
+                                update_if_better(0, j1+1, 0, j2+1, bestC[j1+1][j2+1].alnobj, 
+                                                state.seq1foldscore + newscore1,
+                                                state.seq2foldscore + newscore2,
+                                                state.manner, MANNER_C_eq_C_plus_U_ALN,
+                                                alignscore, state.endHMMstate, MANNER_ALN, weight, verbose);
+                        }
+                    }
+                    if (j1 < seq1->seq_len - 1 && j2 <= seq2->seq_len - 1) { // INS1
+                        // hmm constraint
+                        if (j2 >= hmmalign.low_bounds[j1+1] && j2 <= hmmalign.up_bounds[j1+1]) {
+
+                            trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS1, j1+1, j2, true);
+                            float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
+                            if (alignscore > LOG_OF_ZERO)
+                                update_if_better(0, j1+1, 0, j2, bestC[j1+1][j2].ins1obj,
+                                                state.seq1foldscore + newscore1,
+                                                state.seq2foldscore,
+                                                state.manner, MANNER_C_eq_C_plus_U_INS1,
+                                                alignscore, state.endHMMstate, MANNER_INS1, weight, verbose);
+                        }
+                    }
+                    if (j2 < seq2->seq_len - 1 && j1 <= seq1->seq_len - 1) { // INS2
+                        // hmm constraint
+                        if (j2+1 >= hmmalign.low_bounds[j1] && j2+1 <= hmmalign.up_bounds[j1]) {
+
+                            trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_INS2, j1, j2+1, true);
+                            float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
+                            if (alignscore > LOG_OF_ZERO)
+                                update_if_better(0, j1, 0, j2+1, bestC[j1][j2+1].ins2obj,
+                                                state.seq1foldscore,
+                                                state.seq2foldscore + newscore2,
+                                                state.manner, MANNER_C_eq_C_plus_U_INS2,
+                                                alignscore, state.endHMMstate, MANNER_INS2, weight, verbose);
+                        }
+                    }
+
+                }           
             }     
         }
 
@@ -3573,13 +3710,12 @@ void SankoffParser::parse(const vector<string> &seqs){
     // // mem = GetProcessMemory();
     // // cout << "VmPeak: " << mem.VmPeak << endl;
 
-    State &state = bestC[seq1_len-1][seq2_len-1];
+    State &state = bestC[seq1_len][seq2_len].alnobj;
     float bestscore = state.score;
-    cout << "inside: " << state.score << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << xlog_mul(state.alignscore, hmmalign.trans_probs[state.endHMMstate-1][2]) << endl;
+    cout << "inside: " << state.score << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << endl;
     // // cout << "inside: " << state.manner << " " << state.startHMMstate << " " << state.endHMMstate << endl;
 
     // backtrace
-    verbose = true;
     tuple<string, string, string, string> ret = get_parentheses(*seq1, *seq2, hmmalign);
     cout << get<0>(ret) <<endl;
     cout << get<1>(ret) <<endl;
