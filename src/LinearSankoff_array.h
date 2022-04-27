@@ -32,14 +32,16 @@ struct BoolState {
 
 class SankoffParser {
 public:
-    int beam;
-    int alnbeam;
-    BeamAlign hmmalign;
-    bool verbose;
     float weight;
+    int beam;
+    float lfbeam;
+    int alnbeam;
+    float max_energy_diff;
+    bool verbose;
+    
+    BeamAlign hmmalign;
     float similarity;
     float aln_viterbi;
-    float max_energy_diff;
 
     int num_seqs;
     int seq1_len;
@@ -47,12 +49,7 @@ public:
     int sum_len;
     vector<SeqObject> sequences;
 
-    // int aln_range;
-    // int fold_range;
-    // int valid_range;
-    // vector<int> s2start;
-
-    SankoffParser(int beam_size, int beam_size2, float aln_weight, float energy_diff, bool is_verbose=false);
+    SankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, float energy_diff, bool is_verbose);
     ~SankoffParser(){}
 
     void parse(const vector<string> &seqs, bool limited, const set<pair<int, int>> &allowed_pairs, vector<pair<int, int>> &out_pairs, int num_pairs);
@@ -75,7 +72,7 @@ private:
     vector<int> accumulated_regions;
 
     // bool **seq1_H_pairs, **seq1_P_pairs, **seq1_M_pairs, **seq1_M2_pairs, **seq1_Multi_pairs;
-    // bool **seq2_H_pairs, **seq2_P_pairs, **seq2_M_pairs, **seq2_M2_pairs, **seq2_Multi_pairs;
+    // bool **seq2_H_pairs, **seq2_P_pairs, **seq2_M_pairs, **seq2_M2_pairs, **seq2_Multi_pairs; 
 
     vector<unordered_map<int, BoolState>> seq1_H_pairs, seq1_P_pairs, seq1_M_pairs, seq1_M2_pairs, seq1_Multi_pairs;
     vector<unordered_map<int, BoolState>> seq2_H_pairs, seq2_P_pairs, seq2_M_pairs, seq2_M2_pairs, seq2_Multi_pairs;

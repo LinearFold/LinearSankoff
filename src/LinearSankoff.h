@@ -227,14 +227,17 @@ struct SeqObject {
 
 class BeamSankoffParser {
 public:
-    int beam;
-    int alnbeam;
-    BeamAlign hmmalign;
-    bool verbose;
     float weight;
+    int beam;
+    int lfbeam;
+    int alnbeam;
+    bool use_astar;
+    float max_energy_diff;
+    bool verbose;
+
+    BeamAlign hmmalign;
     float similarity;
     float aln_viterbi;
-    float max_energy_diff;
 
     int num_seqs;
     int seq1_len;
@@ -242,7 +245,7 @@ public:
     int sum_len;
     vector<SeqObject> sequences;
 
-    BeamSankoffParser(int beam_size, int beam_size2, float aln_weight, float energy_diff, bool is_verbose=false);
+    BeamSankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, bool if_aster, float energy_diff, bool is_verbose=false);
     ~BeamSankoffParser(){}
 
     void parse(const vector<string> &seqs, bool limited, const set<pair<int, int>> &allowed_pairs, vector<pair<int, int>> &out_pairs, int num_pairs);
@@ -270,11 +273,6 @@ private:
     // vector<unordered_map<int, float> > seq1_pairs, seq2_pairs;
     // alignment backward scores
     vector<unordered_map<int, float>> aln_backward_score, ins1_backward_score, ins2_backward_score;
-
-    // 3 * 3 * (seq1_len + seq2_len)
-    // unordered_map<int, float> ***alignscore;
-    // unordered_map<int, AlnScore> **bestmanner_left; // 3 * (seq1_len + seq2_len)
-    // unordered_map<int, AlnScore> **bestmanner_right; // 3 * (seq1_len + seq2_len)
 
     pair<string, string> get_hmm_aln(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2);
     pair<string, string> get_hmm_aln_left(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2);
@@ -523,7 +521,7 @@ inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int s
 
 
     if (state.score <= seq1foldscore + seq2foldscore + wegiht * alignscore) {
-        if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
+        if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
         state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, seq1_split, seq2_split, alignscore, wegiht * alignscore, start_manner, end_manner);
     } 
     // else {

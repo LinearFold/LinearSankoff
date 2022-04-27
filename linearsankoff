@@ -8,34 +8,34 @@ import os
 FLAGS = flags.FLAGS
 
 def setgflags():
-    flags.DEFINE_integer('b', 100, "set beam size, (DEFAULT=100)")
-    flags.DEFINE_integer('b2', 100, "set beam size, (DEFAULT=100)")
-    # flags.DEFINE_boolean('V', False, "use vienna parameters, (DEFAULT=FALSE)")
-    # flags.DEFINE_boolean('sharpturn', False, "enable sharp turn in prediction, (DEFAULT=FALSE)")
-    flags.DEFINE_float("energyDiff", 1.0, "maximum energy difference")
-    flags.DEFINE_boolean('dynalign', False, "use Dynalign deductive system, (DEFAULT=FALSE)")
-    flags.DEFINE_boolean('verbose', False, "print out energy of each loop in the structure, (DEFAULT=FALSE)")
     flags.DEFINE_float('w', 1, "weight of alignment")
-    # flags.DEFINE_boolean('eval', False, "print out energy of a given structure, (DEFAULT=FALSE)") # adding eval mode
-    # flags.DEFINE_boolean('switch', False, "switch the order of two RNA sequences, (DEFAULT=FALSE)") # adding switch order mode
+    flags.DEFINE_integer('b', 100, "set beam size, (DEFAULT=100)")
+    flags.DEFINE_integer('LFb', 100, "set beam size, (DEFAULT=100)")
+    flags.DEFINE_integer('LAb', 100, "set beam size, (DEFAULT=100)")
+    flags.DEFINE_boolean("astar", True, "use A star heuristic during beam search")
+    flags.DEFINE_float("energyDiff", 0.3, "maximum energy difference")
+    flags.DEFINE_boolean('verbose', False, "print out energy of each loop in the structure, (DEFAULT=FALSE)")
+    # flags.DEFINE_boolean('dynalign', False, "use Dynalign deductive system, (DEFAULT=FALSE)")
+    # flags.DEFINE_boolean('sharpturn', False, "enable sharp turn in prediction, (DEFAULT=FALSE)")
+    
     argv = FLAGS(sys.argv)
 
 def main():
-    # use_vienna = FLAGS.V
-    beamsize = str(FLAGS.b)
-    beamsize2 = str(FLAGS.b2)
-    energy_diff = str(FLAGS.energyDiff)
-    # is_sharpturn = '1' if FLAGS.sharpturn else '0'
-    is_verbose = '1' if FLAGS.verbose else '0'
-    is_dynalign = '1' if FLAGS.dynalign else '0'
     weight = str(FLAGS.w)
-    # is_eval = '1' if FLAGS.eval else '0'
-    # switch_order = '1' if FLAGS.switch else '0'
+    beamsize = str(FLAGS.b)
+    LFbeam = str(FLAGS.LFb)
+    LAbeam = str(FLAGS.LAb)
+    use_astar = '1' if FLAGS.astar else '0'
+    energy_diff = str(FLAGS.energyDiff)
+    is_verbose = '1' if FLAGS.verbose else '0'
+
+    # is_dynalign = '1' if FLAGS.dynalign else '0'
+    # is_sharpturn = '1' if FLAGS.sharpturn else '0'
 
     path = os.path.dirname(os.path.abspath(__file__))
 
-    # print(beamsize=="-1")
-    cmd = ["%s/%s" % (path, ('bin/linearsankoff' if not FLAGS.dynalign else 'bin/linearsankoff_dynalign')), beamsize, beamsize2, weight, energy_diff, is_verbose] # , beamsize, is_sharpturn, is_verbose, is_eval, switch_order]
+    # cmd = ["%s/%s" % (path, ('bin/linearsankoff' if not FLAGS.dynalign else 'bin/linearsankoff_dynalign')), weight, beamsize, LFbeam, LAbeam, use_astar, energy_diff, is_verbose]
+    cmd = ["%s/%s" % (path, 'bin/linearsankoff'), weight, beamsize, LFbeam, LAbeam, use_astar, energy_diff, is_verbose]
     # print(cmd)
     subprocess.call(cmd, stdin=sys.stdin)
     

@@ -60,9 +60,16 @@ void BeamAlign::traceback(vector<char> &aln1, vector<char> &aln2, HMMManner endm
     }
 }
 
-void BeamAlign::traceback2(vector<char> &aln1, vector<char> &aln2, HMMManner endmanner){
-    int i_seq1 = seq1_len - 1;
-    int i_seq2 = seq2_len - 1;
+void BeamAlign::traceback2(int i1, int j1, int i2, int j2, vector<char> &aln1, vector<char> &aln2, HMMManner endmanner){
+    if (i1>0) i1--; 
+    if (i2>0) i2--;
+
+    // prepare
+    int seq1len = j1 - i1 + 1;
+    int seq2len = j2 - i2 + 1; 
+    
+    int i_seq1 = seq1len - 1;
+    int i_seq2 = seq2len - 1;
     int step = i_seq1 + i_seq2;
     HMMManner cur_manner = endmanner;
 
@@ -220,9 +227,9 @@ void BeamAlign::set_parameters_by_sim(float similarity)
 		{
 			//trans_probs[cnt1][cnt2] = *(par_ptr + cnt1 * N_STATES + cnt2);
 			trans_probs[cnt1][cnt2] = xlog(par_ptr[cnt1 * N_STATES + cnt2]);
-            // cout << cnt1 << " " << cnt2 << " " << trans_probs[cnt1][cnt2] << endl;
+            cout << cnt1 << " " << cnt2 << " " << trans_probs[cnt1][cnt2] << endl;
 		}
-	}		
+    }
 
     // free(fam_hmm_pars);
     // free(fam_thresholds);
@@ -282,59 +289,59 @@ float BeamAlign::get_trans_emit_prob0(int prev_state, int current_state, int i, 
     return(xlog_mul(emit_prob, trans_prob));
 }
 
-float BeamAlign::get_trans_emit_prob1(int current_state, int next_state, int i, int k, bool new_pars){
-    current_state--;
-    next_state--;
+// float BeamAlign::get_trans_emit_prob1(int current_state, int next_state, int i, int k, bool new_pars){
+//     current_state--;
+//     next_state--;
 
-    // cout << prev_state << " " << current_state << " " << i << " " << " " << k << endl;
+//     // cout << prev_state << " " << current_state << " " << i << " " << " " << k << endl;
 
-    if (current_state < 0 || next_state < 0) return xlog(0.0); // N.B.
+//     if (current_state < 0 || next_state < 0) return xlog(0.0); // N.B.
 
-    float trans_prob; 
-    if (new_pars)
-        trans_prob = trans_probs[current_state][next_state];
-    else 
-        trans_prob = xlog(ML_trans_probs[current_state][next_state]);
+//     float trans_prob; 
+//     if (new_pars)
+//         trans_prob = trans_probs[current_state][next_state];
+//     else 
+//         trans_prob = xlog(ML_trans_probs[current_state][next_state]);
         
-    // get_emit_prob
-    int i_sym = seq1[i];
-    int k_sym = seq2[k];
+//     // get_emit_prob
+//     int i_sym = seq1[i];
+//     int k_sym = seq2[k];
 
-    // N character
-    if (i_sym == 4) i_sym = 0; // rand() % 4;
-    if (k_sym == 4) k_sym = 0; // rand() % 4;
+//     // N character
+//     if (i_sym == 4) i_sym = 0; // rand() % 4;
+//     if (k_sym == 4) k_sym = 0; // rand() % 4;
 
-    // Fix symbols to gaps in case of of insertions.
-    // Gap is coded into value 4 in the emission table.
-    if(current_state == 0 || k == 0)  k_sym = 4; 
-    // else k_sym = seq2[k];
+//     // Fix symbols to gaps in case of of insertions.
+//     // Gap is coded into value 4 in the emission table.
+//     if(current_state == 0 || k == 0)  k_sym = 4; 
+//     // else k_sym = seq2[k];
 
-    if(current_state == 1 || i == 0) i_sym = 4;
-    // else i_sym = seq1[i];
+//     if(current_state == 1 || i == 0) i_sym = 4;
+//     // else i_sym = seq1[i];
 
-    // Compute the symbol index into emission table using the coded nucleotide values:
-    // A->0, C->1, G->2, U->3, T->3, .->4
-    // This defines a counting system in base of 5. (25 values.)
-    // There are also emission of start and end symbols. These correspond to 25th and 26th indices in the emission probability table.
-    int sym_index = i_sym * 5 + k_sym;
+//     // Compute the symbol index into emission table using the coded nucleotide values:
+//     // A->0, C->1, G->2, U->3, T->3, .->4
+//     // This defines a counting system in base of 5. (25 values.)
+//     // There are also emission of start and end symbols. These correspond to 25th and 26th indices in the emission probability table.
+//     int sym_index = i_sym * 5 + k_sym;
 
-    // The indices correspond to the end symbol?
-	// if(i == seq1_len && k == seq2_len)
-	// {
-	// 	sym_index = 26;
-	// }
+//     // The indices correspond to the end symbol?
+// 	// if(i == seq1_len && k == seq2_len)
+// 	// {
+// 	// 	sym_index = 26;
+// 	// }
 
-    float emit_prob;
-    if (new_pars)
-        emit_prob = emission_probs[sym_index][current_state];
-    else
-        emit_prob = xlog(ML_emit_probs[sym_index][current_state]);
+//     float emit_prob;
+//     if (new_pars)
+//         emit_prob = emission_probs[sym_index][current_state];
+//     else
+//         emit_prob = xlog(ML_emit_probs[sym_index][current_state]);
 
 
-    // cout << prev_state << " " << current_state << " " << i << " " << " " << k << " " << emit_prob << " " << trans_prob << endl;
+//     // cout << prev_state << " " << current_state << " " << i << " " << " " << k << " " << emit_prob << " " << trans_prob << endl;
 
-    return(xlog_mul(emit_prob, trans_prob));
-}
+//     return(xlog_mul(emit_prob, trans_prob));
+// }
 
 float BeamAlign::get_trans_emit_prob(int prev_state, int current_state, int i, int k, bool new_pars){
     prev_state--;
@@ -393,9 +400,9 @@ float BeamAlign::get_trans_emit_prob(int prev_state, int current_state, int i, i
 float BeamAlign::get_trans_emit_prob(int prev_state, int current_state, int i_1, int k_1, int i, int k, HMMManner s1, HMMManner s2, bool new_pars){
     prev_state--;
     current_state--;
-    
-    // if (i == seq1_len && k == seq2_len)
-    //     cout << prev_state << " " << current_state << " " << i << " " << " " << k << endl;
+
+    // cout << "seq1_len, seq2_len: " << seq1_len << " " << seq2_len << endl;
+    // cout << prev_state << " " << current_state << " " << i << " " << k << " " << i+start1 << " " << k+start2 <<endl;
 
     if (prev_state < 0 || current_state < 0) return xlog(0.0); // N.B.
 
@@ -411,22 +418,13 @@ float BeamAlign::get_trans_emit_prob(int prev_state, int current_state, int i_1,
         // if (s1 != HMMMANNER_NONE)
         trans_prob = xlog(1.0); // do not include transition prob from prev_state
     }
-    // TODO: only work for left regions
-    // if (s2 != HMMMANNER_NONE && (i == (seq1_len - 1)) && (k == (seq2_len - 1))) { 
-    //     if (current_state != s2 - 1)
-    //         return xlog(0.0); // if specify the end state s2, current_state must be s2
-    //     else
-    //         return xlog(1.0); // do not include transition prob from prev_state
-    // }
-    if (i == seq1_len && k == seq2_len){
+
+    if (i+start1 == seq1_len && k+start2 == seq2_len){
         return xlog(1.0); // do not include transition prob from prev_state
+    } 
+    if (i+start1 == seq1_len || k+start2 == seq2_len) { // TODO: debug
+        return xlog(0.0);
     }
-   
-    // get_emit_prob
-    // if (i == seq1_len && k == seq2_len){
-    //     cout << i << " " << start1 << " " << i + start1 << endl;
-    //     cout << k << " " << start2 << " " << k + start2 << endl;
-    // }
     
     int i_sym = seq1[i+start1];
     int k_sym = seq2[k+start2];
@@ -460,18 +458,15 @@ float BeamAlign::get_trans_emit_prob(int prev_state, int current_state, int i_1,
     else
         emit_prob = xlog(ML_emit_probs[sym_index][current_state]);
 
-    // if (i == seq1_len && k == seq2_len)
-    //     cout << prev_state << " " << current_state << " " << i << " " << k << " " << emit_prob << " " << trans_prob << endl;
-
     return(xlog_mul(emit_prob, trans_prob));
 }
 
-float BeamAlign::get_trans_emit_prob_left2(int current_state, int next_state, int i, int k, HMMManner s1, HMMManner s2, bool new_pars){
+float BeamAlign::get_trans_emit_prob_left(int current_state, int next_state, int i, int k, HMMManner s1, HMMManner s2, bool new_pars){
     current_state--;
     next_state--;
     
-    // if (i == seq1_len && k == seq2_len)
-    //     cout << prev_state << " " << current_state << " " << i << " " << " " << k << endl;
+    // cout << "seq1_len, seq2_len: " << seq1_len << " " << seq2_len << endl;
+    // cout << current_state << " " << next_state << " " << i << " " << " " << k << endl;
 
     if (current_state < 0 || next_state < 0) return xlog(0.0); // N.B.
 
@@ -487,23 +482,13 @@ float BeamAlign::get_trans_emit_prob_left2(int current_state, int next_state, in
         // if (s1 != HMMMANNER_NONE)
         return xlog(1.0); // do not include transition prob from prev_state
     }
-    // only work for left regions
-    // if (s2 != HMMMANNER_NONE && (i == (seq1_len - 1)) && (k == (seq2_len - 1))) { 
-    //     if (current_state != s2 - 1)
-    //         return xlog(0.0); // if specify the end state s2, current_state must be s2
-    //     else
-    //         // return xlog(1.0); // do not include transition prob from prev_state
-    //         return trans_prob;
-    // }
-    if (i == seq1_len && k == seq2_len){
+
+    if (i+start1 == seq1_len && k+start2 == seq2_len){
         return xlog(1.0); // do not include transition prob from prev_state
     }
-   
-    // get_emit_prob
-    // if (i == seq1_len && k == seq2_len){
-    //     cout << i << " " << start1 << " " << i + start1 << endl;
-    //     cout << k << " " << start2 << " " << k + start2 << endl;
-    // }
+    if (i+start1 == seq1_len || k+start2 == seq2_len) { // TODO: debug
+        return xlog(0.0);
+    }
     
     int i_sym = seq1[i+start1];
     int k_sym = seq2[k+start2];
@@ -537,16 +522,16 @@ float BeamAlign::get_trans_emit_prob_left2(int current_state, int next_state, in
     else
         emit_prob = xlog(ML_emit_probs[sym_index][current_state]);
 
-    // if (i == seq1_len && k == seq2_len)
-    //     cout << prev_state << " " << current_state << " " << i << " " << k << " " << emit_prob << " " << trans_prob << endl;
-
     return(xlog_mul(emit_prob, trans_prob));
 }
 
-float BeamAlign::get_trans_emit_prob_right2(int prev_state, int current_state, int i_1, int k_1, int i, int k, HMMManner s1, HMMManner s2, bool new_pars){
+float BeamAlign::get_trans_emit_prob_right(int prev_state, int current_state, int i_1, int k_1, int i, int k, HMMManner s1, HMMManner s2, bool new_pars){
     prev_state--;
     current_state--;
     
+    // cout << "seq1_len, seq2_len: " << seq1_len << " " << seq2_len << endl;
+    // cout << prev_state << " " << current_state << " " << i << " " << " " << k << endl;
+
     if (prev_state < 0 || current_state < 0) return xlog(0.0); // N.B.
 
     float trans_prob; 
@@ -563,27 +548,12 @@ float BeamAlign::get_trans_emit_prob_right2(int prev_state, int current_state, i
         return xlog(1.0);
     }
 
-    // cout << i_1 << " " << k_1 << " " << i << " " << k << " " << prev_state+1 << " " << current_state+1 << " " << s1 << " " << s2 << endl;
-    // if (i_1 == 1 && k_1 == 0 && prev_state == (s1-1) && s1 == MANNER_INS1) {
-    //     // cout << i_1 << " " << k_1 << " " << prev_state + 1 << " " << s1 << endl; 
-    //     trans_prob = xlog(1.0);
-    // } else if (i_1 == 0 && k_1 == 1 && prev_state == (s1-1) && s1 == MANNER_INS2) {
-    //     // cout << i_1 << " " << k_1 << " " << prev_state + 1 << " " << s1 << endl; 
-    //     trans_prob = xlog(1.0);
-    // } else if (i_1 == 1 && k_1 == 1 && prev_state == (s1-1) && s1 == MANNER_ALN) {
-    //     // cout << i_1 << " " << k_1 << " " << prev_state + 1 << " " << s1 << endl; 
-    //     trans_prob = xlog(1.0);
-    // }
-
-    if (i == seq1_len && k == seq2_len){
+    if (i+start1 == seq1_len && k+start2 == seq2_len){
         return xlog(1.0); // do not include transition prob from prev_state
     }
-   
-    // get_emit_prob
-    // if (i == seq1_len && k == seq2_len){
-    //     cout << i << " " << start1 << " " << i + start1 << endl;
-    //     cout << k << " " << start2 << " " << k + start2 << endl;
-    // }
+    if (i+start1 == seq1_len || k+start2 == seq2_len) { // TODO: debug
+        return xlog(0.0);
+    }
     
     int i_sym = seq1[i+start1];
     int k_sym = seq2[k+start2];
@@ -650,25 +620,6 @@ void BeamAlign::update(AlignState &state, float newscore, HMMManner pre_manner, 
     state.set(newscore, pre_manner, step, i, k);
 };
 
-// int long BeamAlign::quickselect_partition(vector<pair<float, int> >& scores, int long lower, int long upper) {
-//     double pivot = scores[upper].first;
-//     while (lower < upper) {
-//         while (scores[lower].first < pivot) ++lower;
-//         while (scores[upper].first > pivot) --upper;
-//         if (scores[lower].first == scores[upper].first) ++lower;
-//         else if (lower < upper) swap(scores[lower], scores[upper]);
-//     }
-//     return upper;
-// }
-// // in-place quick-select
-// float BeamAlign::quickselect(vector<pair<float, int> >& scores, int long lower, int long upper, int long k) {
-//     if ( lower == upper ) return scores[lower].first;
-//     int long split = quickselect_partition(scores, lower, upper);
-//     int long length = split - lower + 1;
-//     if (length == k) return scores[split].first;
-//     else if (k  < length) return quickselect(scores, lower, split-1, k);
-//     else return quickselect(scores, split+1, upper, k - length);
-// }
 void BeamAlign::beam_prune(unordered_map<int, AlignState> &beamstep){
     scores.clear();
     for (auto &item : beamstep) {
@@ -1442,12 +1393,11 @@ float BeamAlign::viterbi_path_local(int i1, int j1, int i2, int j2, HMMManner s1
     if (i2>0) i2--;
 
     // prepare
-    seq1_len = j1 - i1 + 1;
-    seq2_len = j2 - i2 + 1;
+    int seq1len = j1 - i1 + 1;
+    int seq2len = j2 - i2 + 1;
     
-    // prepare(seq1_len, seq2_len);
     local_scores.clear();
-    local_scores.resize(seq1_len + seq2_len + 2);
+    local_scores.resize(seq1len + seq2len + 2);
 
     start1 = i1;
     start2 = i2;
@@ -1460,7 +1410,7 @@ float BeamAlign::viterbi_path_local(int i1, int j1, int i2, int j2, HMMManner s1
     local_scores[0][0].alnobj.ml = xlog(1.0);
     
     float trans_emit_prob;
-    for(int s = 0; s < seq1_len + seq2_len; ++s){
+    for(int s = 0; s < seq1len + seq2len; ++s){
         unordered_map<int, AlignState3>& beamstep = local_scores[s];
         for (auto &item : beamstep) {
             AlignState3 state3 = item.second;
@@ -1507,7 +1457,8 @@ float BeamAlign::viterbi_path_local(int i1, int j1, int i2, int j2, HMMManner s1
                 ml = state.ml;
                 if (ml <= xlog(0)) continue; // invalid state
 
-                // if (s1 == HMMMANNER_NONE) cout << s << " " << i << " " << k << " " << start1 + i << " " << start2 + k << endl;
+                // if (s1 == HMMMANNER_NONE) 
+                // cout << s << " " << i << " " << k << " " << ml << " " << seq1len << " " << seq2len << endl;
 
                 HMMManner next_manner;
                 int next_i, next_k, next_step;
@@ -1528,7 +1479,7 @@ float BeamAlign::viterbi_path_local(int i1, int j1, int i2, int j2, HMMManner s1
                             //     if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
                             // } 
                             
-                            if ((next_i < seq1_len && next_k < seq2_len) || (next_i == seq1_len && next_k == seq2_len)) { // seq2_len may out of reach of seq1_len
+                            if ((next_i < seq1len && next_k < seq2len) || (next_i == seq1len && next_k == seq2len)) { // seq2_len may out of reach of seq1_len
                                 trans_emit_prob = get_trans_emit_prob(manner, next_manner, i, k, next_i, next_k, s1, HMMMANNER_NONE, true);
                                 update = update_if_better(local_scores[next_step][next_k].alnobj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                                 if (update) {
@@ -1552,7 +1503,7 @@ float BeamAlign::viterbi_path_local(int i1, int j1, int i2, int j2, HMMManner s1
                             // if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
 
                             // boundary case
-                            if ((next_i >= seq1_len) || (next_k >= seq2_len)) continue;
+                            if ((next_i >= seq1len) || (next_k >= seq2len)) continue;
 
                             trans_emit_prob = get_trans_emit_prob(manner, next_manner, i, k, next_i, next_k, s1, HMMMANNER_NONE, true);
                             update = update_if_better(local_scores[next_step][next_k].ins1obj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
@@ -1574,7 +1525,7 @@ float BeamAlign::viterbi_path_local(int i1, int j1, int i2, int j2, HMMManner s1
                             // if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
                             
                             // boundary case
-                            if ((next_i >= seq1_len) || (next_k >= seq2_len)) continue;
+                            if ((next_i >= seq1len) || (next_k >= seq2len)) continue;
 
                             trans_emit_prob = get_trans_emit_prob(manner, next_manner, i, k, next_i, next_k, s1, HMMMANNER_NONE, true);
                             update = update_if_better(local_scores[next_step][next_k].ins2obj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
@@ -1591,46 +1542,42 @@ float BeamAlign::viterbi_path_local(int i1, int j1, int i2, int j2, HMMManner s1
             }
         }
     }
+    // cout << "end." << endl;
 
     switch (s2)
     {
         case 1:
-            // cout << "new: " << s1 << " " << s2 <<  " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins1obj.ml << endl;
-            return local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins1obj.ml;
+            return local_scores[seq1len + seq2len - 2][seq2len - 1].ins1obj.ml;
             break;
 
         case 2:
-            // cout << "new: " << s1 << " " << s2 <<  " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins2obj.ml << endl;
-            return local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins2obj.ml;
+            return local_scores[seq1len + seq2len - 2][seq2len - 1].ins2obj.ml;
             break;
 
         case 3:
-            // cout << "new: " << s1 << " " << s2 << " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].alnobj.ml << endl;
-            return local_scores[seq1_len + seq2_len - 2][seq2_len - 1].alnobj.ml;
+            return local_scores[seq1len + seq2len - 2][seq2len - 1].alnobj.ml;
             break;
         
         default:
-            // cout << "new: " << s1 << " " << s2 << " " << local_scores[seq1_len + seq2_len][seq2_len].alnobj.ml << endl;
-            return local_scores[seq1_len + seq2_len][seq2_len].alnobj.ml; // TODO
+            return local_scores[seq1len + seq2len][seq2len].alnobj.ml; // TODO
             break;
     }
 
     
 }
 
-void BeamAlign::viterbi_path_local22(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2, bool verbose) {    
+void BeamAlign::viterbi_path_local22(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2, bool verbose) {  
+    int org_i1 = i1;
+    int org_i2 = i2;
+
     // from zero (start point): include first transition prob ALN->ALN/INS1/INS2
     // partial: don't include first transition prob; set i1-- i2-- as start point
     if (i1>0) i1--; 
     if (i2>0) i2--;
 
     // prepare
-    seq1_len = j1 - i1 + 1;
-    seq2_len = j2 - i2 + 1;
-    
-    // prepare(seq1_len, seq2_len);
-    local_scores.clear();
-    local_scores.resize(seq1_len + seq2_len + 2);
+    int seq1len = j1 - i1 + 1;
+    int seq2len = j2 - i2 + 1;
 
     start1 = i1;
     start2 = i2;
@@ -1638,12 +1585,15 @@ void BeamAlign::viterbi_path_local22(int i1, int j1, int i2, int j2, HMMManner s
     // end2 = j2; //  + 1;
 
     // initial state
+    local_scores.clear();
+    local_scores.resize(seq1len + seq2len + 2);
+
     local_scores[0][0].i = 0;
     local_scores[0][0].k = 0;
     local_scores[0][0].alnobj.ml = xlog(1.0);
     
     float trans_emit_prob;
-    for(int s = 0; s < seq1_len + seq2_len; ++s){
+    for(int s = 0; s < seq1len + seq2len; ++s){
         // cout << "s: " << s << " " << i1 << " " << i2 <<  endl;
         unordered_map<int, AlignState3>& beamstep = local_scores[s];
         for (auto &item : beamstep) {
@@ -1691,7 +1641,8 @@ void BeamAlign::viterbi_path_local22(int i1, int j1, int i2, int j2, HMMManner s
                 ml = state.ml;
                 if (ml <= xlog(0)) continue; // invalid state
 
-                // if (s1 == HMMMANNER_NONE) cout << s << " " << i << " " << k << " " << start1 + i << " " << start2 + k << endl;
+                // if (s1 == HMMMANNER_NONE) 
+                // cout << s << " " << start1 << " " << start2 << " " << i << " " << k << " " << start1 + i << " " << start2 + k << " " << seq1len << " " << seq2len << endl;
 
                 HMMManner next_manner;
                 int next_i, next_k, next_step;
@@ -1705,14 +1656,14 @@ void BeamAlign::viterbi_path_local22(int i1, int j1, int i2, int j2, HMMManner s
                             next_k = k + 1;
                             next_step = s + 2;
 
-                            if (next_i < seq1_len && next_k < seq2_len) {
+                            if (next_i < seq1len && next_k < seq2len) {
                                 // check whether in valid region
                                 // loop the region slightly to make sure arrive at the end position with state s2
                                 if ((start2 + next_k) < low_bounds[start1 + next_i]) continue;
                                 if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
                             } 
                             
-                            if ((next_i < seq1_len && next_k < seq2_len) || (next_i == seq1_len && next_k == seq2_len)) { // seq2_len may out of reach of seq1_len
+                            if ((next_i < seq1len && next_k < seq2len) || (next_i == seq1len && next_k == seq2len)) {
                                 trans_emit_prob = get_trans_emit_prob(manner, next_manner, i, k, next_i, next_k, s1, HMMMANNER_NONE, true);
                                 update = update_if_better(local_scores[next_step][next_k].alnobj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                                 if (update) {
@@ -1735,7 +1686,7 @@ void BeamAlign::viterbi_path_local22(int i1, int j1, int i2, int j2, HMMManner s
                             if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
 
                             // boundary case
-                            if ((next_i >= seq1_len) || (next_k >= seq2_len)) continue;
+                            if ((next_i >= seq1len) || (next_k >= seq2len)) continue;
 
                             trans_emit_prob = get_trans_emit_prob(manner, next_manner, i, k, next_i, next_k, s1, HMMMANNER_NONE, true);
                             update = update_if_better(local_scores[next_step][next_k].ins1obj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
@@ -1757,7 +1708,7 @@ void BeamAlign::viterbi_path_local22(int i1, int j1, int i2, int j2, HMMManner s
                             if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
                             
                             // boundary case
-                            if ((next_i >= seq1_len) || (next_k >= seq2_len)) continue;
+                            if ((next_i >= seq1len) || (next_k >= seq2len)) continue;
 
                             trans_emit_prob = get_trans_emit_prob(manner, next_manner, i, k, next_i, next_k, s1, HMMMANNER_NONE, true);
                             update = update_if_better(local_scores[next_step][next_k].ins2obj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
@@ -1773,8 +1724,14 @@ void BeamAlign::viterbi_path_local22(int i1, int j1, int i2, int j2, HMMManner s
                 }
 
                 // save alignment score
-                if (pre_m + 1 == s1)
-                    all_local_scores[s1-1][start1+1][start2+1-low_bounds[start1+1]][i][k] = ml;
+                if (start2+k >= low_bounds[start1+i] && start2+k <= up_bounds[start1+i]) {
+                    if (pre_m + 1 == s1) {
+                        // cout << s1 << " " << org_i1 << " " << org_i2 << " " << i << " " << k << endl;
+                        // all_local_scores[s1-1][start1+1][start2+1-low_bounds[start1+1]][i][k] = ml;
+                        all_local_scores[s1-1][org_i1][org_i2][start1+i][start2+k] = ml;
+                    }
+                }
+                
             }
         }
     }
@@ -1787,12 +1744,11 @@ float BeamAlign::viterbi_path_local_left(int i1, int j1, int i2, int j2, HMMMann
     if (i2>0) i2--;
 
     // prepare
-    seq1_len = j1 - i1 + 1;
-    seq2_len = j2 - i2 + 1;
+    int seq1len = j1 - i1 + 1;
+    int seq2len = j2 - i2 + 1;
     
-    // prepare(seq1_len, seq2_len);
     local_scores.clear();
-    local_scores.resize(seq1_len + seq2_len + 2);
+    local_scores.resize(seq1len + seq2len + 2);
 
     start1 = i1;
     start2 = i2;
@@ -1805,7 +1761,7 @@ float BeamAlign::viterbi_path_local_left(int i1, int j1, int i2, int j2, HMMMann
     local_scores[0][0].alnobj.ml = xlog(1.0);
     
     float trans_emit_prob;
-    for(int s = 0; s < seq1_len + seq2_len; ++s){
+    for(int s = 0; s < seq1len + seq2len; ++s){
         unordered_map<int, AlignState3>& beamstep = local_scores[s];
         for (auto &item : beamstep) {
             AlignState3 state3 = item.second;
@@ -1873,8 +1829,8 @@ float BeamAlign::viterbi_path_local_left(int i1, int j1, int i2, int j2, HMMMann
                             //     if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
                             // } 
                             
-                            if ((next_i < seq1_len && next_k < seq2_len) || (next_i == seq1_len && next_k == seq2_len)) { // seq2_len may out of reach of seq1_len
-                                trans_emit_prob = get_trans_emit_prob_left2(manner, next_manner, i, k, s1, s2, true);
+                            if ((next_i < seq1len && next_k < seq2len) || (next_i == seq1len && next_k == seq2len)) { // seq2_len may out of reach of seq1_len
+                                trans_emit_prob = get_trans_emit_prob_left(manner, next_manner, i, k, s1, s2, true);
                                 // cout << trans_emit_prob << " " << local_scores[next_step][next_k].alnobj.ml << " " << xlog_mul(ml, trans_emit_prob) << endl;
                                 update = update_if_better(local_scores[next_step][next_k].alnobj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                                 if (update) { // lisiz TODO: better solution
@@ -1899,9 +1855,9 @@ float BeamAlign::viterbi_path_local_left(int i1, int j1, int i2, int j2, HMMMann
                             // if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
 
                             // boundary case
-                            if ((next_i >= seq1_len) || (next_k >= seq2_len)) continue;
+                            if ((next_i >= seq1len) || (next_k >= seq2len)) continue;
 
-                            trans_emit_prob = get_trans_emit_prob_left2(manner, next_manner, i, k, s1, s2, true);
+                            trans_emit_prob = get_trans_emit_prob_left(manner, next_manner, i, k, s1, s2, true);
                             // cout << trans_emit_prob << " " << local_scores[next_step][next_k].alnobj.ml << " " << xlog_mul(ml, trans_emit_prob) << endl;
                             update = update_if_better(local_scores[next_step][next_k].ins1obj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                             if (update) {
@@ -1924,9 +1880,9 @@ float BeamAlign::viterbi_path_local_left(int i1, int j1, int i2, int j2, HMMMann
                             // if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
                             
                             // boundary case
-                            if ((next_i >= seq1_len) || (next_k >= seq2_len)) continue;
+                            if ((next_i >= seq1len) || (next_k >= seq2len)) continue;
 
-                            trans_emit_prob = get_trans_emit_prob_left2(manner, next_manner, i, k, s1, s2, true);
+                            trans_emit_prob = get_trans_emit_prob_left(manner, next_manner, i, k, s1, s2, true);
                             update = update_if_better(local_scores[next_step][next_k].ins2obj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                             if (update) {
                                 local_scores[next_step][next_k].i = next_i;
@@ -1964,23 +1920,19 @@ float BeamAlign::viterbi_path_local_left(int i1, int j1, int i2, int j2, HMMMann
     switch (s2)
     {
         case 1:
-            // cout << "left new: " << s1 << " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins1obj.pre << " " << s2 <<  " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins1obj.ml << endl;
-            return local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins1obj.ml;
+            return local_scores[seq1len + seq2len - 2][seq2len - 1].ins1obj.ml;
             break;
 
         case 2:
-            // cout << "left new: " << s1 << " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins2obj.pre << " " << s2 <<  " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins2obj.ml << endl;
-            return local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins2obj.ml;
+            return local_scores[seq1len + seq2len - 2][seq2len - 1].ins2obj.ml;
             break;
 
         case 3:
-            // cout << "left new: " << s1 << " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].alnobj.pre << " " << s2 << " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].alnobj.ml << endl;
-            return local_scores[seq1_len + seq2_len - 2][seq2_len - 1].alnobj.ml;
+            return local_scores[seq1len + seq2len - 2][seq2len - 1].alnobj.ml;
             break;
         
         default:
-            // cout << "left new: " << s1 << " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].alnobj.pre << " " << s2 << " " << local_scores[seq1_len + seq2_len][seq2_len].alnobj.ml << endl;
-            return local_scores[seq1_len + seq2_len][seq2_len].alnobj.ml; // TODO
+            return local_scores[seq1len + seq2len][seq2len].alnobj.ml; // TODO
             break;
     }
 
@@ -1989,18 +1941,21 @@ float BeamAlign::viterbi_path_local_left(int i1, int j1, int i2, int j2, HMMMann
 
 
 void BeamAlign::viterbi_path_local_left22(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2, bool verbose) {
+    int org_i1 = i1;
+    int org_i2 = i2;
+
     // from zero (start point): include first transition prob ALN->ALN/INS1/INS2
     // partial: don't include first transition prob; set i1-- i2-- as start point
     if (i1>0) i1--; 
     if (i2>0) i2--;
 
     // prepare
-    seq1_len = j1 - i1 + 1;
-    seq2_len = j2 - i2 + 1;
+    int seq1len = j1 - i1 + 1;
+    int seq2len = j2 - i2 + 1;
     
     // prepare(seq1_len, seq2_len);
     local_scores.clear();
-    local_scores.resize(seq1_len + seq2_len + 2);
+    local_scores.resize(seq1len + seq2len + 2);
 
     start1 = i1;
     start2 = i2;
@@ -2013,7 +1968,7 @@ void BeamAlign::viterbi_path_local_left22(int i1, int j1, int i2, int j2, HMMMan
     local_scores[0][0].alnobj.ml = xlog(1.0);
     
     float trans_emit_prob;
-    for(int s = 0; s < seq1_len + seq2_len; ++s){
+    for(int s = 0; s < seq1len + seq2len; ++s){
         unordered_map<int, AlignState3>& beamstep = local_scores[s];
         for (auto &item : beamstep) {
             AlignState3 state3 = item.second;
@@ -2059,7 +2014,7 @@ void BeamAlign::viterbi_path_local_left22(int i1, int j1, int i2, int j2, HMMMan
                 if (manner == HMMMANNER_NONE) continue; // wrong manner
                 ml = state.ml;
                 if (ml <= xlog(0)) continue; // invalid state
-                if ((i >= seq1_len) || (k >= seq2_len)) continue; // boundary case
+                if ((i >= seq1len) || (k >= seq2len)) continue; // boundary case
 
                 // cout << s << " " << i << " " << k << " " << start1 + i << " " << start2 + k << " " << seq1_len << " " << seq2_len << endl;
 
@@ -2075,15 +2030,15 @@ void BeamAlign::viterbi_path_local_left22(int i1, int j1, int i2, int j2, HMMMan
                             next_k = k + 1;
                             next_step = s + 2;
 
-                            if (next_i < seq1_len && next_k < seq2_len) {
+                            if (next_i < seq1len && next_k < seq2len) {
                                 // check whether in valid region
                                 // loop the region slightly to make sure arrive at the end position with state s2
                                 if ((start2 + next_k) < low_bounds[start1 + next_i]) continue;
                                 if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
                             } 
                             
-                            if ((next_i < seq1_len && next_k < seq2_len) || (next_i == seq1_len && next_k == seq2_len)) { // seq2_len may out of reach of seq1_len
-                                trans_emit_prob = get_trans_emit_prob_left2(manner, next_manner, i, k, s1, s2, true);
+                            if ((next_i < seq1len && next_k < seq2len) || (next_i == seq1len && next_k == seq2len)) { // seq2_len may out of reach of seq1_len
+                                trans_emit_prob = get_trans_emit_prob_left(manner, next_manner, i, k, s1, s2, true);
                                 // cout << trans_emit_prob << " " << local_scores[next_step][next_k].alnobj.ml << " " << xlog_mul(ml, trans_emit_prob) << endl;
                                 update = update_if_better(local_scores[next_step][next_k].alnobj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                                 if (update) { // lisiz TODO: better solution
@@ -2108,9 +2063,9 @@ void BeamAlign::viterbi_path_local_left22(int i1, int j1, int i2, int j2, HMMMan
                             if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
 
                             // boundary case
-                            if ((next_i >= seq1_len) || (next_k >= seq2_len)) continue;
+                            if ((next_i >= seq1len) || (next_k >= seq2len)) continue;
 
-                            trans_emit_prob = get_trans_emit_prob_left2(manner, next_manner, i, k, s1, s2, true);
+                            trans_emit_prob = get_trans_emit_prob_left(manner, next_manner, i, k, s1, s2, true);
                             // cout << trans_emit_prob << " " << local_scores[next_step][next_k].alnobj.ml << " " << xlog_mul(ml, trans_emit_prob) << endl;
                             update = update_if_better(local_scores[next_step][next_k].ins1obj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                             if (update) {
@@ -2133,9 +2088,9 @@ void BeamAlign::viterbi_path_local_left22(int i1, int j1, int i2, int j2, HMMMan
                             if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
                             
                             // boundary case
-                            if ((next_i >= seq1_len) || (next_k >= seq2_len)) continue;
+                            if ((next_i >= seq1len) || (next_k >= seq2len)) continue;
 
-                            trans_emit_prob = get_trans_emit_prob_left2(manner, next_manner, i, k, s1, s2, true);
+                            trans_emit_prob = get_trans_emit_prob_left(manner, next_manner, i, k, s1, s2, true);
                             update = update_if_better(local_scores[next_step][next_k].ins2obj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                             if (update) {
                                 local_scores[next_step][next_k].i = next_i;
@@ -2152,7 +2107,11 @@ void BeamAlign::viterbi_path_local_left22(int i1, int j1, int i2, int j2, HMMMan
                 
                 // save alignment score
                 // cout << s1-1 << " " << pre_m << " " << start1+1 << " " << start2+1-low_bounds[start1+1] << endl;
-                left_local_scores[s1-1][pre_m][start1+1][start2+1-low_bounds[start1+1]][i][k] = ml;
+                if (start2+k >= low_bounds[start1+i] && start2+k <= up_bounds[start1+i]) {
+                    // left_local_scores[s1-1][pre_m][start1+1][start2+1-low_bounds[start1+1]][i][k] = ml;
+                    // cout << s1 << " " << s2 << " " << org_i1 << " " << org_i2 << " " << i << " " << k << endl;
+                    left_local_scores[s1-1][pre_m][org_i1][org_i2][start1+i][start2+k] = ml;
+                }
             }
         }
     }
@@ -2168,12 +2127,11 @@ float BeamAlign::viterbi_path_local_right(int i1, int j1, int i2, int j2, HMMMan
     if (i2>0) i2--;
 
     // prepare
-    seq1_len = j1 - i1 + 1;
-    seq2_len = j2 - i2 + 1;
+    int seq1len = j1 - i1 + 1;
+    int seq2len = j2 - i2 + 1;
     
-    // prepare(seq1_len, seq2_len);
     local_scores.clear();
-    local_scores.resize(seq1_len + seq2_len + 2);
+    local_scores.resize(seq1len + seq2len + 2);
 
     start1 = i1;
     start2 = i2;
@@ -2186,7 +2144,7 @@ float BeamAlign::viterbi_path_local_right(int i1, int j1, int i2, int j2, HMMMan
     local_scores[0][0].alnobj.ml = xlog(1.0);
     
     float trans_emit_prob;
-    for(int s = 0; s < seq1_len + seq2_len; ++s){
+    for(int s = 0; s < seq1len + seq2len; ++s){
         unordered_map<int, AlignState3>& beamstep = local_scores[s];
         for (auto &item : beamstep) {
             AlignState3 state3 = item.second;
@@ -2248,13 +2206,13 @@ float BeamAlign::viterbi_path_local_right(int i1, int j1, int i2, int j2, HMMMan
                             next_step = s + 2;
 
                             // check whether in valid region
-                            if (limited && next_i < seq1_len && next_k < seq2_len) {
+                            if (limited && next_i < seq1len && next_k < seq2len) {
                                 if ((start2 + next_k) < low_bounds[start1 + next_i]) continue;
                                 if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
                             }
                             
-                            if ((next_i < seq1_len && next_k < seq2_len) || (next_i == seq1_len && next_k == seq2_len)) { // seq2_len may out of reach of seq1_len
-                                trans_emit_prob = get_trans_emit_prob_right2(manner, next_manner, i, k, next_i, next_k, s1, s2, true);
+                            if ((next_i < seq1len && next_k < seq2len) || (next_i == seq1len && next_k == seq2len)) {
+                                trans_emit_prob = get_trans_emit_prob_right(manner, next_manner, i, k, next_i, next_k, s1, s2, true);
                                 // cout << trans_emit_prob << " " << local_scores[next_step][next_k].alnobj.ml << " " << xlog_mul(ml, trans_emit_prob) << endl;
                                 update = update_if_better(local_scores[next_step][next_k].alnobj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                                 if (update) { // lisiz TODO: better solution
@@ -2279,9 +2237,9 @@ float BeamAlign::viterbi_path_local_right(int i1, int j1, int i2, int j2, HMMMan
                             }
 
                             // boundary case
-                            if ((next_i >= seq1_len) || (next_k >= seq2_len)) continue;
+                            if ((next_i >= seq1len) || (next_k >= seq2len)) continue;
 
-                            trans_emit_prob = get_trans_emit_prob_right2(manner, next_manner, i, k, next_i, next_k, s1, s2, true);
+                            trans_emit_prob = get_trans_emit_prob_right(manner, next_manner, i, k, next_i, next_k, s1, s2, true);
                             // cout << trans_emit_prob << " " << local_scores[next_step][next_k].alnobj.ml << " " << xlog_mul(ml, trans_emit_prob) << endl;
                             update = update_if_better(local_scores[next_step][next_k].ins1obj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                             if (update) {
@@ -2305,9 +2263,9 @@ float BeamAlign::viterbi_path_local_right(int i1, int j1, int i2, int j2, HMMMan
                             }      
                             
                             // boundary case
-                            if ((next_i >= seq1_len) || (next_k >= seq2_len)) continue;
+                            if ((next_i >= seq1len) || (next_k >= seq2len)) continue;
 
-                            trans_emit_prob = get_trans_emit_prob_right2(manner, next_manner, i, k, next_i, next_k, s1, s2, true);
+                            trans_emit_prob = get_trans_emit_prob_right(manner, next_manner, i, k, next_i, next_k, s1, s2, true);
                             update = update_if_better(local_scores[next_step][next_k].ins2obj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                             if (update) {
                                 local_scores[next_step][next_k].i = next_i;
@@ -2343,29 +2301,26 @@ float BeamAlign::viterbi_path_local_right(int i1, int j1, int i2, int j2, HMMMan
     switch (s2)
     {
         case 1:
-            // cout << "right new: " << s1 << " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins1obj.pre << " " << s2 <<  " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins1obj.ml << endl;
-            return local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins1obj.ml;
+            return local_scores[seq1len + seq2len - 2][seq2len - 1].ins1obj.ml;
             break;
 
         case 2:
-            // cout << "right new: " << s1 << " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins2obj.pre << " " << s2 <<  " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins2obj.ml << endl;
-            return local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins2obj.ml;
+            return local_scores[seq1len + seq2len - 2][seq2len - 1].ins2obj.ml;
             break;
 
         case 3:
-            // cout << "right new: " << s1 << " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].alnobj.pre << " " << s2 << " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].alnobj.ml << endl;
-            return local_scores[seq1_len + seq2_len - 2][seq2_len - 1].alnobj.ml;
+            return local_scores[seq1len + seq2len - 2][seq2len - 1].alnobj.ml;
             break;
         
         default:
-            // cout << "right new: " << s1 << " " << local_scores[seq1_len + seq2_len - 2][seq2_len - 1].ins2obj.pre << " " << s2 << " " << local_scores[seq1_len + seq2_len][seq2_len].alnobj.ml << endl;
-            return local_scores[seq1_len + seq2_len][seq2_len].alnobj.ml; // TODO
+            return local_scores[seq1len + seq2len][seq2len].alnobj.ml;
             break;
     }  
 }
 
 void BeamAlign::viterbi_path_local_right22(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2, bool verbose) {
-    // cout << i1 << " " << j1 << " " << i2 << " " << j2 << " " << s1 << " " << s2 <<  endl;
+    int org_i1 = i1;
+    int org_i2 = i2;
 
     // from zero (start point): include first transition prob ALN->ALN/INS1/INS2
     // partial: don't include first transition prob; set i1-- i2-- as start point
@@ -2373,12 +2328,11 @@ void BeamAlign::viterbi_path_local_right22(int i1, int j1, int i2, int j2, HMMMa
     if (i2>0) i2--;
 
     // prepare
-    seq1_len = j1 - i1 + 1;
-    seq2_len = j2 - i2 + 1;
+    int seq1len = j1 - i1 + 1;
+    int seq2len = j2 - i2 + 1;
     
-    // prepare(seq1_len, seq2_len);
     local_scores.clear();
-    local_scores.resize(seq1_len + seq2_len + 2);
+    local_scores.resize(seq1len + seq2len + 2);
 
     start1 = i1;
     start2 = i2;
@@ -2391,7 +2345,7 @@ void BeamAlign::viterbi_path_local_right22(int i1, int j1, int i2, int j2, HMMMa
     local_scores[0][0].alnobj.ml = xlog(1.0);
     
     float trans_emit_prob;
-    for(int s = 0; s < seq1_len + seq2_len; ++s){
+    for(int s = 0; s < seq1len + seq2len; ++s){
         unordered_map<int, AlignState3>& beamstep = local_scores[s];
         for (auto &item : beamstep) {
             AlignState3 state3 = item.second;
@@ -2437,9 +2391,11 @@ void BeamAlign::viterbi_path_local_right22(int i1, int j1, int i2, int j2, HMMMa
                 if (manner == HMMMANNER_NONE) continue; // wrong manner
                 ml = state.ml;
                 if (ml <= xlog(0)) continue; // invalid state
-                if ((i >= seq1_len) || (k >= seq2_len)) continue; // boundary case
+                if ((i >= seq1len) || (k >= seq2len)) continue; // boundary case
 
-                // cout << s << " " << i << " " << k << " " << start1 + i << " " << start2 + k << endl;
+                // debug 1386 2 1370
+                if (org_i1 == 1386 && org_i2 == 1370)
+                    cout << s << " " << start1 << " " << start2 << " " << i << " " << k << " " << start1 + i << " " << start2 + k << endl;
 
                 HMMManner next_manner;
                 int next_i, next_k, next_step;
@@ -2453,15 +2409,15 @@ void BeamAlign::viterbi_path_local_right22(int i1, int j1, int i2, int j2, HMMMa
                             next_k = k + 1;
                             next_step = s + 2;
 
-                            if (next_i < seq1_len && next_k < seq2_len) {
+                            if (next_i < seq1len && next_k < seq2len) {
                                 // check whether in valid region
                                 // loop the region slightly to make sure arrive at the end position with state s2
                                 if ((start2 + next_k) < low_bounds[start1 + next_i]) continue;
                                 if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
                             } 
                             
-                            if ((next_i < seq1_len && next_k < seq2_len) || (next_i == seq1_len && next_k == seq2_len)) { // seq2_len may out of reach of seq1_len
-                                trans_emit_prob = get_trans_emit_prob_right2(manner, next_manner, i, k, next_i, next_k, s1, s2, true);
+                            if ((next_i < seq1len && next_k < seq2len) || (next_i == seq1len && next_k == seq2len)) { // seq2_len may out of reach of seq1_len
+                                trans_emit_prob = get_trans_emit_prob_right(manner, next_manner, i, k, next_i, next_k, s1, s2, true);
                                 // cout << trans_emit_prob << " " << local_scores[next_step][next_k].alnobj.ml << " " << xlog_mul(ml, trans_emit_prob) << endl;
                                 update = update_if_better(local_scores[next_step][next_k].alnobj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                                 if (update) { // lisiz TODO: better solution
@@ -2486,9 +2442,9 @@ void BeamAlign::viterbi_path_local_right22(int i1, int j1, int i2, int j2, HMMMa
                             if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
 
                             // boundary case
-                            if ((next_i >= seq1_len) || (next_k >= seq2_len)) continue;
+                            if ((next_i >= seq1len) || (next_k >= seq2len)) continue;
 
-                            trans_emit_prob = get_trans_emit_prob_right2(manner, next_manner, i, k, next_i, next_k, s1, s2, true);
+                            trans_emit_prob = get_trans_emit_prob_right(manner, next_manner, i, k, next_i, next_k, s1, s2, true);
                             // cout << trans_emit_prob << " " << local_scores[next_step][next_k].alnobj.ml << " " << xlog_mul(ml, trans_emit_prob) << endl;
                             update = update_if_better(local_scores[next_step][next_k].ins1obj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                             if (update) {
@@ -2511,9 +2467,9 @@ void BeamAlign::viterbi_path_local_right22(int i1, int j1, int i2, int j2, HMMMa
                             if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
                             
                             // boundary case
-                            if ((next_i >= seq1_len) || (next_k >= seq2_len)) continue;
+                            if ((next_i >= seq1len) || (next_k >= seq2len)) continue;
 
-                            trans_emit_prob = get_trans_emit_prob_right2(manner, next_manner, i, k, next_i, next_k, s1, s2, true);
+                            trans_emit_prob = get_trans_emit_prob_right(manner, next_manner, i, k, next_i, next_k, s1, s2, true);
                             update = update_if_better(local_scores[next_step][next_k].ins2obj, xlog_mul(ml, trans_emit_prob), manner, next_step, next_i, next_k, start_manner);
                             if (update) {
                                 local_scores[next_step][next_k].i = next_i;
@@ -2530,7 +2486,11 @@ void BeamAlign::viterbi_path_local_right22(int i1, int j1, int i2, int j2, HMMMa
 
                 // save alignment score
                 // cout << s1-1 << " " << pre_m << " " << start1+1 << " " << start2+1-low_bounds[start1+1] << endl;
-                right_local_scores[s1-1][pre_m][start1+1][start2+1-low_bounds[start1+1]][i][k] = ml;
+                if (start2+k >= low_bounds[start1+i] && start2+k <= up_bounds[start1+i]) {
+                    // right_local_scores[s1-1][pre_m][start1+1][start2+1-low_bounds[start1+1]][i][k] = ml;
+                    // cout << s1-1 << " " << pre_m << " " << org_i1 << " " << org_i2 << " " << start1+i << " " << start2+k << endl;
+                    right_local_scores[s1-1][pre_m][org_i1][org_i2][start1+i][start2+k] = ml;
+                }
             }
         }
     }
@@ -2541,29 +2501,44 @@ void BeamAlign::viterbi_path_local_right22(int i1, int j1, int i2, int j2, HMMMa
 void BeamAlign::viterbi_path_all_locals()
 {
     cout << "viterbi_path_all_locals start" << endl;
-    int seq1len = seq1_len;
-    int seq2len = seq2_len;
+    // int seq1len = seq1_len;
+    // int seq2len = seq2_len;
 
     all_local_scores = new float****[3];
     left_local_scores = new float*****[3];
     right_local_scores = new float*****[3];
     for (int s1 = 0; s1 < 3; s1++){
         all_local_scores[s1] = new float***[seq1_len];
-        for (int i1 = 0; i1 < seq1len; i1++) {
-            int i2_range = up_bounds[i1] - low_bounds[i1] + 1;
+        for (int i1 = 1; i1 < seq1_len; i1++) {
+            int i2_low = max(1, low_bounds[i1]);
+            int i2_up = up_bounds[i1];
+            int i2_range = i2_up - i2_low + 1;
+            // cout << "all_local_scores i2_range: " << i2_low << " " << i2_up << " " << i2_range << endl;
+
             all_local_scores[s1][i1] = new float**[i2_range];
+            all_local_scores[s1][i1] = all_local_scores[s1][i1] - i2_low;
 
             int j1_range = min(35, seq1_len - i1 + 1);
-
-            for (int i2 = 0; i2 < i2_range; i2++) {
+            // cout << "all_local_scores j1_range: " << i1+1 << " " << i1+j1_range << " " << j1_range << endl;
+            for (int i2 = i2_low; i2 <= i2_up; i2++) {
                 all_local_scores[s1][i1][i2] = new float*[j1_range];
+                all_local_scores[s1][i1][i2] = all_local_scores[s1][i1][i2] - (i1-1);
 
-                int j2_range = min(35, seq2_len - (i2 + low_bounds[i1]) + 1); // TODO, save more, change data structure
+                int j2_range = min(35, seq2_len - i2 + 1); 
+                for (int j1 = i1-1; j1 < i1+j1_range-1; j1++) {
+                    int j2_low = max(i2-1, low_bounds[j1]);
+                    int j2_up = min(i2+j2_range-1, up_bounds[j1]);
+                    if (j2_up < j2_low) continue;
 
-                for (int j1 = 0; j1 < j1_range; j1++) {
-                    all_local_scores[s1][i1][i2][j1] = new float[j2_range];
+                    int new_j2_range = j2_up - j2_low + 1;
+                    // cout << "all_local_scores new_j2_range: " << j2_low << " " << j2_up << " " << new_j2_range << endl;
 
-                    for (int j2 = 0; j2 < j2_range; j2++) {
+                    all_local_scores[s1][i1][i2][j1] = new float[new_j2_range];
+                    all_local_scores[s1][i1][i2][j1] =  all_local_scores[s1][i1][i2][j1] - j2_low;
+
+                    for (int j2 = j2_low; j2 <= j2_up; j2++) {
+                        // cout << "all_local_scores: " <<  s1 << " " << i1 << " " << i2  << " " << j1 << " " << j2 << " " << i2_range << " " << j1_range << " " << new_j2_range << endl;
+
                         all_local_scores[s1][i1][i2][j1][j2] = xlog(0);
                     }
                 }
@@ -2574,32 +2549,47 @@ void BeamAlign::viterbi_path_all_locals()
         left_local_scores[s1] = new float****[3];
         right_local_scores[s1] = new float****[3];
         for (int s2 = 0; s2 < 3; s2++){
-            left_local_scores[s1][s2] = new float***[seq1len];
-            right_local_scores[s1][s2] = new float***[seq1len];
+            left_local_scores[s1][s2] = new float***[seq1_len];
+            right_local_scores[s1][s2] = new float***[seq1_len];
 
-            for (int i1 = 1; i1 < seq1len; i1++) {
-                int i2_range = up_bounds[i1] - low_bounds[i1] + 1;
+            for (int i1 = 1; i1 < seq1_len; i1++) {
+                int i2_low = max(1, low_bounds[i1]);
+                int i2_up = up_bounds[i1];
+                int i2_range = i2_up - i2_low + 1;
+                // cout << "i2_range: " << i2_low << " " << i2_up << " " << i2_range << endl;
+
                 left_local_scores[s1][s2][i1] = new float**[i2_range];
                 right_local_scores[s1][s2][i1] = new float**[i2_range];
 
+                left_local_scores[s1][s2][i1] = left_local_scores[s1][s2][i1] - i2_low;
+                right_local_scores[s1][s2][i1] = right_local_scores[s1][s2][i1] - i2_low;
+                
                 // cout << i1 << " " << low_bounds[i1] <<  " " << up_bounds[i1] << " " << i2_range << endl;
 
                 int j1_range = min(35, seq1_len - i1 + 1);
-
-                // for (int i2 = 0; i2 < max_range+1; i2++) {
-                for (int i2 = 0; i2 < i2_range; i2++) {
+                // cout << "j1_range: " << i1+1 << " " << i1+j1_range << " " << j1_range << endl;
+                for (int i2 = i2_low; i2 <= i2_up; i2++) {
                     left_local_scores[s1][s2][i1][i2] = new float*[j1_range];
                     right_local_scores[s1][s2][i1][i2] = new float*[j1_range];
+
+                    left_local_scores[s1][s2][i1][i2] = left_local_scores[s1][s2][i1][i2] - (i1-1);
+                    right_local_scores[s1][s2][i1][i2] = right_local_scores[s1][s2][i1][i2] - (i1-1);
                     
-                    int j2_range = min(35, seq2_len - (i2 + low_bounds[i1]) + 1); // TODO, save more, change data structure
-                    
-                    // for (int j1 = 0; j1 < 35; j1++) {
-                    for (int j1 = 0; j1 < j1_range; j1++) {
-                        left_local_scores[s1][s2][i1][i2][j1] = new float[j2_range];
-                        right_local_scores[s1][s2][i1][i2][j1] = new float[j2_range];
+                    int j2_range = min(35, seq2_len - i2 + 1); // TODO, save more, change data structure
+                    for (int j1 = i1-1; j1 < i1+j1_range-1; j1++) {
+                        int j2_low = max(i2-1, low_bounds[j1]);
+                        int j2_up = min(i2+j2_range-1, up_bounds[j1]);
+                        if (j2_up < j2_low) continue;
+                        int new_j2_range = j2_up - j2_low + 1;
                         
-                        for (int j2 = 0; j2 < j2_range; j2++) {
-                            // cout << s1 << " " << s2 << " " << i1 << " " << i2  << " " << j1 << " " << j2 << " " << i2_range << " " << j1_range << " " << j2_range << endl;
+                        left_local_scores[s1][s2][i1][i2][j1] = new float[new_j2_range];
+                        right_local_scores[s1][s2][i1][i2][j1] = new float[new_j2_range];
+
+                        left_local_scores[s1][s2][i1][i2][j1] = left_local_scores[s1][s2][i1][i2][j1] - j2_low;
+                        right_local_scores[s1][s2][i1][i2][j1] =  right_local_scores[s1][s2][i1][i2][j1] - j2_low;
+                        
+                        for (int j2 = j2_low; j2 <= j2_up; j2++) {
+                            // cout << s1 << " " << s2 << " " << i1 << " " << i2  << " " << j1 << " " << j2 << " " << i2_range << " " << j1_range << " " << new_j2_range << endl;
 
                             left_local_scores[s1][s2][i1][i2][j1][j2] = xlog(0);
                             right_local_scores[s1][s2][i1][i2][j1][j2] = xlog(0);
@@ -2609,6 +2599,7 @@ void BeamAlign::viterbi_path_all_locals()
             }
         }
     }
+    cout << "end." << endl;
     
     // pre-compute
     for (int s1 = 0; s1 < 3; s1++){
@@ -2629,17 +2620,19 @@ void BeamAlign::viterbi_path_all_locals()
                 break;
         }
 
-        for (int i1 = 1; i1 < seq1len; i1++) {
-            for (int i2 = low_bounds[i1]; i2 <= up_bounds[i1]; i2++){ // why 31? because max. # of dots plus two brackets is 32 
-                // cout << s1 << " " << i1 << " " << i2 << " " << min(seq1len-1, i1+31) << " " << min(seq2len-1, i2+31) <<  endl;
-                viterbi_path_local22(i1, min(seq1len-1, i1+31), i2, min(seq2len-1, i2+31), s1manner, HMMMANNER_NONE);
+        for (int i1 = 1; i1 < seq1_len; i1++) {
+            for (int i2 = max(1, low_bounds[i1]); i2 <= up_bounds[i1]; i2++){
+                // cout << s1 << " " << i1 << " " << i2 << " " << min(seq1_len-1, i1+31) << " " << min(seq2_len-1, i2+31) <<  endl;
+                // cout << "test00" << endl;
+                viterbi_path_local22(i1, min(seq1_len-1, i1+31), i2, min(seq2_len-1, i2+31), s1manner, HMMMANNER_NONE);
                 // cout << "test0" << endl;
-                viterbi_path_local_left22(i1, min(seq1len-1, i1+31), i2, min(seq2len-1, i2+31), s1manner, HMMMANNER_NONE);
+                viterbi_path_local_left22(i1, min(seq1_len-1, i1+31), i2, min(seq2_len-1, i2+31), s1manner, HMMMANNER_NONE);
                 // cout << "test1" << endl;
-                viterbi_path_local_right22(i1, min(seq1len-1, i1+31), i2, min(seq2len-1, i2+31), s1manner, HMMMANNER_NONE);
+                viterbi_path_local_right22(i1, min(seq1_len-1, i1+31), i2, min(seq2_len-1, i2+31), s1manner, HMMMANNER_NONE);
             }
         }
     }
+    cout << "end." << endl;
 
 }
 
@@ -2677,33 +2670,58 @@ void BeamAlign::clear(bool local_path){
 
     if (local_path) {
         for (int s1 = 0; s1 < 3; s1++){
-            for (int i1 = 0; i1 < seq1_len; i1++) {
-                int i2_range = up_bounds[i1] - low_bounds[i1] + 1;
+            for (int i1 = 1; i1 < seq1_len; i1++) {
+                int i2_low = max(1, low_bounds[i1]);
+                int i2_up = up_bounds[i1];
+                int i2_range = i2_up - i2_low + 1;
+
                 int j1_range = min(35, seq1_len - i1 + 1);
-                for (int i2 = 0; i2 < i2_range; i2++) {
-                    int j2_range = min(35, seq2_len - (i2 + low_bounds[i1]) + 1); // TODO, save more, change data structure
-                    for (int j1 = 0; j1 < j1_range; j1++) {
+                for (int i2 = i2_low; i2 <= i2_up; i2++) {
+                    int j2_range = min(35, seq2_len - i2 + 1); 
+                    for (int j1 = i1-1; j1 < i1+j1_range-1; j1++) {
+                        int j2_low = max(i2-1, low_bounds[j1]);
+                        int j2_up = min(i2+j2_range-1, up_bounds[j1]);
+                        if (j2_up < j2_low) continue;
+                        all_local_scores[s1][i1][i2][j1] =  all_local_scores[s1][i1][i2][j1] + j2_low;
                         delete[] all_local_scores[s1][i1][i2][j1];
                     }
+                    all_local_scores[s1][i1][i2] = all_local_scores[s1][i1][i2] + (i1-1);
                     delete[] all_local_scores[s1][i1][i2];
                 }
+                all_local_scores[s1][i1] = all_local_scores[s1][i1] + i2_low;
                 delete[] all_local_scores[s1][i1];
+            
             }
             delete[] all_local_scores[s1];
         
             for (int s2 = 0; s2 < 3; s2++){
                 for (int i1 = 1; i1 < seq1_len; i1++) {
-                    int i2_range = up_bounds[i1] - low_bounds[i1] + 1;
+                    int i2_low = max(1, low_bounds[i1]);
+                    int i2_up = up_bounds[i1];
+                    int i2_range = i2_up - i2_low + 1;
+
                     int j1_range = min(35, seq1_len - i1 + 1);
-                    for (int i2 = 0; i2 < i2_range; i2++) {        
-                        int j2_range = min(35, seq2_len - (i2 + low_bounds[i1]) + 1); // TODO, save more, change data structure
-                        for (int j1 = 0; j1 < j1_range; j1++) {
+                    for (int i2 = i2_low; i2 <= i2_up; i2++) {
+                        int j2_range = min(35, seq2_len - i2 + 1); // TODO, save more, change data structure
+                        for (int j1 = i1-1; j1 < i1+j1_range-1; j1++) {
+                            int j2_low = max(i2-1, low_bounds[j1]);
+                            int j2_up = min(i2+j2_range-1, up_bounds[j1]);
+                            if (j2_up < j2_low) continue;
+                            left_local_scores[s1][s2][i1][i2][j1] = left_local_scores[s1][s2][i1][i2][j1] + j2_low;
+                            right_local_scores[s1][s2][i1][i2][j1] =  right_local_scores[s1][s2][i1][i2][j1] + j2_low;
+                        
                             delete[] left_local_scores[s1][s2][i1][i2][j1];
                             delete[] right_local_scores[s1][s2][i1][i2][j1];
                         }
+                        left_local_scores[s1][s2][i1][i2] = left_local_scores[s1][s2][i1][i2] + (i1-1);
+                        right_local_scores[s1][s2][i1][i2] = right_local_scores[s1][s2][i1][i2] + (i1-1);
+
                         delete[] left_local_scores[s1][s2][i1][i2];
                         delete[] right_local_scores[s1][s2][i1][i2];
                     }
+                    left_local_scores[s1][s2][i1] = left_local_scores[s1][s2][i1] + i2_low;
+                    right_local_scores[s1][s2][i1] = right_local_scores[s1][s2][i1] + i2_low;
+                        
                     delete[] left_local_scores[s1][s2][i1];
                     delete[] right_local_scores[s1][s2][i1];
                 }

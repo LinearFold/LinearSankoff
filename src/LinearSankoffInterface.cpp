@@ -23,17 +23,21 @@ using namespace std;
 
 int main(int argc, char** argv){
     vector<string> seqs;
-    int beam_size, beam_size2;
     float aln_weight;
+    int beam_size, LFbeam, LAbeam;
+    bool use_astar;
     float energy_diff;
     bool is_verbose=false;
 
+    // weight, beamsize, LFbeam, LAbeam, use_astar, energy_diff, is_verbose
     if (argc > 1) {
-        beam_size = atoi(argv[1]);
-        beam_size2 = atoi(argv[2]);
-        aln_weight = atof(argv[3]);
-        energy_diff = atof(argv[4]);
-        is_verbose = atoi(argv[5]) == 1;
+        aln_weight = atof(argv[1]);
+        beam_size = atoi(argv[2]);
+        LFbeam = atoi(argv[3]);
+        LAbeam = atoi(argv[4]);
+        use_astar = atoi(argv[5]) == 1;
+        energy_diff = atof(argv[6]);
+        is_verbose = atoi(argv[7]) == 1;
     }
 
     int seq1len, seq2len;
@@ -72,10 +76,10 @@ int main(int argc, char** argv){
             // }
             // else {
             if (beam_size == -2) {
-                SankoffParser parser(beam_size, beam_size2, aln_weight, energy_diff, is_verbose);
+                SankoffParser parser(aln_weight, beam_size, LFbeam, LAbeam, energy_diff, is_verbose);
                 parser.parse(seqs);
             } else {
-                BeamSankoffParser parser(beam_size, beam_size2, aln_weight, energy_diff, is_verbose);
+                BeamSankoffParser parser(aln_weight, beam_size, LFbeam, LAbeam, use_astar, energy_diff, is_verbose);
                 parser.parse(seqs);
             }
             // }

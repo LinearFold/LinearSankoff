@@ -278,7 +278,7 @@ public:
     float viterbi_path_local(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2, bool verbose=false);
     float viterbi_path_local_left(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2, bool verbose=false);
     float viterbi_path_local_right(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2, bool limited=true, bool verbose=false);
-    void traceback2(vector<char> &aln1, vector<char> &aln2, HMMManner endmanner);
+    void traceback2(int i1, int j1, int i2, int j2, vector<char> &aln1, vector<char> &aln2, HMMManner endmanner);
 
     float get_trans_emit_prob0(int prev_state, int current_state, int i, int k, bool new_pars=false);
     float get_trans_emit_prob1(int current_state, int next_state, int i, int k, bool new_pars=false);
@@ -294,7 +294,6 @@ private:
     void viterbi_path_local_left22(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2, bool verbose=false);
     void viterbi_path_local_right22(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2, bool verbose=false);
 
-    // float beam_prune(std::unordered_map<int, AlignState> &beamstep, int target=0);
     void prepare(int j1, int j2);
     bool update_if_better(AlignState &state, float newscore, HMMManner pre_manner, int step, int i, int k, HMMManner start_manner=HMMMANNER_NONE); 
     bool update_if_better_backward(AlignState &state, float newscore); 
@@ -309,13 +308,11 @@ private:
     // beam prune
     void beam_prune(std::unordered_map<int, AlignState> &beamstep);
     vector<pair<float, int> > scores;
-    // float quickselect(vector<pair<float, int> >& scores, int long lower, int long upper, int long k);
-    // int long quickselect_partition(vector<pair<float, int> >& scores, int long lower, int long upper);
 
     float get_trans_emit_prob(int prev_state, int current_state, int i_1, int k_1, int i, int k, HMMManner s1=HMMMANNER_NONE, HMMManner s2=HMMMANNER_NONE, bool new_pars=false);
     float get_trans_emit_prob(int prev_state, int current_state, int i, int k, bool new_pars=false);
-    float get_trans_emit_prob_right2(int prev_state, int current_state, int i_1, int k_1, int i, int k, HMMManner s1=HMMMANNER_NONE, HMMManner s2=HMMMANNER_NONE, bool new_pars=false);
-    float get_trans_emit_prob_left2(int current_state, int next_state, int i, int k, HMMManner s1=HMMMANNER_NONE, HMMManner s2=HMMMANNER_NONE, bool new_pars=false);
+    float get_trans_emit_prob_right(int prev_state, int current_state, int i_1, int k_1, int i, int k, HMMManner s1=HMMMANNER_NONE, HMMManner s2=HMMMANNER_NONE, bool new_pars=false);
+    float get_trans_emit_prob_left(int current_state, int next_state, int i, int k, HMMManner s1=HMMMANNER_NONE, HMMManner s2=HMMMANNER_NONE, bool new_pars=false);
     
     void traceback(vector<char> &aln1, vector<char> &aln2, HMMManner endmanner);
 

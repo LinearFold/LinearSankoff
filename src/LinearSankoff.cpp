@@ -640,53 +640,38 @@ tuple<string, string, string, string> BeamSankoffParser::get_parentheses(SeqObje
 
 float BeamSankoffParser::get_hmm_score(int i1, int j1, int i2, int j2, int s1, bool allowout){
     // (...)
-    // left bracket must in the alignable region
     if (i2 < hmmalign.low_bounds[i1] || i2 > hmmalign.up_bounds[i1]) return xlog(0.0);
-
-    // if (allowout){
-    //     if (j2 >= hmmalign.low_bounds[j1] && j2 <= hmmalign.up_bounds[j1]) {
-    //         return hmmalign.all_local_scores[s1][i1][i2-hmmalign.low_bounds[i1]][j1-i1+1][j2-i2+1];
-    //     } else {
-    //         return hmmalign.viterbi_path_local(i1, j1, i2, j2, static_cast<HMMManner>(s1+1), static_cast<HMMManner>(s1+1));
-    //     }
-    // }
-    // if (j2 < hmmalign.low_bounds[j1]-10 || j2 > hmmalign.up_bounds[j1]+10) return xlog(0.0);
-
     if (j2 < hmmalign.low_bounds[j1] || j2 > hmmalign.up_bounds[j1]) return xlog(0.0);
 
-    return hmmalign.all_local_scores[s1][i1][i2-hmmalign.low_bounds[i1]][j1-i1+1][j2-i2+1];
+    // cout << "get_hmm_score " << s1 << " " << i1 << " " << j1 << " " << i2 << " " << j2 << endl; // " " << hmmalign.all_local_scores[s1][i1][i2][j1][j2]<< endl;
+
+    // return hmmalign.all_local_scores[s1][i1][i2-hmmalign.low_bounds[i1]][j1-i1+1][j2-i2+1];
+    return hmmalign.all_local_scores[s1][i1][i2][j1][j2];
 }
 
 float BeamSankoffParser::get_hmm_score_left(int i1, int j1, int i2, int j2, int s1, int s2){
     // (-->(
-    // left bracket must in the alignable region
     if (i2 < hmmalign.low_bounds[i1] || i2 > hmmalign.up_bounds[i1]) return xlog(0.0);
     if (j2 < hmmalign.low_bounds[j1] || j2 > hmmalign.up_bounds[j1]) return xlog(0.0);
 
-    return hmmalign.left_local_scores[s1][s2][i1][i2-hmmalign.low_bounds[i1]][j1-i1+1][j2-i2+1];
+    // cout << "get_hmm_score_left " << s1 << " " << s2 << " " << i1 << " " << j1 << " " << i2 << " " << j2  << endl; //" " << hmmalign.left_local_scores[s1][s2][i1][i2][j1][j2]<< endl;
+
+    // return hmmalign.left_local_scores[s1][s2][i1][i2-hmmalign.low_bounds[i1]][j1-i1+1][j2-i2+1];
+    return hmmalign.left_local_scores[s1][s2][i1][i2][j1][j2];
 }
 
 float BeamSankoffParser::get_hmm_score_right(int i1, int j1, int i2, int j2, int s1, int s2, bool allowout){
     // )-->)
-    // right bracket can be out of the alignable region
-    // if (allowout) {
-    //     if (i2 >= hmmalign.low_bounds[i1] && i2 <= hmmalign.up_bounds[i1] && j2 >= hmmalign.low_bounds[j1] && j2 <= hmmalign.up_bounds[j1]) {
-    //         if ((j1-i1+1 < 30) && (j2-i2+1 < 30)) {
-    //             return hmmalign.right_local_scores[s1][s2][i1][i2-hmmalign.low_bounds[i1]][j1-i1+1][j2-i2+1];
-    //         }
-    //     }
-    //     return hmmalign.viterbi_path_local_right(i1, j1, i2, j2, static_cast<HMMManner>(s1+1), static_cast<HMMManner>(s2+1), false);
-    // }
-    // if (i2 < hmmalign.low_bounds[i1]-10 || i2 > hmmalign.up_bounds[i1]+10) return xlog(0.0);
-    // if (j2 < hmmalign.low_bounds[j1]-10 || j2 > hmmalign.up_bounds[j1]+10) return xlog(0.0);
-
     if (i2 < hmmalign.low_bounds[i1] || i2 > hmmalign.up_bounds[i1]) return xlog(0.0);
     if (j2 < hmmalign.low_bounds[j1] || j2 > hmmalign.up_bounds[j1]) return xlog(0.0);
 
     if ((j1-i1+1 > 30) || (j2-i2+1 > 30))
         return hmmalign.viterbi_path_local_right(i1, j1, i2, j2, static_cast<HMMManner>(s1+1), static_cast<HMMManner>(s2+1));
 
-    return hmmalign.right_local_scores[s1][s2][i1][i2-hmmalign.low_bounds[i1]][j1-i1+1][j2-i2+1];
+    // cout << "get_hmm_score_right " << s1 << " " << s2 << " " << i1 << " " << j1 << " " << i2 << " " << j2 << endl; // " " << hmmalign.right_local_scores[s1][s2][i1][i2][j1][j2] << endl;
+
+    // return hmmalign.right_local_scores[s1][s2][i1][i2-hmmalign.low_bounds[i1]][j1-i1+1][j2-i2+1];
+    return hmmalign.right_local_scores[s1][s2][i1][i2][j1][j2];
 }
 
 pair<string, string> BeamSankoffParser::get_hmm_aln(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2){
@@ -695,7 +680,7 @@ pair<string, string> BeamSankoffParser::get_hmm_aln(int i1, int j1, int i2, int 
     vector<char> aln1, aln2;
 
     hmmalign.viterbi_path_local(i1, j1, i2, j2, s1, s2);
-    hmmalign.traceback2(aln1, aln2, s2);
+    hmmalign.traceback2(i1, j1, i2, j2, aln1, aln2, s2);
 
     reverse(aln1.begin(), aln1.end());
     reverse(aln2.begin(), aln2.end());
@@ -721,7 +706,7 @@ pair<string, string> BeamSankoffParser::get_hmm_aln_left(int i1, int j1, int i2,
     vector<char> aln1, aln2;
 
     hmmalign.viterbi_path_local_left(i1, j1, i2, j2, s1, s2);
-    hmmalign.traceback2(aln1, aln2, s2);
+    hmmalign.traceback2(i1, j1, i2, j2, aln1, aln2, s2);
 
     reverse(aln1.begin(), aln1.end());
     reverse(aln2.begin(), aln2.end());
@@ -760,7 +745,7 @@ pair<string, string> BeamSankoffParser::get_hmm_aln_right(int i1, int j1, int i2
     vector<char> aln1, aln2;
 
     hmmalign.viterbi_path_local_right(i1, j1, i2, j2, s1, s2, false);
-    hmmalign.traceback2(aln1, aln2, s2);
+    hmmalign.traceback2(i1, j1, i2, j2, aln1, aln2, s2);
 
     reverse(aln1.begin(), aln1.end());
     reverse(aln2.begin(), aln2.end());
@@ -843,14 +828,13 @@ float quickselect(vector<tuple<float, int, int> >& scores, unsigned long lower, 
 
 float BeamSankoffParser::beam_prune(unordered_map<int, State3> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside){
     scores.clear();
-    // invalid_pos.clear();
-    // int invalid = 0;
     for (auto &item : beamstep) {
         State &cand = item.second.alnobj;
         int j1 = cand.j1;
         int i1 = cand.i1;
         int i2 = cand.i2;
         int j2 = s - j1;
+
         int k1 = i1 - 1;
         int k2 = i2 - 1;
         
@@ -862,80 +846,55 @@ float BeamSankoffParser::beam_prune(unordered_map<int, State3> &beamstep, int s,
         // for tmRNA improve accuracy slightly 
         // if (cand.manner == MANNER_HAIRPIN_ALN) continue;
 
-        
-        // original
-        // if (bestC[k1+k2][k1].score == VALUE_FMIN || cand.score == VALUE_FMIN) {
-        //     invalid_pos.push_back(item.first);
-        //     continue;
-        // }
-        // else {
-        //     int foldingscore = (bestC[k1+k2][k1].seq1foldscore + bestC[k1+k2][k1].seq2foldscore) + (cand.seq1foldscore + cand.seq2foldscore);
-        //     float alignscore = xlog_mul(xlog_mul(bestC[k1+k2][k1].alignscore, cand.alignscore), hmmalign.trans_probs[bestC[k1+k2][k1].endHMMstate-1][2]);
-            
-        //     // deviation
-        //     // newscore = foldingscore + weight * xlog_div(alignscore, viterbi_score); 
-
-        //     if (max_energy_diff < 1.0) {
-        //         if ((seq1_outside[j1].find(i1) == seq1_outside[j1].end())) {
-        //             invalid_pos.push_back(item.first);
-        //             continue;   
-        //         }
-        //         if ((seq2_outside[j2].find(i2) == seq2_outside[j2].end())) {
-        //             invalid_pos.push_back(item.first);
-        //             continue;
-        //         }
-        //     }
-
-        //     if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN) {
-        //         invalid_pos.push_back(item.first);
-        //         continue;
-        //     }
-
-        //     newscore = foldingscore + weight * alignscore;
-        // }
-
-        // + alignment heuristic 
-        // if (bestC[k1+k2][k1].score == VALUE_FMIN || cand.score == VALUE_FMIN) 
-        //    invalid_pos.push_back(item.first);
-        // else {
-        //     int foldingscore = (bestC[k1+k2][k1].seq1foldscore + bestC[k1+k2][k1].seq2foldscore) + (cand.seq1foldscore + cand.seq2foldscore);
-        //     float alignscore = xlog_mul(xlog_mul(bestC[k1+k2][k1].alignscore, cand.alignscore), hmmalign.trans_probs[bestC[k1+k2][k1].endHMMstate-1][2]);
-        //     // A*
-        //     float backward_score = hmmalign.bestALN[s][s-j1].beta;
-        //     alignscore = xlog_mul(alignscore, backward_score);
-
-        //     newscore = foldingscore + weight * alignscore;
-        // }
-
-        // + alignment & folding heuristic 
-        int foldingscore;
-        float alignscore, forward_score, backward_score;
-       
-        // alignment score
-#ifdef dynalign
-        int alignscore = bestC[k1+k2][k1].alignscore + cand.alignscore + abs(seq2_len-j2-seq1_len+j1);
-#else       
-        // alignment forward score
         HMMManner forward_endmanner = bestC[k1+k2][k1].endHMMstate;
-        forward_score = bestC[k1+k2][k1].alignscore; 
-        alignscore = xlog_mul(xlog_mul(forward_score, cand.alignscore), hmmalign.trans_probs[forward_endmanner-1][2]);
-        // alignment backward/heuristic score
-        backward_score = aln_backward_score[j1][j2];      
-        alignscore = xlog_mul(alignscore, backward_score);
-#endif      
-        // folding score
-        foldingscore = cand.seq1foldscore + cand.seq2foldscore;
-        // folding heuristic
-        assert (seq1_outside[j1].find(i1) != seq1_outside[j1].end());
-        assert (seq2_outside[j2].find(i2) != seq2_outside[j2].end());
-        foldingscore += seq1_outside[j1][i1] + seq2_outside[j2][i2];
+        if (forward_endmanner == HMMMANNER_NONE) {
+            scores.push_back(make_pair(LOG_OF_ZERO, item.first));
+            continue;
+        }
 
-        // final score
-        float newscore;
-        if (alignscore <= LOG_OF_ZERO)
-            newscore = LOG_OF_ZERO;
-        else
-            newscore = foldingscore + weight * alignscore;
+        float newscore; // final score
+        if (use_astar) {
+            // + alignment & folding heuristic 
+            int foldingscore;
+            float alignscore, forward_score, backward_score;
+    
+#ifdef dynalign
+            // alignment score
+            int alignscore = bestC[k1+k2][k1].alignscore + cand.alignscore + abs(seq2_len-j2-seq1_len+j1);
+#else       
+            // alignment forward score
+            forward_score = bestC[k1+k2][k1].alignscore; 
+            alignscore = xlog_mul(xlog_mul(forward_score, cand.alignscore), hmmalign.trans_probs[forward_endmanner-1][2]);
+            // alignment backward/heuristic score
+            backward_score = aln_backward_score[j1][j2];      
+            alignscore = xlog_mul(alignscore, backward_score);
+#endif      
+            // folding score
+            foldingscore = cand.seq1foldscore + cand.seq2foldscore;
+            // folding heuristic (DEBUG)
+            // assert (seq1_outside[j1].find(i1) != seq1_outside[j1].end());
+            // assert (seq2_outside[j2].find(i2) != seq2_outside[j2].end());
+            foldingscore += seq1_outside[j1][i1] + seq2_outside[j2][i2];
+
+            // final score
+            if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN)
+                newscore = LOG_OF_ZERO;
+            else
+                newscore = foldingscore + weight * alignscore;
+        } 
+        else {
+            // original
+            int foldingscore = (bestC[k1+k2][k1].seq1foldscore + bestC[k1+k2][k1].seq2foldscore) + (cand.seq1foldscore + cand.seq2foldscore);
+            float alignscore = xlog_mul(xlog_mul(bestC[k1+k2][k1].alignscore, cand.alignscore), hmmalign.trans_probs[forward_endmanner-1][2]);
+            
+            // deviation
+            // newscore = foldingscore + weight * xlog_div(alignscore, viterbi_score); 
+
+            if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN)
+                newscore = LOG_OF_ZERO;
+            else
+                newscore = foldingscore + weight * alignscore;
+        }
         
         scores.push_back(make_pair(newscore, item.first));
     }
@@ -965,95 +924,70 @@ float BeamSankoffParser::beam_prune(unordered_map<int, State> &beamstep, int s, 
         // assert (i2 > 0); // lisiz TODO: DEBUG
         // assert (k1 * k2 >= 0);
 
-        ////////////////// original
-        // if (bestC[k1+k2][k1].score == VALUE_FMIN || cand.score == VALUE_FMIN) {
-        //     invalid_pos.push_back(item.first);
-        //     continue;
-        // }
-        // else {
-        //     int foldingscore = (bestC[k1+k2][k1].seq1foldscore + bestC[k1+k2][k1].seq2foldscore) + (cand.seq1foldscore + cand.seq2foldscore);
-        //     float alignscore = xlog_mul(xlog_mul(bestC[k1+k2][k1].alignscore, cand.alignscore), hmmalign.trans_probs[bestC[k1+k2][k1].endHMMstate-1][2]);
-            
-        //     // deviation
-        //     // newscore = foldingscore + weight * xlog_div(alignscore, viterbi_score); 
-
-        //     if (max_energy_diff < 1.0) {
-        //         if ((seq1_outside[j1].find(i1) == seq1_outside[j1].end())) {
-        //             invalid_pos.push_back(item.first);
-        //             continue;   
-        //         }
-        //         if ((seq2_outside[j2].find(i2) == seq2_outside[j2].end())) {
-        //             invalid_pos.push_back(item.first);
-        //             continue;
-        //         }
-        //     }
-
-        //     if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN) {
-        //         invalid_pos.push_back(item.first);
-        //         continue;
-        //     }
-
-        //     newscore = foldingscore + weight * alignscore;
-        // }
-        //////////////////
-
-        // + alignment heuristic 
-        // if (bestC[k1+k2][k1].score == VALUE_FMIN || cand.score == VALUE_FMIN) 
-        //    newscore = VALUE_FMIN;
-        // else {
-        //     int foldingscore = (bestC[k1+k2][k1].seq1foldscore + bestC[k1+k2][k1].seq2foldscore) + (cand.seq1foldscore + cand.seq2foldscore);
-        //     float alignscore = xlog_mul(xlog_mul(bestC[k1+k2][k1].alignscore, cand.alignscore), hmmalign.trans_probs[bestC[k1+k2][k1].endHMMstate-1][2]);
-            
-        //     // alignment heuristic 
-        //     float backward_score = hmmalign.bestALN[s][s-j1].beta;
-        //     alignscore = xlog_mul(alignscore, backward_score);
-
-        //     newscore = foldingscore + weight * alignscore;
-        // }
-
-        ////////////////// + alignment & folding heuristic 
-        float alignscore, forward_score, backward_score;
-        int foldingscore, seq1_out, seq2_out;
-       
-        // alignment score
-#ifdef dynalign
-        int alignscore = bestC[k1+k2][k1].alignscore + cand.alignscore + abs(seq2_len-j2-seq1_len+j1);
-#else       
-        // add forward score
-        HMMManner forward_endmanner =  bestC[k1+k2][k1].endHMMstate;
-        forward_score = bestC[k1+k2][k1].alignscore; 
-        alignscore = xlog_mul(xlog_mul(forward_score, cand.alignscore), hmmalign.trans_probs[forward_endmanner-1][2]);
-        // backward/heuristic score
-        switch (cand.endHMMstate)
-        {
-            case MANNER_ALN:
-                backward_score = aln_backward_score[j1][j2];
-                break;
-            case MANNER_INS1:
-                backward_score = ins1_backward_score[j1][j2]; 
-                break;
-            case MANNER_INS2:
-                backward_score = ins2_backward_score[j1][j2]; 
-                break;          
-            default:
-                backward_score = aln_backward_score[j1][j2];
-                break;
+        HMMManner forward_endmanner = bestC[k1+k2][k1].endHMMstate;
+        if (forward_endmanner == HMMMANNER_NONE) {
+            scores.push_back(make_pair(LOG_OF_ZERO, item.first));
+            continue;
         }
-        alignscore = xlog_mul(alignscore, backward_score);
-#endif
-        // folding score
-        foldingscore = cand.seq1foldscore + cand.seq2foldscore;
-        // folding heuristic
-        assert (seq1_outside[j1].find(i1) != seq1_outside[j1].end());
-        assert (seq2_outside[j2].find(i2) != seq2_outside[j2].end());
-        foldingscore += seq1_outside[j1][i1] + seq2_outside[j2][i2];
 
-        // final score
-        float newscore;
-        if (alignscore <= LOG_OF_ZERO)
-            newscore = LOG_OF_ZERO;
-        else
+        float newscore; // final score
+        if (use_astar) {
+                ////////////////// + alignment & folding heuristic 
+            float alignscore, forward_score, backward_score;
+            int foldingscore, seq1_out, seq2_out;
+        
+            // alignment score
+    #ifdef dynalign
+            int alignscore = bestC[k1+k2][k1].alignscore + cand.alignscore + abs(seq2_len-j2-seq1_len+j1);
+    #else       
+            // add forward score
+            forward_score = bestC[k1+k2][k1].alignscore; 
+            alignscore = xlog_mul(xlog_mul(forward_score, cand.alignscore), hmmalign.trans_probs[forward_endmanner-1][2]);
+            // backward/heuristic score
+            switch (cand.endHMMstate)
+            {
+                case MANNER_ALN:
+                    backward_score = aln_backward_score[j1][j2];
+                    break;
+                case MANNER_INS1:
+                    backward_score = ins1_backward_score[j1][j2]; 
+                    break;
+                case MANNER_INS2:
+                    backward_score = ins2_backward_score[j1][j2]; 
+                    break;          
+                default:
+                    backward_score = aln_backward_score[j1][j2];
+                    break;
+            }
+            alignscore = xlog_mul(alignscore, backward_score);
+#endif
+            // folding score
+            foldingscore = cand.seq1foldscore + cand.seq2foldscore;
+            // folding heuristic DEBUG
+            // assert (seq1_outside[j1].find(i1) != seq1_outside[j1].end());
+            // assert (seq2_outside[j2].find(i2) != seq2_outside[j2].end());
+            foldingscore += seq1_outside[j1][i1] + seq2_outside[j2][i2];
+
+            // final score
+            if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN) // DEBUG
+                newscore = LOG_OF_ZERO;
+            else
+                newscore = foldingscore + weight * alignscore;
+        } else {
+            // original
+            int foldingscore = (bestC[k1+k2][k1].seq1foldscore + bestC[k1+k2][k1].seq2foldscore) + (cand.seq1foldscore + cand.seq2foldscore);
+            float alignscore = xlog_mul(xlog_mul(bestC[k1+k2][k1].alignscore, cand.alignscore), hmmalign.trans_probs[forward_endmanner-1][2]);
+            
+            // deviation
+            // newscore = foldingscore + weight * xlog_div(alignscore, viterbi_score);
+
+            if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN) { // DEBUG
+                invalid_pos.push_back(item.first);
+                continue;
+            }
+
             newscore = foldingscore + weight * alignscore;
+        }
 
         scores.push_back(make_pair(newscore, item.first));
     }
@@ -2133,7 +2067,7 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
 
     // single sequence folding
     BeamCKYParser* cky_parser = new BeamCKYParser();
-    cky_parser->beam = -1;
+    cky_parser->beam = lfbeam;
 
     seq1_out_H.clear();
     seq1_out_P.clear();
@@ -2300,6 +2234,8 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
     // cout << "VmPeak: " << mem.VmPeak << endl;
     // float pseudo1=0.0, pseudo2=0.0;
     for(int s = 1; s < seq1_len + seq2_len - 1; ++s) {
+        // if (s > 2700) verbose = true;
+
         // mem = GetProcessMemory();
         // cout << "s: " << s << " VmPeak: " << mem.VmPeak << endl;
         if (s % 100 == 1) cout << "s: " << s << endl;
@@ -3987,14 +3923,16 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 #endif
 }
 
-BeamSankoffParser::BeamSankoffParser(int beam_size, int beam_size2, float aln_weight, float energy_diff, bool is_verbose)
-    :beam(beam_size),
-     alnbeam(beam_size2),
-     weight(aln_weight),
+BeamSankoffParser::BeamSankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, bool if_aster, float energy_diff, bool is_verbose)
+    :weight(aln_weight),
+     beam(beam_size),
+     lfbeam(LFbeam),
+     alnbeam(LAbeam),
+     use_astar(if_aster),
      max_energy_diff(energy_diff),
      verbose(is_verbose){
 
-    cout << "energy_diff: " << max_energy_diff << endl; 
+    cout << "beam : " << beam << " lfbeam: " << lfbeam << " alnbeam: " << alnbeam << " use_astar: " << use_astar << " max_energy_diff: " << max_energy_diff << endl;  
     
     initialize();
 
