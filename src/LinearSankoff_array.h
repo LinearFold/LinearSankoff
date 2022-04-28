@@ -58,10 +58,10 @@ public:
 
 private:
     // state, cost of folding and alignment, three-dimentional: [s, (j1*seq1len+i1)*seq2len+i2] 
-    State3 ****bestH, ****bestP, ****bestMulti;
+    State3 ****bestH, ****bestP, ****bestMulti, ****bestM, **bestC;
     // unordered_map<int, State3> *bestH, *bestP, *bestMulti;
-    State ****bestM, ****bestM2;
-    State3 **bestC;
+    State ****bestM2;
+    // State3 **bestC;
 
     // save internal loops score 
     // unordered_map<int, int>*** seq1_internal; 
