@@ -256,7 +256,7 @@ private:
     // state, cost of folding and alignment, three-dimentional: [s, (j1*seq1len+i1)*seq2len+i2] 
     vector<unordered_map<int, State3> > bestH, bestP, bestMulti;
     vector<unordered_map<int, State> > bestM, bestM2;
-    vector<unordered_map<int, State> > bestC;
+    vector<unordered_map<int, State3> > bestC;
 
     // state, cost of folding and alignment, three-dimentional: [s, (j1*seq1len+i1)*seq2len+i2] 
     // outside score

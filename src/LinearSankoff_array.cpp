@@ -3112,12 +3112,12 @@ void SankoffParser::parse(const vector<string> &seqs){
                                     // 4. C = C + P
                                     // external pairs must be aligned
                                     if (k1 >= 0 && k2 >= 0) {
+                                        int newscore1 = external_paired_score(k1, j1, seq1);
+                                        int newscore2 = external_paired_score(k2, j2, seq2);
                                         {
                                             State& prefix_C = bestC[k1][k2].alnobj;
                                             if (prefix_C.endHMMstate != HMMMANNER_NONE) {
-                                                int newscore1 = external_paired_score(k1, j1, seq1);
-                                                int newscore2 = external_paired_score(k2, j2, seq2);
-
+                                                
                                                 if (verbose) cout << "C+P: "<< i1 << " " << j1 << " "  << i2 << " " << j2  <<  " " << state.manner << " " << state.premanner << " " << newscore1 << " " << newscore2 << endl;
 
                                                 float alignscore = xlog_mul(prefix_C.alignscore, hmmalign.trans_probs[2][2]); 
@@ -3135,9 +3135,6 @@ void SankoffParser::parse(const vector<string> &seqs){
                                         {
                                             State& prefix_C = bestC[k1][k2].ins1obj;
                                             if (prefix_C.endHMMstate != HMMMANNER_NONE) {
-                                                int newscore1 = external_paired_score(k1, j1, seq1);
-                                                int newscore2 = external_paired_score(k2, j2, seq2);
-
                                                 if (verbose) cout << "C+P: "<< i1 << " " << j1 << " "  << i2 << " " << j2  <<  " " << state.manner << " " << state.premanner << " " << newscore1 << " " << newscore2 << endl;
 
                                                 float alignscore = xlog_mul(prefix_C.alignscore, hmmalign.trans_probs[0][2]); 
@@ -3155,9 +3152,6 @@ void SankoffParser::parse(const vector<string> &seqs){
                                         {
                                             State& prefix_C = bestC[k1][k2].ins2obj;
                                             if (prefix_C.endHMMstate != HMMMANNER_NONE) {
-                                                int newscore1 = external_paired_score(k1, j1, seq1);
-                                                int newscore2 = external_paired_score(k2, j2, seq2);
-
                                                 if (verbose) cout << "C+P: "<< i1 << " " << j1 << " "  << i2 << " " << j2  <<  " " << state.manner << " " << state.premanner << " " << newscore1 << " " << newscore2 << endl;
 
                                                 float alignscore = xlog_mul(prefix_C.alignscore, hmmalign.trans_probs[1][2]); 
@@ -3898,6 +3892,7 @@ void SankoffParser::parse(const vector<string> &seqs){
         bestC[j1] = bestC[j1] + low_bound;
         delete[] bestC[j1];
     }
+    bestC[seq1_len] = bestC[seq1_len] + seq2_len;
     delete[] bestC;
 
     // internal loop score
