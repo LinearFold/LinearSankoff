@@ -1009,7 +1009,7 @@ float BeamSankoffParser::beam_prune(unordered_map<int, State> &beamstep, int s, 
 
         float newscore; // final score
         if (use_astar) {
-                ////////////////// + alignment & folding heuristic 
+            ////////////////// + alignment & folding heuristic 
             float alignscore, forward_score, backward_score;
             int foldingscore, seq1_out, seq2_out;
         
@@ -1058,12 +1058,10 @@ float BeamSankoffParser::beam_prune(unordered_map<int, State> &beamstep, int s, 
             // deviation
             // newscore = foldingscore + weight * xlog_div(alignscore, viterbi_score);
 
-            if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN) { // DEBUG
-                invalid_pos.push_back(item.first);
-                continue;
-            }
-
-            newscore = foldingscore + weight * alignscore;
+            if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN) // DEBUG
+                newscore = LOG_OF_ZERO;
+            else
+                newscore = foldingscore + weight * alignscore;
         }
 
         scores.push_back(make_pair(newscore, item.first));
@@ -3877,7 +3875,7 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 
                     float trans_emit_prob;
                     if (j1 == seq1->seq_len - 1 && j2 == seq2->seq_len - 1) {
-                        // cout << "C+U: " << m << " " << j1 << " "  << j2  << " "<<  j1 << " "  << j2  << " " << state.score << endl;
+                        cout << m << " " << j1 << " "  << j2  << " " << state.score << endl;
 
                         trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_ALN, j1+1, j2+1, true);
                         float alignscore = xlog_mul(state.alignscore, trans_emit_prob);

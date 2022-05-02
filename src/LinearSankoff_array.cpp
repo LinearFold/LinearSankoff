@@ -3396,10 +3396,12 @@ void SankoffParser::parse(const vector<string> &seqs){
                     if (state.endHMMstate == HMMMANNER_NONE) continue;
                     assert (state.endHMMstate == pre_manner);
 
-                    if (verbose) cout << "C+U: " << m << " " << j1 << " "  << j2  << " "<<  j1 << " "  << j2  << " " << state.endHMMstate << endl;
+                    if (verbose) cout << "C+U: " << m << " " << j1 << " "  << j2  << " " <<  j1 << " "  << j2  << " " << state.endHMMstate << endl;
 
                     float trans_emit_prob; //  alignscore;
                     if (j1 == seq1->seq_len - 1 && j2 == seq2->seq_len - 1) {
+                        // cout << m << " " << j1 << " "  << j2  << " " << state.score << endl;
+
                         trans_emit_prob = hmmalign.get_trans_emit_prob0(state.endHMMstate, MANNER_ALN, j1+1, j2+1, true);
                         float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
                         if (alignscore > LOG_OF_ZERO)
