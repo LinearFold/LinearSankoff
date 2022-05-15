@@ -144,6 +144,7 @@ public:
     vector<unordered_map<int, LFState>> bestH, bestP, bestM2, bestMulti, bestM;
     //Zuker subopt
     vector<unordered_map<int, LFState>> bestH_beta, bestP_beta, bestM2_beta, bestMulti_beta, bestM_beta;
+    vector<LFState> bestC_beta;
 
     int parse(const string& seq, short**** internal_score, vector<int>* cons);
                 
@@ -175,9 +176,6 @@ private:
                vector<pair<value_type, int>>& sorted_stepM);
     vector<LFState> bestC;
     vector<int> nucs;
-
-    //Zuker subopt
-    vector<LFState> bestC_beta;
     
     // SHAPE
     vector<double> SHAPE_data;

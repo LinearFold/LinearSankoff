@@ -1353,7 +1353,7 @@ int BeamCKYParser::parse(const string& seq, short**** internal_score, vector<int
 
                 // 1. multi-loop
                 {
-                    for (int p = i-1; p >= max(i - SINGLE_MAX_LEN, 0); --p) {
+                    for (int p = i-1; p >= max(i - 35 - 1, 0); --p) {
                         int nucp = nucs[p];
                         int q = next_pair[nucp][j];
 
@@ -1371,7 +1371,7 @@ int BeamCKYParser::parse(const string& seq, short**** internal_score, vector<int
                                 continue;
                         }
 
-                        if (q != -1 && ((i - p - 1) <= SINGLE_MAX_LEN)) {
+                        if (q != -1 && ((i - p - 1) <= 35)) {
                             // the current shape is p..i M2 j ..q
 
                             value_type newscore;

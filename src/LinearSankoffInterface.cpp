@@ -25,7 +25,7 @@ int main(int argc, char** argv){
     vector<string> seqs;
     float aln_weight;
     int beam_size, LFbeam, LAbeam;
-    bool use_astar;
+    bool use_astar, use_suffix;
     float energy_diff;
     bool is_verbose=false;
 
@@ -36,8 +36,9 @@ int main(int argc, char** argv){
         LFbeam = atoi(argv[3]);
         LAbeam = atoi(argv[4]);
         use_astar = atoi(argv[5]) == 1;
-        energy_diff = atof(argv[6]);
-        is_verbose = atoi(argv[7]) == 1;
+        use_suffix = atoi(argv[6]) == 1;
+        energy_diff = atof(argv[7]);
+        is_verbose = atoi(argv[8]) == 1;
     }
 
     int seq1len, seq2len;
@@ -79,7 +80,7 @@ int main(int argc, char** argv){
                 SankoffParser parser(aln_weight, beam_size, LFbeam, LAbeam, energy_diff, is_verbose);
                 parser.parse(seqs);
             } else {
-                BeamSankoffParser parser(aln_weight, beam_size, LFbeam, LAbeam, use_astar, energy_diff, is_verbose);
+                BeamSankoffParser parser(aln_weight, beam_size, LFbeam, LAbeam, use_astar, use_suffix, energy_diff, is_verbose);
                 parser.parse(seqs);
             }
             // }

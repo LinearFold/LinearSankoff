@@ -232,6 +232,7 @@ public:
     int lfbeam;
     int alnbeam;
     bool use_astar;
+    bool use_suffix;
     float max_energy_diff;
     bool verbose;
 
@@ -245,7 +246,7 @@ public:
     int sum_len;
     vector<SeqObject> sequences;
 
-    BeamSankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, bool if_aster, float energy_diff, bool is_verbose=false);
+    BeamSankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, bool if_aster, bool if_suffix, float energy_diff, bool is_verbose=false);
     ~BeamSankoffParser(){}
 
     void parse(const vector<string> &seqs, bool limited, const set<pair<int, int>> &allowed_pairs, vector<pair<int, int>> &out_pairs, int num_pairs);
@@ -268,6 +269,10 @@ private:
     vector<unordered_map<int, int> > seq1_out_H, seq1_out_P, seq1_out_M, seq1_out_M2, seq1_out_Multi;
     vector<unordered_map<int, int> > seq2_out_H, seq2_out_P, seq2_out_M, seq2_out_M2, seq2_out_Multi;
     vector<int> seq1_out_C, seq2_out_C;
+
+    vector<unordered_map<int, int> > seq1_in_H, seq1_in_P, seq1_in_M, seq1_in_M2, seq1_in_Multi;
+    vector<unordered_map<int, int> > seq2_in_H, seq2_in_P, seq2_in_M, seq2_in_M2, seq2_in_Multi;
+    vector<int> seq1_in_C, seq2_in_C;
 
     // base pair probs
     // vector<unordered_map<int, float> > seq1_pairs, seq2_pairs;
@@ -312,7 +317,7 @@ private:
     vector<pair<float, int> > scores;
     vector<int> invalid_pos;
     float beam_prune(unordered_map<int, State3> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
-    float beam_prune(unordered_map<int, State> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
+    float beam_prune(unordered_map<int, State> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside, bool if_astar);
 };
 
 ////////

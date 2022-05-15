@@ -227,7 +227,7 @@ void BeamAlign::set_parameters_by_sim(float similarity)
 		{
 			//trans_probs[cnt1][cnt2] = *(par_ptr + cnt1 * N_STATES + cnt2);
 			trans_probs[cnt1][cnt2] = xlog(par_ptr[cnt1 * N_STATES + cnt2]);
-            cout << cnt1 << " " << cnt2 << " " << trans_probs[cnt1][cnt2] << endl;
+            // cout << cnt1 << " " << cnt2 << " " << trans_probs[cnt1][cnt2] << endl;
 		}
     }
 
@@ -2595,7 +2595,6 @@ void BeamAlign::viterbi_path_all_locals()
             }
         }
     }
-    cout << "end." << endl;
     
     // pre-compute
     for (int s1 = 0; s1 < 3; s1++){
@@ -2628,7 +2627,6 @@ void BeamAlign::viterbi_path_all_locals()
             }
         }
     }
-    cout << "end." << endl;
 
 }
 
