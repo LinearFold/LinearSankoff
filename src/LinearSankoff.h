@@ -303,15 +303,15 @@ private:
     tuple<string, string, string, string> get_parentheses_M1(SeqObject& seq1, SeqObject& seq2, stack<tuple<int, int, int, int, State>> &stk, BeamAlign &hmmalign);
 
     // hzhang: sort keys in each beam to avoid randomness
-    vector<pair<int, State> > keys;
-    vector<vector<pair<float, int>>> sorted_bestM;
-    void sort_keys(unordered_map<int, State3> &map, vector<pair<int,State> > &sorted_keys);
-    void sortM(float threshold,
-               unordered_map<int, State> &beamstep,
-               vector<pair<float, int>> &sorted_stepM,
-               int s,
-               vector<unordered_map<int, int> > seq1_outside, 
-               vector<unordered_map<int, int> > seq2_outside);
+    // vector<pair<int, State> > keys;
+    // vector<vector<pair<float, int>>> sorted_bestM;
+    // void sort_keys(unordered_map<int, State3> &map, vector<pair<int,State> > &sorted_keys);
+    // void sortM(float threshold,
+    //            unordered_map<int, State> &beamstep,
+    //            vector<pair<float, int>> &sorted_stepM,
+    //            int s,
+    //            vector<unordered_map<int, int> > seq1_outside, 
+    //            vector<unordered_map<int, int> > seq2_outside);
 
     // beam prune
     vector<pair<float, int> > scores;

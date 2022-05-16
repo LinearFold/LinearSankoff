@@ -2219,14 +2219,14 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
 
                 for (auto i : valid_pos) {
                     // debug
-                    if (k == 2) {
-                        if (i_seq == 0 && i == 55) {
-                            cout << i_seq << " " << i << " " << j << " " << beamins[i].score << " " << beamout[i].score << endl;
-                        }
-                        if (i_seq == 1 && i == 49) {
-                            cout << i_seq << " " << i << " " << j << " " <<  beamins[i].score << " " << beamout[i].score << endl;
-                        }
-                    }
+                    // if (k == 2) {
+                    //     if (i_seq == 0 && i == 55) {
+                    //         cout << i_seq << " " << i << " " << j << " " << beamins[i].score << " " << beamout[i].score << endl;
+                    //     }
+                    //     if (i_seq == 1 && i == 49) {
+                    //         cout << i_seq << " " << i << " " << j << " " <<  beamins[i].score << " " << beamout[i].score << endl;
+                    //     }
+                    // }
 
                     (*seq_in_saved[k])[i+1] = beamins[i].score; // debug
                     (*seq_out_saved[k])[i+1] = beamout[i].score;
