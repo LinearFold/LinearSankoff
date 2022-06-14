@@ -2080,11 +2080,31 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
 
     // HMM align tool
     hmmalign.set(alnbeam, sequences[0].nucs, sequences[1].nucs);
-    hmmalign.viterbi_path(false); // envelope
+    float similarity = hmmalign.viterbi_path(false);
+    int iter = 0;
+    while (true) {
+        iter ++;
+        hmmalign.set_parameters_by_sim(similarity); // load new parameters
+        float newsimilarity = hmmalign.viterbi_path(true); // smaller ? 
+        if (abs(similarity - newsimilarity) < 0.001 || iter == 5) { // if newsimilarity is larger ? 
+            similarity = newsimilarity;
+            break;
+        }
+        similarity = newsimilarity;
+    }
+    // alignment envelope
+    float avg_width = hmmalign.envelope(similarity); 
+
+    // update alignment weight
+    cout << "weight old: " << weight << " " << avg_width << endl;
+    // weight *= (1 - 2 * avg_width / (seq1_len + seq2_len)); // avg_width / avg_seq_len / 2
+    weight = 100 * similarity * (1 - 3 * avg_width / (seq1_len + seq2_len)); // avg_width / avg_seq_len / 2
+    cout << "weight new: " << weight << endl;
+
 #ifndef dynalign
-    cout << "recompute forward-backward viterbi with new parameters" << endl;
-    aln_viterbi = hmmalign.viterbi_path(true);
     // save alignment backward score
+    hmmalign.viterbi_path(true);
+    hmmalign.viterbi_backward(true);
     aln_backward_score.resize(seq1_len);
     ins1_backward_score.resize(seq1_len);
     ins2_backward_score.resize(seq1_len);

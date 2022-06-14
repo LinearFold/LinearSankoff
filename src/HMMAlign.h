@@ -273,6 +273,9 @@ public:
     void clear(bool local_path=true);
 
     float viterbi_path(bool newpara);
+    void set_parameters_by_sim(float similarity);
+    void viterbi_backward(bool newpara);
+    float envelope(float similarity);
     float evalulate(bool newpara, const std::set<pair<int, int>> &align_pairs);
     void viterbi_path_all_locals();
     float viterbi_path_local(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2, bool verbose=false);
@@ -301,7 +304,7 @@ private:
     
     // traceback
     float get_aln_similarity(char* &seq1_aln_line, char* &seq2_aln_line, char gap_symbol='-');
-    void set_parameters_by_sim(float similarity);
+    
     int get_bin_index(float similarity, int n_bins);
     void load_init_params();
 
@@ -316,10 +319,9 @@ private:
     
     void traceback(vector<char> &aln1, vector<char> &aln2, HMMManner endmanner);
 
-    void viterbi_backward(bool newpara);
     void forward();
 	void backward();
-    void cal_align_prob(float threshold);
+    float cal_align_prob(float threshold);
 };
 
 #endif // HMM_ALIGN_H

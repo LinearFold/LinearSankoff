@@ -169,7 +169,7 @@ int BeamAlign::get_bin_index(float similarity, int n_bins){
 }
 void BeamAlign::set_parameters_by_sim(float similarity)
 {
-    load_init_params(); // allocal space
+    // load_init_params(); // allocal space
 
     // load parameters from file
     char *data_dir = getcwd(NULL, 0);
@@ -215,7 +215,7 @@ void BeamAlign::set_parameters_by_sim(float similarity)
 		{
 			//emission_probs[cnt1][cnt2] = *(par_ptr + cnt1 * N_STATES + cnt2);
 			emission_probs[cnt1][cnt2] = xlog(par_ptr[cnt1 * N_STATES + cnt2]);
-            // cout << cnt1 << " " << cnt2 << " " << emission_probs[cnt1][cnt2] << endl;
+            // cout << "emission_probs: " <<  cnt1 << " " << cnt2 << " " << emission_probs[cnt1][cnt2] << endl;
 		}
 	}
 	start_linear_index = (N_STATES + N_OUTPUTS) * N_STATES * fam_par_set_index + N_STATES * N_OUTPUTS;
@@ -227,7 +227,7 @@ void BeamAlign::set_parameters_by_sim(float similarity)
 		{
 			//trans_probs[cnt1][cnt2] = *(par_ptr + cnt1 * N_STATES + cnt2);
 			trans_probs[cnt1][cnt2] = xlog(par_ptr[cnt1 * N_STATES + cnt2]);
-            // cout << cnt1 << " " << cnt2 << " " << trans_probs[cnt1][cnt2] << endl;
+            // cout << "trans_probs: " << cnt1 << " " << cnt2 << " " << trans_probs[cnt1][cnt2] << endl;
 		}
     }
 
@@ -650,7 +650,7 @@ void BeamAlign::prepare(int j1, int j2) {
     bestINS2 = new unordered_map<int, AlignState>[sum_len];
 }
 
-void BeamAlign::cal_align_prob(float threshold){
+float BeamAlign::cal_align_prob(float threshold){
     float aln_prob, ins1_prob, ins2_prob;
    
     for (int s = 0; s < seq1_len + seq2_len; s++){
@@ -745,6 +745,8 @@ void BeamAlign::cal_align_prob(float threshold){
     // boundary case
     low_bounds[seq1_len] = seq2_len;
     up_bounds[seq1_len] = seq2_len;
+
+    return sum_range / float(seq1_len);
 }
 
 void BeamAlign::forward() {
@@ -1064,39 +1066,6 @@ float BeamAlign::viterbi_path(bool newpara) {
     float ml = bestALN[seq1_len + seq2_len][seq2_len].ml;
     cout << "viterbi path score: " << ml << endl;
 
-    if (newpara) {
-        // get similarity again
-        vector<char> aln1, aln2;
-        traceback(aln1, aln2, bestALN[seq1_len + seq2_len][seq2_len].pre);
-
-        int aln_len = aln1.size();
-        assert (aln1.size() == aln2.size());
-
-        char* seq1_aln_line_str = (char*)malloc(sizeof(char) * (aln_len+2)); 
-        char* seq2_aln_line_str = (char*)malloc(sizeof(char) * (aln_len+2));
-        for (int i = aln_len - 1; i >= 0; --i){
-            seq1_aln_line_str[aln_len - 1 - i] = aln1[i];
-            seq2_aln_line_str[aln_len - 1 - i] = aln2[i];
-        }
-        seq1_aln_line_str[aln_len] = 0;
-        seq2_aln_line_str[aln_len] = 0;
-        cout << seq1_aln_line_str << endl;
-        cout << seq2_aln_line_str << endl;
-
-        float similarity = get_aln_similarity(seq1_aln_line_str, seq2_aln_line_str);
-        cout << "similarity with new paras: " << similarity << endl;
-
-        aln1.clear();
-        aln2.clear();
-        free(seq1_aln_line_str);
-        free(seq2_aln_line_str);
-
-        // backward
-        viterbi_backward(newpara);
-
-        return ml;
-    }
-
     // traceback
     vector<char> aln1, aln2;
     traceback(aln1, aln2, bestALN[seq1_len + seq2_len][seq2_len].pre);
@@ -1116,16 +1085,17 @@ float BeamAlign::viterbi_path(bool newpara) {
     cout << seq2_aln_line_str << endl;
 
     float similarity = get_aln_similarity(seq1_aln_line_str, seq2_aln_line_str);
-    cout << "similarity with initial paras: " << similarity << endl;
+    cout << "similarity: " << similarity << endl;
 
     aln1.clear();
     aln2.clear();
     free(seq1_aln_line_str);
     free(seq2_aln_line_str);
 
-    // load new parameters
-    set_parameters_by_sim(similarity);
+    return similarity;
+}
 
+float BeamAlign::envelope(float similarity){
     forward();
     backward();
 
@@ -1134,14 +1104,13 @@ float BeamAlign::viterbi_path(bool newpara) {
 
     aln_env.clear();
     aln_env.resize(seq1_len + 1);
-    cal_align_prob(threshold); // prune
-    // cout << "after calculate align probs." << endl;
+    float avg_width = cal_align_prob(threshold); // average alignment width
 
     delete[] bestALN;
     delete[] bestINS1;
     delete[] bestINS2;
 
-    return ml;
+    return avg_width;
 }
 
 float BeamAlign::evalulate(bool newpara, const std::set<pair<int, int>> &align_pairs) {
@@ -2636,6 +2605,8 @@ void BeamAlign::set(int beam_size, vector<int> &seq1_nuc_types, vector<int> &seq
     beam = beam_size;
     seq1 = seq1_nuc_types;
     seq2 = seq2_nuc_types;
+
+    load_init_params();
 }
 
 BeamAlign::BeamAlign(int beam_size,
