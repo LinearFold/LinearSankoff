@@ -11,10 +11,10 @@ MULTILIGNDEPS=src/LinearMultilign.h src/LinearSankoff.h src/HMMAlign.h src/Linea
 ALIGNDEPS=src/HMMAlignInterface.h src/HMMAlign.h src/check_mem.h src/Utils/utility.h
 CFLAGS=-std=c++11 -O3
 .PHONY : clean bin/*
-objects=bin/linearmultilign bin/linearsankoff bin/linearsankoff_dynalign bin/linearalignment
+objects=bin/linearsankoff # bin/linearmultilign bin/linearsankoff_dynalign bin/linearalignment
 
 linearsankoff: src/LinearSankoffInterface.cpp $(SANKOFFDEPS)
-		chmod +x linearsankoff
+		chmod +x LinearSankoff
 		mkdir -p bin
 		$(CC) src/LinearSankoffInterface.cpp src/LinearSankoff.cpp src/LinearSankoff_array.cpp src/HMMAlign.cpp src/LinearFold.cpp src/LinearPartition.cpp src/check_mem.cpp src/Utils/utility.cpp src/Utils/energy_parameter.cpp src/Utils/feature_weight.cpp src/Utils/intl11.cpp src/Utils/intl21.cpp src/Utils/intl22.cpp $(CFLAGS) -Dlv -o bin/linearsankoff
 		# $(CC) src/LinearSankoffInterface.cpp src/LinearSankoff.cpp src/HMMAlign.cpp src/LinearFold.cpp src/LinearPartition.cpp src/check_mem.cpp src/Utils/utility.cpp src/Utils/energy_parameter.cpp src/Utils/feature_weight.cpp src/Utils/intl11.cpp src/Utils/intl21.cpp src/Utils/intl22.cpp $(CFLAGS) -Dlv -Ddynalign -o bin/linearsankoff_dynalign

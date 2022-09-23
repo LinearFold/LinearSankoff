@@ -23,19 +23,17 @@
 #include "HMMAlign.h"
 #include "check_mem.h"
 
-#define MIN_CUBE_PRUNING_SIZE 20
-
 using namespace std;
 
+#define MIN_CUBE_PRUNING_SIZE 20
 
-// #ifdef dynalign
-//   typedef int aln_value_type;
-// #else
-//   typedef float aln_value_type;
-// #endif
-// #define ALN_VALUE_MIN numeric_limits<aln_value_type>::lowest()
-// #define VALUE_FMIN numeric_limits<float>::lowest()
-// #define VALUE_MIN numeric_limits<int>::lowest()
+// hash for integer pair
+struct pair_hash {
+    template <class T1, class T2>
+    std::size_t operator () (const std::pair<T1,T2> &p) const {
+        return (p.first << 15) + p.second; // maximum length: 32768 or Cantor pairing function
+    }
+};
 
 enum Manner {
   MANNER_NONE = 0,                  // 0: empty
@@ -50,6 +48,12 @@ enum Manner {
   MANNER_SINGLE_ALN,                // 7: single
   MANNER_SINGLE_INS1,               // 8: single
   MANNER_SINGLE_INS2,               // 9: single
+
+  MANNER_STACKING_ALIGN_INTERNAL_LOOP1,
+  MANNER_STACKING_ALIGN_INTERNAL_LOOP2,
+
+  MANNER_STEM_EXTENSION1,
+  MANNER_STEM_EXTENSION2,
 
   MANNER_MULTI_ALN,                 // 10: multi = ..M2. [30 restriction on the left and jump on the right]
   MANNER_MULTI_INS1,                // 11: multi = ..M2. [30 restriction on the left and jump on the right]
@@ -255,15 +259,20 @@ public:
 
 private:
     // state, cost of folding and alignment, three-dimentional: [s, (j1*seq1len+i1)*seq2len+i2] 
-    vector<unordered_map<int, State3> > bestH, bestP, bestMulti;
-    vector<unordered_map<int, State> > bestM, bestM2;
+    unordered_map<pair<int, int>, State3, pair_hash>** bestH;
+    unordered_map<pair<int, int>, State3, pair_hash>** bestP; // must sperate
+    unordered_map<pair<int, int>, State3, pair_hash>** bestMulti;
+
+    unordered_map<pair<int, int>, State, pair_hash>** bestM;
+    unordered_map<pair<int, int>, State, pair_hash>** bestM2;
+
     vector<unordered_map<int, State3> > bestC;
 
     // state, cost of folding and alignment, three-dimentional: [s, (j1*seq1len+i1)*seq2len+i2] 
     // outside score
-    vector<unordered_map<int, State3> > bestH_beta, bestP_beta, bestMulti_beta;
-    vector<unordered_map<int, State> > bestM_beta, bestM2_beta;
-    vector<unordered_map<int, State> > bestC_beta;
+    // vector<unordered_map<int, State3> > bestH_beta, bestP_beta, bestMulti_beta;
+    // vector<unordered_map<int, State> > bestM_beta, bestM2_beta;
+    // vector<unordered_map<int, State> > bestC_beta;
 
     // single sequence folding outside score as hueristic
     vector<unordered_map<int, int> > seq1_out_H, seq1_out_P, seq1_out_M, seq1_out_M2, seq1_out_Multi;
@@ -291,7 +300,7 @@ private:
     void prepare(const vector<string> &seqs);
 
     // i1i2
-    int get_keys(int j1, int i1, int i2);
+    // int get_keys(int j1, int i1, int i2);
 
     // backtrace
     tuple<string, string, string, string> get_parentheses(SeqObject& seq1, SeqObject& seq2, BeamAlign &hmmalign);
@@ -318,6 +327,9 @@ private:
     vector<int> invalid_pos;
     float beam_prune(unordered_map<int, State3> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
     float beam_prune(unordered_map<int, State> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside, bool if_astar);
+    // new datastructure
+    float beam_prune(unordered_map<pair<int, int>, State3, pair_hash> *beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
+    float beam_prune(unordered_map<pair<int, int>, State, pair_hash> *beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
 };
 
 ////////
@@ -362,13 +374,12 @@ inline pair<int, int> hairpinScore(int i, int j, SeqObject *seq){
 inline tuple<int, int, char, int> multiloopUnpairedScore(int i, int j, SeqObject *seq, TraceInfo* trace){
     int nuci = seq->nucs[i];
     int jnext = seq->next_pair[nuci][j];
-    // if (jnext != -1 && new_l1 + new_l2 <= SINGLE_MAX_LEN) {
 
     char new_l1 = trace->paddings.l1;
     int new_l2 = trace->paddings.l2 + jnext - j;
     
     // speed up
-    if (jnext != -1 && new_l2 < 50) { // && new_l2 < SINGLE_MAX_LEN
+    if (jnext != -1) { // && new_l2 < SINGLE_MAX_LEN
         // 1. extend (i, j) to (i, jnext)
         int newscore;
 // #ifdef lv

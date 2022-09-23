@@ -63,15 +63,35 @@ int main(int argc, char** argv){
             }  
             else if (seqs.size() == 2) {
                 seq2len = seq.size();
+                
+                // string to in vector
+                vector<int> seq1_nucs, seq2_nucs;
+                seq1len = seqs[0].size() + 1;
+                seq1_nucs.resize(seq1len);
+                for (int j=0; j<seq1len; j++){
+                    if (j == 0) seq1_nucs[j] = 4;
+                    else seq1_nucs[j] = GET_ACGU_NUM(seqs[0][j-1]);
+                }
+                seq2len = seqs[1].size() + 1;
+                seq2_nucs.resize(seq2len);
+                for (int j=0; j<seq2len; j++){
+                    if (j == 0) seq2_nucs[j] = 4;
+                    else seq2_nucs[j] = GET_ACGU_NUM(seqs[1][j-1]);
+                }
 
                 struct timeval parse_starttime, parse_endtime;
                 gettimeofday(&parse_starttime, NULL);
                 
                 BeamAlign parser(beam_size, is_eval, is_verbose);
-                parser.viterbi_path(false);
+                parser.set(beam_size, seq1_nucs, seq2_nucs);
 
-                cout << "recompute forward-backward viterbi with new parameters" << endl;
-                float aln_viterbi = parser.viterbi_path(true);
+                // viterbi path, compute similarity, load new parameters
+                float similarity = parser.viterbi_path(false);
+                parser.set_parameters_by_sim(similarity);
+
+                // alignment envelope
+                cout << "compute forward-backward with new parameters" << endl;
+                float avg_width = parser.envelope(similarity); 
                     
                 gettimeofday(&parse_endtime, NULL);
                 double parse_elapsed_time = parse_endtime.tv_sec - parse_starttime.tv_sec + (parse_endtime.tv_usec-parse_starttime.tv_usec)/1000000.0;

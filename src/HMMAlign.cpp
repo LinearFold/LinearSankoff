@@ -653,7 +653,7 @@ void BeamAlign::prepare(int j1, int j2) {
 float BeamAlign::cal_align_prob(float threshold){
     float aln_prob, ins1_prob, ins2_prob;
    
-    for (int s = 0; s < seq1_len + seq2_len; s++){
+    for (int s = 0; s <= seq1_len + seq2_len; s++){
         for(auto &item : bestALN[s]){
             AlignState &state = item.second;
             int i = state.i;
@@ -687,12 +687,12 @@ float BeamAlign::cal_align_prob(float threshold){
     up_bounds.resize(seq1_len+1, -1);
     low_bounds.resize(seq1_len+1, seq2_len);
 
-    max_j1.resize(seq1_len + seq2_len, -1);
-    min_j1.resize(seq1_len + seq2_len, seq1_len);
+    max_j1.resize(seq1_len + seq2_len + 1, -1);
+    min_j1.resize(seq1_len + seq2_len + 1, seq1_len);
 
     max_range = 0;
     int sum_range = 0;
-    for (int i = 0; i < seq1_len; i++){
+    for (int i = 0; i <= seq1_len; i++){
         int upbound = -1;
         int lowbound = seq2_len;
         cands.clear();
@@ -713,13 +713,23 @@ float BeamAlign::cal_align_prob(float threshold){
             // upbound = i;
         }
 
-        if (lowbound > upbound) {
-            low_bounds[i] = 0;
-            up_bounds[i] = seq2_len - 1;
-        } else {
-            low_bounds[i] = lowbound;
-            up_bounds[i] = upbound;
-        }
+        // if (lowbound > upbound) {
+        //     cout << "lowbound > upbound: " << i << " " << lowbound << " " << upbound << endl;
+        //     if (i == 0) {
+        //         low_bounds[i] = 0;
+        //         up_bounds[i] = 0;
+        //     } else {
+        //         low_bounds[i] = low_bounds[i-1];
+        //         up_bounds[i] = up_bounds[i-1];
+        //     }
+        // } else {
+        //     low_bounds[i] = lowbound;
+        //     up_bounds[i] = upbound;
+        // }
+
+        assert (lowbound <= upbound); // TODO
+        low_bounds[i] = lowbound;
+        up_bounds[i] = upbound;
 
         // cout << i << " " << low_bounds[i] << " " << up_bounds[i] << endl;
         for (int k = low_bounds[i]; k <= up_bounds[i]; k++) {
@@ -739,7 +749,7 @@ float BeamAlign::cal_align_prob(float threshold){
     //     cout << s << " " << min_j1[s] << " " << max_j1[s] << endl;
     // }
 
-    cout << "max_range: " << max_range << endl;
+    cout << "max_range: " << max_range << " sum_range: " << sum_range << endl;
     cout << "average range: " << sum_range / float(seq1_len) << endl;
 
     // boundary case
@@ -798,8 +808,6 @@ void BeamAlign::forward() {
                 int k = state.k;
                 float ml = state.ml;
                 if (i + k != s) continue;
-
-                // cout << "s, i, k: " << s << " " << i << " " << k << endl;
 
                 HMMManner next_manner;
                 int next_i, next_k, next_step;
@@ -1009,7 +1017,7 @@ float BeamAlign::viterbi_path(bool newpara) {
                 float ml = state.ml;
                 if (i + k != s) continue; //TODO: 0, 0 debug
 
-                // cout << "s, i, k: " << s << " " << i << " " << k << endl;
+                // cout << "s, i, k: " << s << " " << i << " " << k  << " " << ml << endl;
 
                 HMMManner next_manner;
                 int next_i, next_k, next_step;
@@ -1062,7 +1070,7 @@ float BeamAlign::viterbi_path(bool newpara) {
         }
 
     }
-    // cout << "ml: " << bestALN[seq1_len + seq2_len][seq2_len].ml << endl;
+
     float ml = bestALN[seq1_len + seq2_len][seq2_len].ml;
     cout << "viterbi path score: " << ml << endl;
 
@@ -1231,7 +1239,7 @@ float BeamAlign::evalulate(bool newpara, const std::set<pair<int, int>> &align_p
         }
 
     }
-    // cout << "ml: " << bestALN[seq1_len + seq2_len][seq2_len].ml << endl;
+
     float ml = bestALN[seq1_len + seq2_len][seq2_len].ml;
     cout << "viterbi path score: " << ml << endl;
 
@@ -1351,7 +1359,7 @@ void BeamAlign::viterbi_backward(bool newpara) {
     }
 
     float back_score = bestALN[0][0].beta;
-    printf("backward score: %.10f\n", back_score);
+    printf("viterbi backward score: %.10f\n", back_score);
     // return back_score;
 }
 

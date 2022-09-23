@@ -1806,21 +1806,38 @@ void SankoffParser::prepare(const vector<string> &seqs){
             if (j == 0) seq.nucs[j] = 4;
             else seq.nucs[j] = GET_ACGU_NUM(seqs[i][j-1]);
         }
-        // for (int j=0; j<seq.seq_len; j++){
-        //     cout << seq.nucs[j] << " " ;
-        // }
-        // cout << endl;
         sequences.push_back(seq);
         sum_len += seq.seq_len;
     }
     cout << "sum of seq length: " << sum_len << endl;
 
-    // HMM align tool
+    /************************** HMM alignment tool **************************/
     hmmalign.set(alnbeam, sequences[0].nucs, sequences[1].nucs);
-    hmmalign.viterbi_path(false); // alignment envelope
-    hmmalign.viterbi_path_all_locals(); // compute and save local alignments
+    float similarity = hmmalign.viterbi_path(false);
+    int iter = 0;
+    while (true) {
+        iter ++;
+        hmmalign.set_parameters_by_sim(similarity); // load new parameters
+        float newsimilarity = hmmalign.viterbi_path(true); // smaller ? 
+        if (abs(similarity - newsimilarity) < 0.001 || iter == 5) { // if newsimilarity is larger ? 
+            similarity = newsimilarity;
+            break;
+        }
+        similarity = newsimilarity;
+    }
+    // alignment envelope
+    float avg_width = hmmalign.envelope(similarity); 
+    
+    // update alignment weight
+    // cout << "weight old: " << weight << endl;
+    // // weight *= (1 - 2 * avg_width / (seq1_len + seq2_len)); // avg_width / avg_seq_len / 2
+    // weight = 100 * similarity * (1 - 3 * avg_width / (seq1_len + seq2_len)); // avg_width / avg_seq_len / 2
+    // cout << "weight new: " << weight << endl;
 
-    // single sequence folding
+    // all local alignment scores
+    hmmalign.viterbi_path_all_locals();
+
+    /************************** single sequence folding **************************/
     BeamCKYParser* cky_parser = new BeamCKYParser();
     cky_parser->beam = lfbeam;
 
@@ -2223,8 +2240,6 @@ void SankoffParser::parse(const vector<string> &seqs){
     // from left to right
     mem = GetProcessMemory();
     for(int s = 1; s < seq1_len + seq2_len - 1; ++s) {
-        // if (s > 2400) verbose = true;
-
         if (s%10 == 1)
             cout << "s: " << s << " VmPeak: " << mem.VmPeak  / 1024.0 / 1024.0 << endl;
 
@@ -2244,7 +2259,7 @@ void SankoffParser::parse(const vector<string> &seqs){
             // hmm constraint, left bracket
             if (j2 > hmmalign.up_bounds[j1] || j2 < hmmalign.low_bounds[j1]) continue;
 
-            int j1next = j1, j2next;
+            int j1next = j1;
             pair<int, int> newscore1, newscore2;
             while (j1next != -1) {
                 newscore1 = hairpinScore(j1, j1next, seq1);
@@ -2254,7 +2269,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                 // single seq folding subopt
                 if (!seq1_H_pairs[j1next][j1].valid) continue;
 
-                j2next = j2;
+                int j2next = j2;
                 while (j2next != -1) {
                     newscore2 = hairpinScore(j2, j2next, seq2);
                     j2next = newscore2.first;
@@ -3172,6 +3187,7 @@ void SankoffParser::parse(const vector<string> &seqs){
                                         // speed up
                                         int i2_p2 = i2 - p2;
                                         if (q2 == -1 || q2 > hmmalign.up_bounds[q1] || (i2_p2 + (q2 - j2) - 2 > SINGLE_MAX_LEN)) continue;
+                                        // if (q2 == -1 || q2 > hmmalign.up_bounds[q1] || (i2_p2 + (q2 - j2) - 2 > SINGLE_MAX_LEN)) continue;
                                         if (q2 < hmmalign.low_bounds[q1])
                                             q2 = seq2->next_pair[nucp2][hmmalign.low_bounds[q1]-1]; 
                                         

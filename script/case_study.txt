@@ -1,0 +1,78 @@
+# 5S Dynalign II < Dynalign, group26
+> B06430.ct	& B02953.ct
+> ground truth 
+(((((((((.....((((((((.....((((((.............))))..))....)))))).)).((.((....((((((.(-.....).)).))))....)).))...))))))))).
+-...(((((.....(.((((((.....((((((.............))))..))....))))))..).((.((....((((----......-----))))....)).))...)))))....-
+GUGCGGCGGCCACAGCGGAAGGGAAACACCCGGACCCAUACCGAACCCGGCCGUUAAGCCUUCCAGCGCCGAUGGUACUGCCCCC-AUGGUGCGGGGCGGGAGAGUAGGACACCGCCGCACC
+-UCAGGUGGUUAUAGCACGAGGGUUCCACCUCUUCCCAUUCCGAACAGAGAAGUUAAGCCUCGUCACGCCGAUGGUACUGC----GUAACA-----GUGGGAGAGUAGGUAGCCGCCGUUU-
+
+> Dynalign: B06430 0.9666666344	0.8529411514	0.89999997	0.7941176237
+> Dynalign: B02953 0.8846153506	0.8846153506	0.8846153506	0.8846153506		
+---(((((((((.......((((((.......((((.............))))........))))))....((.((....(((((((........)))))))....)).))...))))))))).---
+...(((-(((((....---((((((.......((((.............))))........))))))....((.((....(-(-(-(......--)-)-)-)....)).))---)))))-)))....
+---GUGCGGCGGCCACAGCGGAAGGGAAACACCCGGACCCAUACCGAACCCGGCCGUUAAGCCUUCCAGCGCCGAUGGUACUGCCCCCAUGGUGCGGGGCGGGAGAGUAGGACACCGCCGCACC---
+UCAGGU-GGUUAUAGC---ACGAGGGUUCCACCUCUUCCCAUUCCGAACAGAGAAGUUAAGCCUCGUCACGCCGAUGGUAC-U-G-CGUAACA--G-U-G-GGAGAGUAGG---UAGCC-GCCGUUU
+
+> Dynalign II: B06430 0.7575757346	0.735294096	0.6969696758	0.6764705683
+> Dynalign II: B02953 0.7307692027	0.7307692027	0.7307692027	0.7307692027
+---(((((((((((((...((((((.......((((.............))))........))))))...(((...))).(((((((........)))))))....----)).))...))))))))).---
+...(----((((((((...((((((.......((((.............))))........))))))...(((...))).(---(((......--)))---)........))-))---))))----)....
+---GUGCGGCGGCCACAGCGGAAGGGAAACACCCGGACCCAUACCGAACCCGGCCGUUAAGCCUUCCAGCGCCGAUGGUACUGCCCCCAUGGUGCGGGGCGGGAGA----GUAGGACACCGCCGCACC---
+UCAG----GUGGUUAUAGCACGAGGGUUCCACCUCUUCCCAUUCCGAACAGAGAAGUUAAGCCUCGUCACGCCGAUGGUAC---UGCGUAACA--GUG---GGAGAGUAGGU-AG---CCGC----CGUUU
+
+# 5S Dynalign II < Dynalign, group20
+
+> ground truth 
+CCUGGUGGUUAUGGCGGAGCGGCUGCACCCGAUCCCAUUCCGAACUCGGCCGUGAAACGCUCCAGCGCCAAUGGUACUUCGUC--UCAA-GACGCGGGAGAGUAGGUCGCUGCCAGGU
+((((((((.....((((((((.....((((((.............))))..))....)))))).)).((.((....((.((((--....-)))).))....)).))...)))))))).
+UCCGGUAACGAAAGUAAGAGGGAAACACCUGUAACCAUACCGAACACAGAAGUUAAGGCUCAAUACGCUGAUGGUACUUGGCUGGCGA-CGGCCCGGGAGAGUAGGU-AUUGCCGGUU
+.(((((((.....((..(((......((((((.............))))..)).....)))...)).((.((....((.(((((....-))))).))....)).)).-.)))))))..
+
+> Dynalign
+>B02369
+-CCUGGUGGUUAUGGCGGA-GCGGCUGCAC--CCGAUCCCAUUCCGAACUCGGCCGUGAAA-CGC--UCCAGCGCCAAUGGUACUUCGU-CUCAAG-ACGCGGGAGAGUAGGUCGCUGCCAGGU-
+-(((((((((......(((-(((....(((--((((.............))))..)))...-)))--)))...(((.((....((.(((-(....)-))).))....)).))).))))))))).-
+>B03048
+UCCGGU-A-ACGAAA-GUAAGAGGGA-AACACCUGUAACCAUACCGAACACAGAAGUUAAGGCUCAAUAC---GCUGAUGGUACUUGGCUGGCGACGGCCCGGGAGAGUAGGUAU-U-GCCGGUU
+.(((((-(-(.....-(((.(((...-(((..((((.............))))..)))....)))..)))---(((.((....((.(((((....))))).))....)).))).)-)-)))))..
+UCCGGU-A-ACGAAA-GUAAGAGGGA-AACACCUGUAACCAUACCGAACACAGAAGUUAAGGCUCAAUAC---GCUGAUGGUACUUGGCUGGCGACGGCCCGGGAGAGUAGGUAU-U-GCCGGUU
+
+> Dynalign II
+>B02369
+-CCUGGUGGUUAUGGCGGAGCGGCUGCAC--CCGAUCCCAUUCCGAACUCGGCCGUGAAA-CGCUCCAGCG-CCAAUGGUACUUC-GUCUCAAGAC-GCGGGAGAGUAGGUCGCUGCCAGGU-
+-((((((.........((((((....(((--((((.............))))..)))...-)))))).(((-((.((....((.(-(((....)))-).))....)).)).))).)))))).-
+>B03048
+UCCGGUAACGAAAGUAA--GAGGGA-AACACCUGUAACCAUACCGAACACAGAAGUUAAGGCUCAA--UACGCUGAUGGUACUUGGCUGGCGACGGCCCGGGAGAGU-AG-GUAUUGCCGGUU
+.((((((..........--(((...-(((..((((.............))))..)))....)))..--(((.((.((....((.(((((....))))).))....))-))-))).))))))..
+
+
+# 5S Dynalign II > Dynalign, group29
+> Dynalign
+> B05202
+UU---UGGUGACGAUAGCGAAGAGGUCACACCCGUUCCCAUGCCGAACACGGCCGUUAAGCUCUUCAGCGCCGAUGGUAGUUGGGGGCUUCCCCCUGCAAGAGUAGGA-CGUUGCCAAGC
+..---((((((((...((((((((...((..((((((.......))..))))..))....)))))).)).((..........(((((...)))))..........)).-))))))))...
+> B05635
+UCUAGUGGCG-AUA--GCGAAGUGGUCACACCCGUUCCCAUGCCGAACACGGAAGUUAAGCGCUUCAGCGCCGAAAGUAGUUGGGGGUCUCCCCCUGUGAGGAUAGGACGU-UGCCAGGC
+.....(((((-((.--((((((((...((..((((((.......))..))))..))....)))))).)).((..........(((((...)))))..........))..))-)))))...
+
+> Dynalign II
+> B05202
+UUUGGUGACGAUAGCGAAGAGGUCACACCCGUUCCCAUGCCGAACACGGCCGUUAAGCUCUUCAGCGCCGAUGGUAGUUGGGGGCUUCCCCCUGCAAGAGUAGGACGUUGCCAAGC
+((((((((((...((((((((...((..((((((.......))..))))..))....)))))).)).((..........(((((...)))))..........)).)))))))))).
+> B05635
+UCUAGUGGCGAUAGCGAAGUGGUCACACCCGUUCCCAUGCCGAACACGGAAGUUAAGCGCUUCAGCGCCGAAAGUAGUUGGGGGUCUCCCCCUGUGAGGAUAGGACGUUGCCAGGC
+(((.((((((...((((((((...((..((((((.......))..))))..))....)))))).)).((..........(((((...)))))..........)).)))))).))).
+
+
+CCUGGUGGCCUGAGCGGUGUGCCCAGGACCCGAUCCCAUCUCGAACUCGGCCGUCAAACACACCAGCGCCCAUGGUACUGUGUC-UCAA-GACACGGGAGAGUCGGUCGCCGCCAGGC
+GUUGGUGACCAGCG-GAGCGGGU-CCACCCGGAACC-AUGCCGAACCCGGAAGUUAAGCGCUUCAGCGCCGAUGGUACUGCGA-UUCAGU-UCGUGGGAGAGUAGGUCGUUGCCAACC
+((((((((.....((((((((......((((((.............))))..))....)))))).)).((.((....(((((((-....-)))))))....)).))...)))))))). 
+((((((((.....(-(((..(..-....((.(....-..........).)..).....)..)))..).((.((....((((((-......-))))))....)).))...)))))))).
+
+
+.((((((((((......(((((-(..((...((((.............))))..))....))))))....((.....(.((.(((((....))))).)).).....))..)))))))))).
+-((-(((((((......(((((.(..((-..((((.............))))..))....))))))....((.....((((.(((((-...))))).)))).....))..)))))))-)).
+GGUCUGGUGACUAGAGCGAGGU-GGUACGACCUGAUCCCAUUCCGAACUCAGAAGUCAAACGCCUCAGCGGGGACGAUAGUUGUCGGGCAACUGACCGCGAAAAUACCUCGUCGCCAGACU
+-UU-AAGUGACGAUAGCCUAGGAGAUAC-ACCUGUACCCAUGCCGAACACAGUAGUUAAGCCCUAGAACGCCUGAAGUAGUUGGGGG-UUGCCCCCUGUUAGAUACGGAAGUUGCUU-AGC
+
+
