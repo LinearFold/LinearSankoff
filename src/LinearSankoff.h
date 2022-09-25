@@ -68,6 +68,9 @@ enum Manner {
   MANNER_P_eq_MULTI_INS2,           // 18: P = (multi)
 
   MANNER_M2_eq_M_plus_P,            // 19: M2 = M + P
+  MANNER_M2_eq_M_plus_P1,
+  MANNER_M2_eq_M_plus_P2,
+  
   MANNER_M_eq_M2,                   // 20: M = M2
   MANNER_M_eq_P,                    // 21: M = P
 
@@ -78,7 +81,11 @@ enum Manner {
   MANNER_C_eq_C_plus_U_ALN,         // 25: C = C + U
   MANNER_C_eq_C_plus_U_INS1,        // 26: C = C + U
   MANNER_C_eq_C_plus_U_INS2,        // 27: C = C + U
+
   MANNER_C_eq_C_plus_P,             // 28: C = C + P
+  MANNER_C_eq_C_plus_P1,             // 28: C = C + P
+  MANNER_C_eq_C_plus_P2,             // 28: C = C + P
+  
   MANNER_C_eq_P                     // 29: C = P
 };
 
@@ -291,6 +298,9 @@ private:
     pair<string, string> get_hmm_aln(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2);
     pair<string, string> get_hmm_aln_left(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2);
     pair<string, string> get_hmm_aln_right(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2);
+
+    tuple<string, string, string, string> backtrace_branch_insertion(int i1, int j1, int i2, int j2);
+    string backtrace_single_seq(SeqObject *seq, int i, int j, vector<unordered_map<int, int> > &seq_in_P);
 
     float get_hmm_score(int i1, int j1, int i2, int j2, int s1, bool allowout=false);
     float get_hmm_score_left(int i1, int j1, int i2, int j2, int s1, int s2);

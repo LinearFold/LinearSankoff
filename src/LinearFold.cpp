@@ -1156,8 +1156,8 @@ int BeamCKYParser::parse(const string& seq, short**** internal_score, vector<int
 #else
                         precomputed = score_junction_B(j, i, nucj, nucj1, nuci_1, nuci);
 #endif
-                    // for (int p = i - 1; p >= max(i - SINGLE_MAX_LEN, 0); --p) {
-                    for (int p = i - 1; p >= max(i - MAX_LOOP_LEN - 1, 0); --p) {
+                    for (int p = i - 1; p >= max(i - SINGLE_MAX_LEN, 0); --p) {
+                    // for (int p = i - 1; p >= max(i - MAX_LOOP_LEN - 1, 0); --p) {
                         int nucp = nucs[p];
                         int nucp1 = nucs[p + 1]; // hzhang: move here
                         int q = next_pair[nucp][j];
@@ -1172,8 +1172,8 @@ int BeamCKYParser::parse(const string& seq, short**** internal_score, vector<int
                             }
                         }
 
-                        // while (q != -1 && ((i - p) + (q - j) - 2 <= SINGLE_MAX_LEN)) {
-                        while (q != -1 && (q - j - 1 <= MAX_LOOP_LEN)) {
+                        while (q != -1 && ((i - p) + (q - j) - 2 <= SINGLE_MAX_LEN)) {
+                        // while (q != -1 && (q - j - 1 <= MAX_LOOP_LEN)) {
                             int nucq = nucs[q];
 
                             // lisiz constraints
