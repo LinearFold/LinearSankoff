@@ -381,12 +381,12 @@ inline pair<int, int> hairpinScore(int i, int j, SeqObject *seq){
     return make_pair(jnext, score); //  / -100.0
 }
 
-inline tuple<int, int, char, int> multiloopUnpairedScore(int i, int j, SeqObject *seq, TraceInfo* trace){
+inline pair<int, int> multiloopUnpairedScore(int i, int j, SeqObject *seq){
     int nuci = seq->nucs[i];
     int jnext = seq->next_pair[nuci][j];
 
-    char new_l1 = trace->paddings.l1;
-    int new_l2 = trace->paddings.l2 + jnext - j;
+    // char new_l1 = trace->paddings.l1;
+    // int new_l2 = trace->paddings.l2 + jnext - j;
     
     // speed up
     if (jnext != -1) { // && new_l2 < SINGLE_MAX_LEN
@@ -397,10 +397,10 @@ inline tuple<int, int, char, int> multiloopUnpairedScore(int i, int j, SeqObject
 // #else
 //         newscore = state.score + score_multi_unpaired(j, jnext - 1);
 // #endif
-        return make_tuple(jnext, newscore, new_l1, new_l2); // / -100.0
+        return make_pair(jnext, newscore); // / -100.0
     }
 
-    return make_tuple(-1, 0, '\0', 0);
+    return make_pair(-1, 0);
 }
 
 inline int multiloop2Pscore(int i, int j, SeqObject *seq){

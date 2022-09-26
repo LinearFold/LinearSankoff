@@ -63,20 +63,27 @@ UUUGGUGACGAUAGCGAAGAGGUCACACCCGUUCCCAUGCCGAACACGGCCGUUAAGCUCUUCAGCGCCGAUGGUAGUUG
 UCUAGUGGCGAUAGCGAAGUGGUCACACCCGUUCCCAUGCCGAACACGGAAGUUAAGCGCUUCAGCGCCGAAAGUAGUUGGGGGUCUCCCCCUGUGAGGAUAGGACGUUGCCAGGC
 (((.((((((...((((((((...((..((((((.......))..))))..))....)))))).)).((..........(((((...)))))..........)).)))))).))).
 
+5S group21 
+inside: -6436.74 2990 2340 -294.198
+...(((((.......((((((.......((((((.......))..))))........))))))...(((.((....(((((((....--)))))))....)).)))..))))).-...
+...(((((.......((((((.......((((((.......))..))))........))))))...(((.((....(((---(......)---)))....)).)))..))))).....
+CCUGGUGAAAUUAGCGCUGUGGAACCACCCGAUCCCAUCCCGAACUCGGAAGUGAAACGCAGCUGCGCCGAUGGUAGUGUGGCUCAA--GCCAUGCGAGAGUAGGUCAUCGCCA-GGG
+UCAGGUGACUACAGCACCGGGGUUCCACCUCUUCCCAUUCCGAACAGAGAAGUUAAGCCCGGUCACGCCGAUGGUACUG---CGUAACAG---UGGGAGAGUAGGUAGUCGCCGUUUU
 
-CCUGGUGGCCUGAGCGGUGUGCCCAGGACCCGAUCCCAUCUCGAACUCGGCCGUCAAACACACCAGCGCCCAUGGUACUGUGUC-UCAA-GACACGGGAGAGUCGGUCGCCGCCAGGC
-GUUGGUGACCAGCG-GAGCGGGU-CCACCCGGAACC-AUGCCGAACCCGGAAGUUAAGCGCUUCAGCGCCGAUGGUACUGCGA-UUCAGU-UCGUGGGAGAGUAGGUCGUUGCCAACC
-((((((((.....((((((((......((((((.............))))..))....)))))).)).((.((....(((((((-....-)))))))....)).))...)))))))). 
-((((((((.....(-(((..(..-....((.(....-..........).)..).....)..)))..).((.((....((((((-......-))))))....)).))...)))))))).
+inside: -6756.75 2620 3060 -310.948
+...(((((--.((..((((((((....(..((((((.......))..))))..).....))))))...(((...))).(((((((....--)))))))....))..))..--))))).-...
+...(((((((-((-.((((((((....(..((((((.......))..))))..).....))))))...(((...))).(((---(......)---)))....))..))--))))))).....
+CCUGGUGA--AAUUAGCGCUGUGGAACCACCCGAUCCCAUCCCGAACUCGGAAGUGAAACGCAGCUGCGCCGAUGGUAGUGUGGCUCAA--GCCAUGCGAGAGUAGGUCA--UCGCCA-GGG
+UCAGGUGACU-AC-AGCACCGGGGUUCCACCUCUUCCCAUUCCGAACAGAGAAGUUAAGCCCGGUCACGCCGAUGGUACUG---CGUAACAG---UGGGAGAGUAGGU--AGUCGCCGUUUU
 
-
-.((((((((((......(((((-(..((...((((.............))))..))....))))))....((.....(.((.(((((....))))).)).).....))..)))))))))).
--((-(((((((......(((((.(..((-..((((.............))))..))....))))))....((.....((((.(((((-...))))).)))).....))..)))))))-)).
-GGUCUGGUGACUAGAGCGAGGU-GGUACGACCUGAUCCCAUUCCGAACUCAGAAGUCAAACGCCUCAGCGGGGACGAUAGUUGUCGGGCAACUGACCGCGAAAAUACCUCGUCGCCAGACU
--UU-AAGUGACGAUAGCCUAGGAGAUAC-ACCUGUACCCAUGCCGAACACAGUAGUUAAGCCCUAGAACGCCUGAAGUAGUUGGGGG-UUGCCCCCUGUUAGAUACGGAAGUUGCUU-AGC
-
-
-(((((((..((((.........)))).(((((.......)))))...-.---------.(((((.......)))))))))))).
-(((((((..((((.........)))).(((((.......))))).--((((....))))..(((((.......)))))))))))).
-GGCGAUGUAGCUCAGUCGGUUAGAGCGAACGACUCAUAAUCGUUAGG-G---------UCGCCGGUUCGAGUCCGGCCAUCGCUA
-GCCGAGGUAGUCUAGUCCGGGAAGGCGGUGGUCUCGAAAACCACU--GGUGGUAACACUCGGGAGUUCAAAUCUCCCCUUCGGCG
+5S group18
+inside: -6056.13 4410 1840 -307.7
+((((((((((.....((((((((.......((((.............))))........)))))).)).((.((....((.((((....)))).))....)).))...)))))))))).
+(---((((((.....((((((((.......((((.............))))........)))))).)).((.((....((.((((....)))).))....)).))...))))))---).
+GGCCUGGUGGUUAUAGCGCGGGGCCCCCACCCGAUCCCAUCUCGAACUCGGUCGUUAAAUCCCGCAGCGCCGAUGGUACUCCGCCUUAAGGCGUGGGAGAGUAGGUCGCCGCCAGGCCU
+C---UGACGAACAUAGCGUUUUGGAACCACCUGACUCCAUGCCGAACUCAGAAGUGAAACGAAACAGCGUCGAUGAUAGUGUGGGUUCGCCCAUGUGAAAGUAGAACAUCGUCA---GG
+inside: -6756.13 3850 1700 -307.7
+((((((((((...((((((((((....(..((((.............))))..).....)))))).))(((...)))....((((....))))........)).....)))))))))).
+(---((((((...((((((((((....(..((((.............))))..).....)))))).))(((...)))....((((....))))........)).....))))))---).
+GGCCUGGUGGUUAUAGCGCGGGGCCCCCACCCGAUCCCAUCUCGAACUCGGUCGUUAAAUCCCGCAGCGCCGAUGGUACUCCGCCUUAAGGCGUGGGAGAGUAGGUCGCCGCCAGGCCU
+C---UGACGAACAUAGCGUUUUGGAACCACCUGACUCCAUGCCGAACUCAGAAGUGAAACGAAACAGCGUCGAUGAUAGUGUGGGUUCGCCCAUGUGAAAGUAGAACAUCGUCA---GG
