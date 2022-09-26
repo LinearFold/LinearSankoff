@@ -2014,7 +2014,8 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                         // 1. extend (i, j) to (i, jnext)
                         {
                             int j1next = j1;
-                            while (j1next != -1 && j1next <= min(seq1_len, j1+5)) {
+                            // while (j1next != -1 && j1next <= min(seq1_len, j1+5)) 
+                            {
                                 // update j1next
                                 pair<int, int> result1 = multiloopUnpairedScore(i1, j1next, seq1);
                                 j1next = get<0>(result1);
@@ -2038,7 +2039,8 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                 }
                             
                                 int j2next = j2;
-                                while (j1next != -1 && j2next != -1 && j2next <= min(seq2_len, j2+5)) {
+                                // while (j2next != -1 && j2next <= min(seq2_len, j2+5)) 
+                                {
                                     // update j21next
                                     pair<int, int> result2 = multiloopUnpairedScore(i2, j2next, seq2);
                                     j2next = get<0>(result2);
@@ -2047,7 +2049,7 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                     if (j2next == -1 || new_seq2_l2 > SINGLE_MAX_LEN) break;
 
                                     float alignscore;
-                                    if (j2next != -1 && j2next >= hmmalign.low_bounds[j1next] && j2next <= hmmalign.up_bounds[j1next] && (abs(new_seq1_l2 - new_seq2_l2) < 10)) // length of aligned multiloop are close 
+                                    if (j2next >= hmmalign.low_bounds[j1next] && j2next <= hmmalign.up_bounds[j1next] && (abs(new_seq1_l2 - new_seq2_l2) < 10)) // length of aligned multiloop are close 
                                     {
                                         switch (m) {
                                             case 2: 
@@ -2094,7 +2096,7 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                         }
                                     }
 
-                                    if (m == 1 && j2next != -1 && j2next >= hmmalign.low_bounds[j1] && j2next <= hmmalign.up_bounds[j1] && (abs(new_seq2_l2 - state.trace1.paddings.l2) < 10)) {
+                                    if (m == 1 && j2next >= hmmalign.low_bounds[j1] && j2next <= hmmalign.up_bounds[j1] && (abs(new_seq2_l2 - state.trace1.paddings.l2) < 10)) {
                                         alignscore = get_hmm_score_right(j1, j1-1, j2, j2next, m, m, true); // true
                                         alignscore = xlog_mul(state.alignscore, alignscore);
 
@@ -2784,15 +2786,12 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                 q2 = seq2->next_pair[nucp2][hmmalign.low_bounds[q1] - 1]; 
 
                             // while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (i2_p2 + (q2 - j2) - 2 <= SINGLE_MAX_LEN)) {
-                            while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (q2 - j2 - 1 <= MAX_LOOP_LEN)) {
+                            while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (q2 - j2 - 1 <= 10)) { // MAX_LOOP_LEN => 10: lengths of aligned internal loops are close
                                 // single seq folding
                                 if (seq2_out_P[q2].find(p2) == seq2_out_P[q2].end()) {
                                     q2 = seq2->next_pair[nucp2][q2];
                                     continue;
                                 }
-
-                                // lengths of aligned internal loops are close
-                                if (q2 - j2 > 10) break;
 
                                 // TODO: redundant calculation
                                 int nucq2 = seq2->nucs[q2];
@@ -2903,14 +2902,11 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 
                             // int i1_p1 = i1 - p1;
                             // while (q1 != -1 && (i1_p1 + (q1 - j1) - 2 <= SINGLE_MAX_LEN)) {
-                            while (q1 != -1 && (q1 - j1 - 1 <= MAX_LOOP_LEN)) {
+                            while (q1 != -1 && (q1 - j1 - 1 <= 10)) { //MAX_LOOP_LEN->10 lengths of aligned internal loops are close
                                 if (q2 < hmmalign.low_bounds[q1] || q2 > hmmalign.up_bounds[q1]) { // Note.
                                     q1 = seq1->next_pair[nucp1][q1];
                                     continue;
                                 }
-
-                                // lengths of aligned internal loops are close
-                                if (q1 - j1 > 10) break; 
 
                                 // single seq folding
                                 if (seq1_out_P[q1].find(p1) == seq1_out_P[q1].end()) {
@@ -3242,9 +3238,9 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                             int q1 = seq1->next_pair[nucp1][j1];
                             
                             int i1_p1 = i1 - p1;
-                            // if (q1 != -1 && (i1_p1 + (q1 - j1) - 2 <= SINGLE_MAX_LEN)) {
+                            if (q1 != -1 && (i1_p1 + (q1 - j1) - 2 <= SINGLE_MAX_LEN)) {
                             // while (q1 != -1 && (i1_p1 + (q1 - j1) - 2 <= SINGLE_MAX_LEN)) {
-                            while (q1 != -1 && ((q1 - j1) - 1 <= 5)) {
+                            // while (q1 != -1 && ((q1 - j1) - 1 <= 5)) {
                                 // single seq folding
                                 if (seq1_out_Multi[q1].find(p1) == seq1_out_Multi[q1].end()) {
                                     q1 = seq1->next_pair[nucp1][q1];
@@ -3270,22 +3266,14 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                     if (q2 < hmmalign.low_bounds[q1]) 
                                         q2 = seq2->next_pair[nucp2][hmmalign.low_bounds[q1] - 1];
 
-                                    // if (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (i2_p2 + (q2 - j2) - 2 <= SINGLE_MAX_LEN)) {
+                                    if (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (i2_p2 + (q2 - j2) - 2 <= SINGLE_MAX_LEN)) {
                                     // while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (i2_p2 + (q2 - j2) - 2 <= SINGLE_MAX_LEN)) {
-                                    while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (q2 - j2 <= 5)) {
+                                    // while (q2 <= hmmalign.up_bounds[q1] && q2 != -1 && (q2 - j2 - 1 <= 5)) {
                                         // single seq folding
                                         if (seq2_out_Multi[q2].find(p2) == seq2_out_Multi[q2].end()) {
                                             q2 = seq2->next_pair[nucp2][q2];
                                             continue;
                                         }
-
-                                        // lengths of aligned internal loops are close
-                                        int loop_diff = q2 - j2 - q1_j1;
-                                        if (loop_diff < -10) {
-                                            q2 = seq2->next_pair[nucp2][q2];
-                                            continue;
-                                        }
-                                        if (loop_diff > 10) break;
 
                                         int newscore1 = multi_unpaired_score2(i1, j1, p1, q1, seq1);
                                         int newscore2 = multi_unpaired_score2(i2, j2, p2, q2, seq2);
@@ -3356,10 +3344,10 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                                                 alignscore, MANNER_INS2, MANNER_INS2, weight, verbose);
                                         }
 #endif
-                                        q2 = seq2->next_pair[nucp2][q2];
+                                        // q2 = seq2->next_pair[nucp2][q2];
                                     } // while loop enumerate q2
                                 } // for loop enumerate p2
-                                q1 = seq1->next_pair[nucp1][q1];
+                                // q1 = seq1->next_pair[nucp1][q1];
                             } // q1
                         } // p1
                     } // 1. multi-loop
