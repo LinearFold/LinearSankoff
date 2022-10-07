@@ -70,19 +70,14 @@ int main(int argc, char** argv){
             struct timeval parse_starttime, parse_endtime;
             gettimeofday(&parse_starttime, NULL);
             
-            // if (seq1len < seq2len){ // TODO
-            //     BeamSankoffParser parser(beam_size, beam_size2, aln_weight, is_verbose);
-            //     swap(seqs[0], seqs[1]);
+
+            // if (beam_size == -2) {
+            //     SankoffParser parser(aln_weight, beam_size, LFbeam, LAbeam, energy_diff, is_verbose);
             //     parser.parse(seqs);
-            // }
-            // else {
-            if (beam_size == -2) {
-                SankoffParser parser(aln_weight, beam_size, LFbeam, LAbeam, energy_diff, is_verbose);
-                parser.parse(seqs);
-            } else {
+            // } else {
                 BeamSankoffParser parser(aln_weight, beam_size, LFbeam, LAbeam, use_astar, use_suffix, energy_diff, is_verbose);
                 parser.parse(seqs);
-            }
+            // }
             // }
                 
             gettimeofday(&parse_endtime, NULL);

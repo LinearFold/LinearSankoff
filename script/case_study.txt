@@ -1,89 +1,73 @@
-# 5S Dynalign II < Dynalign, group26
-> B06430.ct	& B02953.ct
-> ground truth 
-(((((((((.....((((((((.....((((((.............))))..))....)))))).)).((.((....((((((.(-.....).)).))))....)).))...))))))))).
--...(((((.....(.((((((.....((((((.............))))..))....))))))..).((.((....((((----......-----))))....)).))...)))))....-
-GUGCGGCGGCCACAGCGGAAGGGAAACACCCGGACCCAUACCGAACCCGGCCGUUAAGCCUUCCAGCGCCGAUGGUACUGCCCCC-AUGGUGCGGGGCGGGAGAGUAGGACACCGCCGCACC
--UCAGGUGGUUAUAGCACGAGGGUUCCACCUCUUCCCAUUCCGAACAGAGAAGUUAAGCCUCGUCACGCCGAUGGUACUGC----GUAACA-----GUGGGAGAGUAGGUAGCCGCCGUUU-
-
-> Dynalign: B06430 0.9666666344	0.8529411514	0.89999997	0.7941176237
-> Dynalign: B02953 0.8846153506	0.8846153506	0.8846153506	0.8846153506		
----(((((((((.......((((((.......((((.............))))........))))))....((.((....(((((((........)))))))....)).))...))))))))).---
-...(((-(((((....---((((((.......((((.............))))........))))))....((.((....(-(-(-(......--)-)-)-)....)).))---)))))-)))....
----GUGCGGCGGCCACAGCGGAAGGGAAACACCCGGACCCAUACCGAACCCGGCCGUUAAGCCUUCCAGCGCCGAUGGUACUGCCCCCAUGGUGCGGGGCGGGAGAGUAGGACACCGCCGCACC---
-UCAGGU-GGUUAUAGC---ACGAGGGUUCCACCUCUUCCCAUUCCGAACAGAGAAGUUAAGCCUCGUCACGCCGAUGGUAC-U-G-CGUAACA--G-U-G-GGAGAGUAGG---UAGCC-GCCGUUU
-
-> Dynalign II: B06430 0.7575757346	0.735294096	0.6969696758	0.6764705683
-> Dynalign II: B02953 0.7307692027	0.7307692027	0.7307692027	0.7307692027
----(((((((((((((...((((((.......((((.............))))........))))))...(((...))).(((((((........)))))))....----)).))...))))))))).---
-...(----((((((((...((((((.......((((.............))))........))))))...(((...))).(---(((......--)))---)........))-))---))))----)....
----GUGCGGCGGCCACAGCGGAAGGGAAACACCCGGACCCAUACCGAACCCGGCCGUUAAGCCUUCCAGCGCCGAUGGUACUGCCCCCAUGGUGCGGGGCGGGAGA----GUAGGACACCGCCGCACC---
-UCAG----GUGGUUAUAGCACGAGGGUUCCACCUCUUCCCAUUCCGAACAGAGAAGUUAAGCCUCGUCACGCCGAUGGUAC---UGCGUAACA--GUG---GGAGAGUAGGU-AG---CCGC----CGUUU
-
-# 5S Dynalign II < Dynalign, group20
-
-> ground truth 
-CCUGGUGGUUAUGGCGGAGCGGCUGCACCCGAUCCCAUUCCGAACUCGGCCGUGAAACGCUCCAGCGCCAAUGGUACUUCGUC--UCAA-GACGCGGGAGAGUAGGUCGCUGCCAGGU
-((((((((.....((((((((.....((((((.............))))..))....)))))).)).((.((....((.((((--....-)))).))....)).))...)))))))).
-UCCGGUAACGAAAGUAAGAGGGAAACACCUGUAACCAUACCGAACACAGAAGUUAAGGCUCAAUACGCUGAUGGUACUUGGCUGGCGA-CGGCCCGGGAGAGUAGGU-AUUGCCGGUU
-.(((((((.....((..(((......((((((.............))))..)).....)))...)).((.((....((.(((((....-))))).))....)).)).-.)))))))..
-
-> Dynalign
->B02369
--CCUGGUGGUUAUGGCGGA-GCGGCUGCAC--CCGAUCCCAUUCCGAACUCGGCCGUGAAA-CGC--UCCAGCGCCAAUGGUACUUCGU-CUCAAG-ACGCGGGAGAGUAGGUCGCUGCCAGGU-
--(((((((((......(((-(((....(((--((((.............))))..)))...-)))--)))...(((.((....((.(((-(....)-))).))....)).))).))))))))).-
->B03048
-UCCGGU-A-ACGAAA-GUAAGAGGGA-AACACCUGUAACCAUACCGAACACAGAAGUUAAGGCUCAAUAC---GCUGAUGGUACUUGGCUGGCGACGGCCCGGGAGAGUAGGUAU-U-GCCGGUU
-.(((((-(-(.....-(((.(((...-(((..((((.............))))..)))....)))..)))---(((.((....((.(((((....))))).))....)).))).)-)-)))))..
-UCCGGU-A-ACGAAA-GUAAGAGGGA-AACACCUGUAACCAUACCGAACACAGAAGUUAAGGCUCAAUAC---GCUGAUGGUACUUGGCUGGCGACGGCCCGGGAGAGUAGGUAU-U-GCCGGUU
-
-> Dynalign II
->B02369
--CCUGGUGGUUAUGGCGGAGCGGCUGCAC--CCGAUCCCAUUCCGAACUCGGCCGUGAAA-CGCUCCAGCG-CCAAUGGUACUUC-GUCUCAAGAC-GCGGGAGAGUAGGUCGCUGCCAGGU-
--((((((.........((((((....(((--((((.............))))..)))...-)))))).(((-((.((....((.(-(((....)))-).))....)).)).))).)))))).-
->B03048
-UCCGGUAACGAAAGUAA--GAGGGA-AACACCUGUAACCAUACCGAACACAGAAGUUAAGGCUCAA--UACGCUGAUGGUACUUGGCUGGCGACGGCCCGGGAGAGU-AG-GUAUUGCCGGUU
-.((((((..........--(((...-(((..((((.............))))..)))....)))..--(((.((.((....((.(((((....))))).))....))-))-))).))))))..
+.ENERGY = 0    Baci.alca._D11422
+UUUGCCGUGCUAAGCGGGGAGGUAGCGGUGCCCUGUACUCGCAAUCCGCUAUAGCAGGCUGAAUCCCUUCUAGAGGUUUUGUCACCGUAGGCUCUGCCCUAAGUAAGUGGUGUUGACGUUGGGUUCUACGCAACGAAAACCCACGAACCCUGUCAGGUCCGGAAGGAAGCAGCAGUAAGUGGCCCCUUUCGUGUGCCGUAGAGUCGCUGGGCCGAGCUAACUGCUCAGGUAACGCUAGGGUGGCAUGAUCGACAGAAGGUGCACGGUA
+..((((((((..((.((((.(.(...).).))))...((.((...........)).)))).....((((((...((((.((((((..(.(((..(((.((.(((.((((((......((((.((((((((((.(((((..((((.....((((....(((....)))....))))...))))....)))))))...))))))...))))).)...))).)))))).)))))..))).).)))))).))))...)))))).))))))))
+.ENERGY = 0    Halo.spec._AE004437
+GGACUAGGCCGGGCGGUUUGGCUCCGCCCGACACCCGUGAGACAGUCAUCAGCGGGGGCCGAACACCGGGCGCGUCCGACCGCCGCGGUCGGGCCCCGGAAGCCAACGUGGAAGCCUCGUCCGUCGGGGACGGCGGUCCGCGGCGUGCGCCCGCAGGGGCGUUCCGUCGUGGUUCGACGGUGGCAACCCGCCAGGCACGGAAGUGAGCAGCGGACCACCGAACGCCCGUCGCUCGACGGGUCGCGGGGUGGAGAAGGCGACCGGGACUACCCGGCCGGGAACGCCGGGCUACCCCGACUGUCCAC
+((((..((((((((((.......))))))....(((((.............)))))))))......((((...(((((.....(.((((((((.(((((..(((..(.(....((((((((((((((.((((((((.(((((..(.((((((....)))))).)..).))))..)..((((((....((((....(((....)))....)))).))))))..)).))))).).))))))...))))))).).)..)))..))))).)...))))))).)....).))))...))))...))))..
 
 
-# 5S Dynalign II > Dynalign, group29
-> Dynalign
-> B05202
-UU---UGGUGACGAUAGCGAAGAGGUCACACCCGUUCCCAUGCCGAACACGGCCGUUAAGCUCUUCAGCGCCGAUGGUAGUUGGGGGCUUCCCCCUGCAAGAGUAGGA-CGUUGCCAAGC
-..---((((((((...((((((((...((..((((((.......))..))))..))....)))))).)).((..........(((((...)))))..........)).-))))))))...
-> B05635
-UCUAGUGGCG-AUA--GCGAAGUGGUCACACCCGUUCCCAUGCCGAACACGGAAGUUAAGCGCUUCAGCGCCGAAAGUAGUUGGGGGUCUCCCCCUGUGAGGAUAGGACGU-UGCCAGGC
-.....(((((-((.--((((((((...((..((((((.......))..))))..))....)))))).)).((..........(((((...)))))..........))..))-)))))...
+. SRP List.mono._U15684 
+ground truth 
+UGGGUUGAUGAGCGUGAAGCCUUCGCUCGGUUGGAUUUUUCUUCAUUGCUACUCUUGGCUUGCAGGAAUUCCUCAUUUGAGGCAUCGUAAUUGUUUGGUCUGCCCUUGACAAGUUGGUGUGAAGGUUGGGUCUUGCGCAAUGGGAACCUUGUGAACCAUGUCAGGUCCGGAAGGAAGCAGCAUUAAGCAGUGUUCUCAUGUGCCGCGAGUCGCCUGGCCCGAGCUAACUAUCAGGGUAACGCAGAUGAUUGCAUGUCGAUGUGAGGUGCGCGACACUAA
+.(.((((...(.(.((.(.((..(.....)..)).)...(...(.............)...))).)....((((((....(((((.(((((((((((...(((.(((((..(((((((.....((((((((((((((((.(((((((.((((.....((((....(((....)))....))))...)))).)))))))))...))))))..))))))))...))))))).))))))).)..))))))))))))))))...)))))))...)))).)...
+GGACUAGGCCGGGCGGUUUGGCUCCGCCCGACACCCGUGAGACAGUCAUCAGCGGGGGCCGAACACCGGGCGCGUCCGACCGCCGCGGUCGGCCCCGGAAGCCAACGUGGAAGCCUCGUCCGUCGGGGACGGCGGUCCGCGGCGUGCGCCCGCAGGGGCGUUCCGUCGUGGUUCGACGGUGGCAACCCGCCAGGCACGGAAGUGAGCAGCGGACCACCGAACGCCCGUCGCUCGACGGGUCGCGGGGUGGAGAAGGCGACCGGGACUACCCGGCCGGGAACGCCGGGCUACCCCGACUGUCCAC
+((((..((((((((((.......))))))....(((((.............)))))))))......((((...(((((.....(.(((((((.(((((..(((..(.(....((((((((((((((.((((((((.(((((..(.((((((....)))))).)..).))))..)..((((((....((((....(((....)))....)))).))))))..)).))))).).))))))...))))))).).)..)))..))))).....))))))).)....).))))...))))...))))..
+LSO 
+........((((((.........)))))).........(((((((..((((....)))).)).)))))............(((((.(((((((((((((.(((((.(((..(((((((.....(((((((((((((((((((((((.((((.....((((....(((....)))....))))...)))).))))))))..)).)))))..))))))))...))))))).)))))))))).)))))))))))))))).......((((.....))))..
+.........(((((((.......)))))))...(((((((........)).)))))............((((..((((...((((.(((.((.(((((..(((..(......((((((((((((((((((((..((((((((((.((((((....))))))..)))))))).....((((((....((((....(((....)))....)))).)))))).))..))))).))))))))...)))))))...)..)))..))))).)))))))))))))..))))((((..........))))..
+Dynalign II
+UGGGUUGAUGAGCGUGAAGCCUUCGCUCGGUUGGAUUUUUCUUCAUUGCUACUCUUGGCUUGCAGGAAUUCCUCAUUUGAGGCAUCGUAAUUGUUUGGUCUGCCCUUGACAAGUUGGUGUGAAGGUUGGGUCUUGCGCAAUGGGAACCUUGUGAACCAUGUCAGGUCCGGAAGGAAGCAGCAUUAAGCAGUGUUCUCAUGUGCCGCGAGUCGCCUGGCCCGAGCUAACUAUCAGGGUAACGCAGAUGAUUGCAUGUCGAUGUGAGGUGCGCGACACUAA
+(((((((...(((((((((..(((........))).....))))).))))..(((((.....)))))...((((((....(((((.(((((((((((((.((((((.....(((((((.....((((((((((((((((..((((((.((((.....((((....(((....)))....))))...)))).))))))...)).))))))..))))))))...)))))))...)))))))).))))))))))))))))...))))))....)))).))).
+GGACUAGGCCGGGCGGUUUGGCUCCGCCCGACACCCGUGAGACAGUCAUCAGCGGGGGCCGAACACCGGGCGCGUCCGACCGCCGCGGUCGGCCCCGGAAGCCAACGUGGAAGCCUCGUCCGUCGGGGACGGCGGUCCGCGGCGUGCGCCCGCAGGGGCGUUCCGUCGUGGUUCGACGGUGGCAACCCGCCAGGCACGGAAGUGAGCAGCGGACCACCGAACGCCCGUCGCUCGACGGGUCGCGGGGUGGAGAAGGCGACCGGGACUACCCGGCCGGGAACGCCGGGCUACCCCGACUGUCCAC
+((((.((..((((..((((((((((((..(((............)))....))))).))))))).((.((((..((((...((((.(((.((.(((((..(((.........((((((((((((((((((((((..((((((((.((((((....))))))..)))))))).....((((((....((((....(((....)))....)))).))))))..)).))))).))))))))...)))))))......)))..))))).)))))))))))))..)))).))....)))).))))))..
 
-> Dynalign II
-> B05202
-UUUGGUGACGAUAGCGAAGAGGUCACACCCGUUCCCAUGCCGAACACGGCCGUUAAGCUCUUCAGCGCCGAUGGUAGUUGGGGGCUUCCCCCUGCAAGAGUAGGACGUUGCCAAGC
-((((((((((...((((((((...((..((((((.......))..))))..))....)))))).)).((..........(((((...)))))..........)).)))))))))).
-> B05635
-UCUAGUGGCGAUAGCGAAGUGGUCACACCCGUUCCCAUGCCGAACACGGAAGUUAAGCGCUUCAGCGCCGAAAGUAGUUGGGGGUCUCCCCCUGUGAGGAUAGGACGUUGCCAGGC
-(((.((((((...((((((((...((..((((((.......))..))))..))....)))))).)).((..........(((((...)))))..........)).)))))).))).
+. SRP Meth.ther._X15364
+UGGGCUAGACCGGAGGGUUAGGGGUCCUCUGUAAGCGCAAAUCCCCUAUACGGCGCGGUCGAAGUUCAGGGGACGGCUGAUCGACUGUUUAUCGGCCCUGCUGAUUGGUGUCGAAGCCUCGUCCCGCAGGAUCAGUGGUGAUGGGGCCCUGACUGGAGGGUCAGGGUAAACCAUCUUAGUCAUGGGAACGGGUCAGGCCUGGAAAGGAGCAGCCCUACCAUGGACAGCUGAUGCUUGCGGAUUAACGGGGUGGAGCCAGUCAGCGGGAUCACCGGUAAAUGGAAGGUCUGUCAACCCCUGAACGUGCCCA
+(((((..(((((((((((.....)))))))....((((..............))))))))...(((((((((..(((.(.(...(((((((((((.(((((((((((((.(....(((((((.((((((.((((((((.(((((.(((((((((....)))))))))...))))).)..((((((....((((....(((....)))....))))..)))))).)).))))).).)))))....))))))).).)))))))))))))....)))))))))))..).)..)))..)))))))))..)))))
+LSO
+.((((....(((...(..((((((..................))))))..)....))).....(((((((((..(((.((((..(((((((((((.(((((((((((((......(((((((.(((((((((((((.(((((((.(((((((((....)))))))))...))))).....(((((....((((....(((....)))....))))..))))).)).)))))).)))))))....)))))))...)))))))))))))....)))))))))))..)))).)))..)))))))))..)))).
+Dynalign II
+(((((..(((((....((((((((..................)))))).))....)))))...(((((((((..(((.((((..(((((((((((.(((((((((((((......(((((((.(((((((((((((.(.(((((.(((((((((....)))))))))...))))).....(((((....((((....(((....)))....))))..)))))..).)))))).)))))))....)))))))...)))))))))))))....)))))))))))..)))).)))..)))))))))..)))))
 
-5S group21 
-inside: -6436.74 2990 2340 -294.198
-...(((((.......((((((.......((((((.......))..))))........))))))...(((.((....(((((((....--)))))))....)).)))..))))).-...
-...(((((.......((((((.......((((((.......))..))))........))))))...(((.((....(((---(......)---)))....)).)))..))))).....
-CCUGGUGAAAUUAGCGCUGUGGAACCACCCGAUCCCAUCCCGAACUCGGAAGUGAAACGCAGCUGCGCCGAUGGUAGUGUGGCUCAA--GCCAUGCGAGAGUAGGUCAUCGCCA-GGG
-UCAGGUGACUACAGCACCGGGGUUCCACCUCUUCCCAUUCCGAACAGAGAAGUUAAGCCCGGUCACGCCGAUGGUACUG---CGUAACAG---UGGGAGAGUAGGUAGUCGCCGUUUU
+................((((((..(((((((((((.(((......))).............(((((((((((.(.((((((.....(((.((((((.................)))))).))))))))).).)).))))).)))).((((..........)))).......(((............))).......))))))..)))))..))))))(((((((((.((.(((.(((((((((....(((((((.(.(((((.....((((((((.((((...((((.((......)).))))...))))))))).((((.....))))....))))))))..).)))))))...)))))).)))...)))...)).))))))))).......(.(((((((((((((.......(((((.(((((........))))).)))))))))))))).)))).)......
+.......((((((..((((((((((...........(((.......))).............((((((.......(((((((((.................)))))))))..)))))).((....))....(((........))).....)))).))))))..))))))..((((((((((((.(((((.((((((.(((((((.((((((.......((((((((((.((((...((......))...))))))))).((((.....))))....))))).)))))).)))..))))...)))))).)))))..))).....))))))))).............(.(((((((((.....((((..(((((........))))).)))).....))))))))).)......
 
-inside: -6756.75 2620 3060 -310.948
-...(((((--.((..((((((((....(..((((((.......))..))))..).....))))))...(((...))).(((((((....--)))))))....))..))..--))))).-...
-...(((((((-((-.((((((((....(..((((((.......))..))))..).....))))))...(((...))).(((---(......)---)))....))..))--))))))).....
-CCUGGUGA--AAUUAGCGCUGUGGAACCACCCGAUCCCAUCCCGAACUCGGAAGUGAAACGCAGCUGCGCCGAUGGUAGUGUGGCUCAA--GCCAUGCGAGAGUAGGUCA--UCGCCA-GGG
-UCAGGUGACU-AC-AGCACCGGGGUUCCACCUCUUCCCAUUCCGAACAGAGAAGUUAAGCCCGGUCACGCCGAUGGUACUG---CGUAACAG---UGGGAGAGUAGGU--AGUCGCCGUUUU
+.........(((((.(((((...))))).)..)))).......................(((((((((((((...((((((.....(((.((((((.................)))))).)))))))))...)).))))).)))).)).......................(((............))).(((((.((((((...........))))))..))))).............................(((.(.....).)))(((((.((((...((((.((......)).))))...))))))))).((((.....))))....(((..(((((((...)))))))..)))........((((....)))).............(.(((((((((((((.......(((((.(((((........))))).)))))))))))))).)))).)......
+.........((((((....)))))).......................((((..((......((((((.......(((((((((.................)))))))))..))))))....)).))))..(((........))).((.(((((........)))))........)).............................(((.(.......).)))(((((.((((...((......))...))))))))).((((.....))))....((((...))))...................((((..............)))).................(.(((((((((.....((((..(((((........))))).)))).....))))))))).)......
 
-5S group18
-inside: -6056.13 4410 1840 -307.7
-((((((((((.....((((((((.......((((.............))))........)))))).)).((.((....((.((((....)))).))....)).))...)))))))))).
-(---((((((.....((((((((.......((((.............))))........)))))).)).((.((....((.((((....)))).))....)).))...))))))---).
-GGCCUGGUGGUUAUAGCGCGGGGCCCCCACCCGAUCCCAUCUCGAACUCGGUCGUUAAAUCCCGCAGCGCCGAUGGUACUCCGCCUUAAGGCGUGGGAGAGUAGGUCGCCGCCAGGCCU
-C---UGACGAACAUAGCGUUUUGGAACCACCUGACUCCAUGCCGAACUCAGAAGUGAAACGAAACAGCGUCGAUGAUAGUGUGGGUUCGCCCAUGUGAAAGUAGAACAUCGUCA---GG
-inside: -6756.13 3850 1700 -307.7
-((((((((((...((((((((((....(..((((.............))))..).....)))))).))(((...)))....((((....))))........)).....)))))))))).
-(---((((((...((((((((((....(..((((.............))))..).....)))))).))(((...)))....((((....))))........)).....))))))---).
-GGCCUGGUGGUUAUAGCGCGGGGCCCCCACCCGAUCCCAUCUCGAACUCGGUCGUUAAAUCCCGCAGCGCCGAUGGUACUCCGCCUUAAGGCGUGGGAGAGUAGGUCGCCGCCAGGCCU
-C---UGACGAACAUAGCGUUUUGGAACCACCUGACUCCAUGCCGAACUCAGAAGUGAAACGAAACAGCGUCGAUGAUAGUGUGGGUUCGCCCAUGUGAAAGUAGAACAUCGUCA---GG
+CAGGGAUGAACUGUACUCCGAACAAAACGUCCCAGGCGCAGGCUCAUCACCUGCGUCUAGUCGGCGCGCCGCUGUAUGGCACUGGCGGCGCGCACGGCUACACACCUGGAUGCGGGGAACUCUUGCUAGGCACACAGUACCAAGCGCUGGCUGUAACACUCCAGCGUUCCGAUGAUAAGGGUACGGUAAUAACCUGUGUGAUAGAGACAAUCCGCAGCCGAGUUGGCUGCCUCUGGGGAUCCCAGAGGGUGCUGACCGGUUCAACGCUCGGUAAGGUGUGGGUUGUGACCGUAAGGGCUGGUUCUGGCGACCAAGCAGGCCCGGUCACGGCUUAAGGUACGGGCUACGCCCACCCGAGAGGGUGAUGCUGCCUACCGGGAGUGCAACCCGAGAAGCAGCAUGUGCUGAGAGUUAUAGUGCUCGCACGGUAUCACGGAACUGGCUUGUGGCG
+..((((((...................))))))(((((((((.......))))))))).(((((((((((((((........))))))))))).))))..(((((((.......((....(((.......(((((((((((.((((((((..((...)).))))))))((........))....)))).....)))))))....)))....))...((((.((((((..((((((((...))))))))..)))))))))).............)))))))((((((((((....(((((.(((.(((...)))))).)))))))))))))))..............((..(((((....))))).((((((....((((.......))))....)))))).((((((.((((......))))...))))))..))................
+UCCGUAGGUUUUACUAUGCGGAGAAAAGCAGGCUUGAAAAGAGUUUCCUGCUAGUGCCUGAAUAAGGUGCGACACUGUCAAAUUGCCUGGAAAUCCUGUCAAGCCCCUGGUACCGCUCAUCUUGAGGAAACUCUGGUGUGCACCUCGGUGAAAGUCGAGGGUAUGGUAAUAAUCCAGCGGGAUAAGGACAAUAGGCAGCCAACUGCUAAAAGAGUCCUAUGACUCUCAUGCAGGCAGUCCACAGACUAAAUGGCAGUGGGUCAAAAAGCAUUAAGUGCCGCUUGGCUUAAGAUAUAGUCGGUCCUCGCUGAAAAGCGGCCAAUGAGAGGAAUUCUCUUUGAGAAGGAGAGCUCAUUGGAGUUUGGGUAAUACUCUGCAAUGCAAAUUGUAUGAGGGCAAUAAGCCUCCAAACUGGGUGAAACGAGGUGAAACU
+((((((..........))))))....(((((((((.....)))...)))))).((((((.....))))))..((((((((...((((((....((((......(((((((((((((.((((..(((....))).)))).)).((((((......))))))....)))....).)))).)))...))))...))))))((....(((....((((((....))))))...)))....))............))))))))((((((...(((.....)))...)))))).............((...((((....)))).((((((((.....(((((...)))))......))))))))((((((((.....(((((((((....)))))).)))(((.....))))))))))).......))...........
+
+CAGGGAUGAACUGUACUCCGAACAAAACGUCCCAGGCGCAGGCUCAUCACCUGCGUCUAGUCGGCGCGCCGCUGUAUGGCACUGGCGGCGCGCACGGCUACACACCUGGAUGCGGGGAACUCUUGCUAGGCACACAGUACCAAGCGCUGGCUGUAACACUCCAGCGUUCCGAUGAUAAGGGUACGGUAAUAACCUGUGUGAUAGAGACAAUCCGCAGCCGAGUUGGCUGCCUCUGGGGAUCCCAGAGGGUGCUGACCGGUUCAACGCUCGGUAAGGUGUGGGUUGUGACCGUAAGGGCUGGUUCUGGCGACCAAGCAGGCCCGGUCACGGCUUAAGGUACGGGCUACGCCCACCCGAGAGGGUGAUGCUGCCUACCGGGAGUGCAACCCGAGAAGCAGCAUGUGCUGAGAGUUAUAGUGCUCGCACGGUAUCACGGAACUGGCUUGUGGCG
+..((((((...(((.......)))...))))))(((((((((.......))))))))).((((((((((((((((.....)).)))))))))).))))..(((((((...((((((....((((......(((((((((((((((((((..((...)).))))))))((........))....)))).....)))))))...))))...))))))((((.((((((..((((((((...))))))))..)))))))))).............)))))))((((((((((....(((((.(((.(((...)))))).)))))))))))))))......((((((((..(((((((....)))))(((((((.(..((((.......))))..).)))))))((((((.((((......))))...))))))...))...)))))))).....
+UCCGUAGGUUUUACUAUGCGGAGAAAAGCAGGCUUGAAAAGAGUUUCCUGCUAGUGCCUGAAUAAGGUGCGACACUGUCAAAUUGCCUGGAAAUCCUGUCAAGCCCCUGGUACCGCUCAUCUUGAGGAAACUCUGGUGUGCACCUCGGUGAAAGUCGAGGGUAUGGUAAUAAUCCAGCGGGAUAAGGACAAUAGGCAGCCAACUGCUAAAAGAGUCCUAUGACUCUCAUGCAGGCAGUCCACAGACUAAAUGGCAGUGGGUCAAAAAGCAUUAAGUGCCGCUUGGCUUAAGAUAUAGUCGGUCCUCGCUGAAAAGCGGCCAAUGAGAGGAAUUCUCUUUGAGAAGGAGAGCUCAUUGGAGUUUGGGUAAUACUCUGCAAUGCAAAUUGUAUGAGGGCAAUAAGCCUCCAAACUGGGUGAAACGAGGUGAAACU
+.((((((((...))).))))).....(((((((((.....)))...)))))).((((((.....))))))..((((((((...((((((....((((......(((((((((((((.((((..(((....))).)))).)).(((((........)))))....)))).....)))).)))...))))...))))))(((...(((....((((((....))))))...))))))((((....))))...))))))))((((((...((((...))))...))))))..........(((..(((((((.(.((((..((((((((.....(((((((.....))))))))))))))).))))((((...))))((((((....))))))((.((((.....)))).))...).)).....))))))))....
+
+CAGGGAUGAACUGUACUCCGAACAAAACGUCCCAGGCGCAGGCUCAUCACCUGCGUCUAGUCGGCGCGCCGCUGUAUGGCACUGGCGGCGCGCACGGCUACACACCUGGAUGCGGGGAACUCUUGCUAGGCACACAGUACC--------------------------AGCGCUGGCUGUAACACUCCAGCGU-CC---GAUGAUAA---GGGUACGGUAAUAACCUGU-GUGAUAGAGACAAUCCGCAGCC-----------GAGUUGGCUGCCUCUGGGG-AUCCCAGAGGGUGCUGACC-------GGU-----------UCAACGCUCGGAAGGU-GUGGGUUGUGACCGUAAGGGCUGGUUCUGGCGACCAAGCAGGCCC---GGUCACGGCUUAAGGUACGGGCUACGCCCACCCGA-----------GAGGGUGAUGCUGCCUACCGGGAGUG-CAACCCGAGAAGCAGCAUGUGC-------UG------------------GAGUUAUAGUGCUCGCACGGUAUCACGGAACUGGCUUGUGGCG
+CAGGGAUGAACUGUACUCCGAACAAAACGUCCCAGGCGCAGGCUCAUCACCUGCGUCUAGUCGGCGCGCCGCUGUAUGGCACUGGCGGCGCGCACGGCUACACACCUGGAUGCGGGGAACUCUUGCUAGGCACACAGUACCA GCGCUGGCUGUAACACUCCAGCGU CCGAUGAUAAGGGUACGGUAAUAACCUGUGUGAUAGAGACAAUCCGCAGCCGAGUUGGCUGCCUCUGGGGAUCCCAGAGGGUGCUGACCGGUUCAACGCUCGGAAGGUGUGGGUUGUGACCGUAAGGGCUGGUUCUGGCGACCAAGCAGGCCCGGUCACGGCUUAAGGUACGGGCUACGCCCACCCGAGAGGGUGAUGCUGCCUACCGGGAGUGCAACCCGAGAAGCAGCAUGUGCUGGAGUUAUAGUGCUCGCACGGUAUCACGGAACUGGCUUGUGGCG
+CAGGGAUGAACUGUACUCCGAACAAAACGUCCCAGGCGCAGGCUCAUCACCUGCGUCUAGUCGGCGCGCCGCUGUAUGGCACUGGCGGCGCGCACGGCUACACACCUGGAUGCGGGGAACUCUUGCUAGGCACACAGUACCAAGCGCUGGCUGUAACACUCCAGCGUUCCGAUGAUAAGGGUACGGUAAUAACCUGUGUGAUAGAGACAAUCCGCAGCCGAGUUGGCUGCCUCUGGGGAUCCCAGAGGGUGCUGACCGGUUCAACGCUCGGUAAGGUGUGGGUUGUGACCGUAAGGGCUGGUUCUGGCGACCAAGCAGGCCCGGUCACGGCUUAAGGUACGGGCUACGCCCACCCGAGAGGGUGAUGCUGCCUACCGGGAGUGCAACCCGAGAAGCAGCAUGUGCUGAGAGUUAUAGUGCUCGCACGGUAUCACGGAACUGGCUUGUGGCG
+..((((((...(((.......)))...))))))(((((((((.......))))))))).((((((((((((((((.....)).)))))))))).))))..((((((....((((((....((((......(((((((((((((((((((..((...)).))))))))((........))....)))).....)))))))...))))...))))))((((.((((((..((((((((...))))))))..))))))))))...((.....))..))))))((((((((((....(((((.(((.(((...)))))).)))))))))))))))..............(((((........)))))(((((((.(..((((.......))))..).)))))))((((..((((......)))))))).........................
+UCCGUAGGUUUUACUAUGCGGAGAAAAGCAGGCUUGAAAAGAGUUUCCUGCUAGUGCCUGAAUAAGGUGCGACACUGUCAAAUUGCCUGGAAAUCCUGUCAAGCCCCUGGUACCGCUCAUCUUGAGGAAACUCUGGUGUGCACCUCGGUGAAAGUCGAGGGUAUGGUAAUAAUCCAGCGGGAUAAGGACAAUAGGCAGCCAACUGCUAAAAGAGUCCUAUGACUCUCAUGCAGGCAGUCCACAGACUAAAUGGCAGUGGGUCAAAAAGCAUUAAGUGCCGCUUGGCUUAAGAUAUAGUCGGUCCUCGCUGAAAAGCGGCCAAUGAGAGGAAUUCUCUUUGAGAAGGAGAGCUCAUUGGAGUUUGGGUAAUACUCUGCAAUGCAAAUUGUAUGAGGGCAAUAAGCCUCCAAACUGGGUGAAACGAGGUGAAACU
+.((((((((...))).))))).....(((((((((.....)))...)))))).((((((.....))))))..(((((((....((((((....((((......(((((((((((((.((((..(((....))).)))).)).(((((........)))))....)))).....)))).)))...))))...))))))(((...(((....((((((....))))))...))))))((((....))))....)))))))((((((...((((...))))...))))))..............(((((...................)))))((((.(..((((........))))..)))))((((.........((((((....))))))...((((.....)))))))).......................
+
+>Ther.teng._AE012978.dotbracket
+CCGUACUAGAUGGGGAGGUAGCGGUGCCCUGUAGCCUGCAACCCGCUAUAGCAGGGUCGAAUUCCCAGGCUGAGGCCUGAUUUCUGUAAGGCCUGGCGCAAGUAAGUGGCGUUGAUACUUGAGUCCUGCGCAACGGAGAUUUGCGAACCCCGUCAGGUCCGGAAGGAAGCAGCGGUAAGCAAACACCUCCGUGUGCCGCAGGGGUGCUUGAGUGGAGCUAACUGCUUGCGUAACGCUUAUGGGGACAGGUCGAAGCUGGGUGUACGG
+>Sulf.toko._BA000023.dotbracket
+GGGUCGGGUAGGGUGGGGAGUCUCGCCAGCUCCUGUAACCCCGUGGCGUAAUGGGGCACCAGUAACCCUUAUGCCAUGAUACCUACCUCUCUAGAUCCCAGCUGAACGAUGAGCACCGCCCGGUGGGGCGAGACGGACGCGAAUCUCCUCUCUGGAGGGAGAGGGGAUAUCGCGUCAACCGGAGGAAUCGGCCAGGUCCGGAAGGGAGCAACCGUGUCCGGCCGUCCGCGUUCACCGGUCACCGGUGUGAGAAAGGCUGGGGGUAAAUCUAGAGAGGAAAGGAUCAUGGCAUAAGGGGGCCGACCCAU
+..........(((.(.(((.((((.((......)))))).)))).)))((((.(((.......)))..))))((((((..........))))))(((((.........((((.(((......)))..)))).((((((.(((((.....(((.....(((....))).....)))...)))))...)))))))))))((((((((((((.....))))..))).)))))..........................(((......)))
+..........((((.((((((.......))))))...))))((((((((((.(((..........)))))))))))))......................(((........)))......((((((((((.((((((((((((((((((((((....))))))))))).))))))...(((((.....(((.....(((....))).....)))..))))))))))))).))))))).((.(((((.(.....).)))))))................................(((......)))..
+
+inside: -5826.46 4250 1740 -295.459
+.((((((((....((.(((((.....((((((.............))))..))....)))))..)).((.((....((((((((....))))))))....)).))..))))))))..
+.((((((((....((.(((((.....((((((.............))))..))....)))))..)).((.((....(((((....)))))....)).))..))))))))..
+CCUGGUGGUUAAAGAAAAGAGGAAACACCUGUUAUCAUUCCGAACACAGAAGUUAAGCUCUUAUUCGCUGAUGGUACUGCGAGUUCGCGGGAGAGUAAGUUAUUGCCAGGG
+GGCGGCGGUCAUAGCAGUAGGGAAACGCCCGGACCCAUCCCGAACCCGGAAGCUAAGCCUACCCGCGCCGAUGGUACUGCAACCGAGGGGUsUGUGGGAGAGUAGGAAACCGCCGCAC
+CCUGGUGGUUAAAGAAAAGAGGAAACACCUGUUAUCAUUCCGAACACAGAAGUUAAGCUCUUAUUCGCUGAUGGUACUGCG---AGUU---CGCGGGAGAGUAAGUUAUUGCCAGGG
+
+inside: -6426.46 3920 1470 -295.459
+.((((((((..(.((.(((((.....((((((.............))))..))....)))))..)).((.((....((((((((....))))))))....)).))).))))))))..
+.((((((((..(.((.(((((.....((((((.............))))..))....)))))..)).((.((....(((((---....---)))))....)).))).))))))))..
+GGCGGCGGUCAUAGCAGUAGGGAAACGCCCGGACCCAUCCCGAACCCGGAAGCUAAGCCUACCCGCGCCGAUGGUACUGCAACCGAGGGGUUGUGGGAGAGUAGGAAACCGCCGCAC
+CCUGGUGGUUAAAGAAAAGAGGAAACACCUGUUAUCAUUCCGAACACAGAAGUUAAGCUCUUAUUCGCUGAUGGUACUGCG---AGUU---CGCGGGAGAGUAAGUUAUUGCCAGGG

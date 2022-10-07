@@ -15,8 +15,8 @@
 #include <vector>
 #include <unordered_map>
 
-// #include "LinearSankoff.h"
-#include "LinearSankoff_array.h"
+#include "LinearSankoff.h"
+// #include "LinearSankoff_array.h"
 
 class BeamSankoffParser;
 class SankoffParser;

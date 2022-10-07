@@ -22,13 +22,13 @@ elif "time_mem_data" == fam:
 
 else:
     data_dir = "/nfs/stak/users/lisiz/LinearSankoff/dataset/train_data"
-    out_dir = "/scratch/lisiz/lso_ret/align_internal_loop_diff10/train_w%s_b%s_LFb%s_energyDiff%s_ret" % (w, b, LFb, energyDiff)
+    out_dir = "/scratch/lisiz/lso_ret/branch_insertion/train_w%s_b%s_LFb%s_energyDiff%s_ret" % (w, b, LFb, energyDiff)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
     if fam in ["16S", "SRP", "RNaseP", "telomerase"]:
         data_dir = "/nfs/stak/users/lisiz/LinearSankoff/dataset/test_data"
-        out_dir = "/scratch/lisiz/lso_ret/align_internal_loop_diff10/test_w%s_b%s_LFb%s_energyDiff%s_ret" % (w, b, LFb, energyDiff)
+        out_dir = "/scratch/lisiz/lso_ret/branch_insertion/test_w%s_b%s_LFb%s_energyDiff%s_ret" % (w, b, LFb, energyDiff)
 
 fam_dir = os.path.join(data_dir, fam)
 fam_dir_out = os.path.join(out_dir, fam)

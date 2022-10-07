@@ -169,8 +169,9 @@ def ours():
         fam_dir = os.path.join(result_dir, fam)
 
         # if "16S" in fam: continue
-
-        if "tRNA" in fam or "tmRNA" in fam or "telomerase" in fam:
+        
+        if 
+        elif "tRNA" in fam or "tmRNA" in fam or "telomerase" in fam:
             ref_dir = os.path.join(ground_truth, fam + "_database")
         elif "5S" in fam:
             ref_dir = os.path.join(ground_truth, fam + "_rRNA_database", "Bacteria")
@@ -461,7 +462,7 @@ def ltf():
 
 
 
-# ours()
-dynalign()
+ours()
+# dynalign()
 # mafft()
 # ltf()
