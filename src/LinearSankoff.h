@@ -39,10 +39,14 @@ enum Manner {
   MANNER_NONE = 0,                  // 0: empty
 
   MANNER_START,
-  
+
   MANNER_H_ALN,                     // 1: hairpin candidate
   MANNER_H_INS1,                    // 2: hairpin candidate
   MANNER_H_INS2,                    // 3: hairpin candidate
+
+  MANNER_HAIRPIN,
+  MANNER_SINGLE,
+  MANNER_P_eq_MULTI,
 
   MANNER_HAIRPIN_ALN,               // 4: hairpin
   MANNER_HAIRPIN_INS1,              // 5: hairpin
@@ -273,10 +277,10 @@ public:
     void outside(bool limited, const set<pair<int, int>> &allowed_pairs);
 
 private:
-    // state, cost of folding and alignment, three-dimentional: [s, (j1*seq1len+i1)*seq2len+i2] 
-    unordered_map<pair<int, int>, State3, pair_hash>** bestH;
-    unordered_map<pair<int, int>, State3, pair_hash>** bestP; // must sperate
-    unordered_map<pair<int, int>, State3, pair_hash>** bestMulti;
+    // state, cost of folding and alignment, three-dimentional: [s][j1][(i1,i2)] 
+    unordered_map<pair<int, int>, State, pair_hash>*** bestH;
+    unordered_map<pair<int, int>, State, pair_hash>*** bestP;
+    unordered_map<pair<int, int>, State, pair_hash>*** bestMulti;
 
     unordered_map<pair<int, int>, State, pair_hash>** bestM;
     unordered_map<pair<int, int>, State, pair_hash>** bestM2;
@@ -341,13 +345,12 @@ private:
     //            vector<unordered_map<int, int> > seq2_outside);
 
     // beam prune
-    vector<pair<float, int> > scores;
-    vector<int> invalid_pos;
-    float beam_prune(unordered_map<int, State3> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
-    float beam_prune(unordered_map<int, State> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside, bool if_astar);
-    // new datastructure
-    float beam_prune(unordered_map<pair<int, int>, State3, pair_hash> *beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
-    float beam_pruneM(unordered_map<pair<int, int>, State3, pair_hash> *beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
+    // vector<pair<float, int> > scores;
+    // vector<int> invalid_pos;
+    // float beam_prune(unordered_map<int, State3> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
+    // float beam_prune(unordered_map<int, State> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside, bool if_astar);
+    // // new datastructure
+    float beam_prune(unordered_map<pair<int, int>, State, pair_hash> **beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
     float beam_prune(unordered_map<pair<int, int>, State, pair_hash> *beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
 };
 
@@ -538,7 +541,7 @@ inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int s
     // assert (i2 >= 0);
     
     if (state.score <= seq1foldscore + seq2foldscore + wegiht * alignscore) {
-        if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
+        if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << " " << premanner << " " << manner << endl;
         state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, alignscore, end_hmm_m, wegiht * alignscore);
     }
 }
@@ -552,7 +555,7 @@ inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int s
     // assert (i2 >= 0);
 
     if (state.score <= seq1foldscore + seq2foldscore + wegiht * alignscore) {
-        if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << endl;
+        if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << " " << premanner << " " << manner << endl;
         state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, seq1_split, seq2_split, alignscore, end_hmm_m, wegiht * alignscore);
     }
 }
