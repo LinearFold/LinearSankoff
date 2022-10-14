@@ -1825,37 +1825,6 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                                             state.trace2.paddings.l1, new_seq2_l2,
                                                             alignscore, MANNER_ALN, weight, verbose); 
                                     }
-                                    if (j1next != -1 && j2 >= hmmalign.low_bounds[j1next] && j2 <= hmmalign.up_bounds[j1next]) {
-// #ifdef dynalign
-//                                     // do not apply alignment constraint on right side
-//                                     aln_value_type alignscore = state.alignscore - abs(state.trace1.paddings.l2 - state.trace2.paddings.l2) + abs(new_seq1_l2 - new_seq2_l2);
-// #else
-                                        alignscore = get_hmm_score_right(j1, j1next, j2, j2, 2, 2, true); // true
-                                        alignscore = xlog_mul(state.alignscore, alignscore);
-
-// #endif
-                                        if (alignscore > LOG_OF_ZERO)
-                                            update_if_better(i1, j1next, i2, j2, bestMulti[j1next+j2][j1next][2][make_pair(i1, i2)], // bestMulti[j1next+j2next][get_keys(j1next, i1, i2)].alnobj,
-                                                            state.seq1foldscore + get<1>(result1),
-                                                            state.seq2foldscore,
-                                                            state.manner, MANNER_MULTI_eq_MULTI_plus_U_ALN,
-                                                            state.trace1.paddings.l1, new_seq1_l2,
-                                                            state.trace2.paddings.l1, state.trace2.paddings.l2,
-                                                            alignscore, MANNER_ALN, weight, verbose); 
-                                    }
-                                    if (j2next != -1 && j2next >= hmmalign.low_bounds[j1] && j2next <= hmmalign.up_bounds[j1]) {
-                                        alignscore = get_hmm_score_right(j1, j1, j2, j2next, 2, 2, true); // true
-                                        alignscore = xlog_mul(state.alignscore, alignscore);
-
-                                        if (alignscore > LOG_OF_ZERO)
-                                            update_if_better(i1, j1, i2, j2next, bestMulti[j1+j2next][j1][2][make_pair(i1, i2)], // bestMulti[j1+j2next][get_keys(j1, i1, i2)].ins2obj,
-                                                            state.seq1foldscore,
-                                                            state.seq2foldscore + get<1>(result2),
-                                                            state.manner, MANNER_MULTI_eq_MULTI_plus_U_ALN,
-                                                            state.trace1.paddings.l1, state.trace1.paddings.l2,
-                                                            state.trace2.paddings.l1, new_seq2_l2,
-                                                            alignscore, MANNER_ALN, weight, verbose); 
-                                    }
                                     break;
                                 }
                                 case MANNER_INS1:
@@ -1885,19 +1854,6 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                                             state.trace2.paddings.l1, state.trace2.paddings.l2,
                                                             alignscore, MANNER_ALN, weight, verbose); 
                                     }
-                                    if (j2next != -1 && j2next >= hmmalign.low_bounds[j1] && j2next <= hmmalign.up_bounds[j1]) {
-                                        alignscore = get_hmm_score_right(j1, j1, j2, j2next-1, 0, 0, true); // true
-                                        alignscore = xlog_mul(state.alignscore, alignscore);
-
-                                        if (alignscore > LOG_OF_ZERO)
-                                            update_if_better(i1, j1, i2, j2next, bestMulti[j1+j2next][j1][0][make_pair(i1, i2)], // bestMulti[j1+j2next][get_keys(j1, i1, i2)].ins2obj,
-                                                            state.seq1foldscore,
-                                                            state.seq2foldscore + get<1>(result2),
-                                                            state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS1,
-                                                            state.trace1.paddings.l1, state.trace1.paddings.l2,
-                                                            state.trace2.paddings.l1, new_seq2_l2,
-                                                            alignscore, MANNER_ALN, weight, verbose); 
-                                    }
                                     break;
                                 }  
                                 case MANNER_INS2:   
@@ -1912,19 +1868,6 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                                             state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS2,
                                                             state.trace1.paddings.l1, new_seq1_l2,
                                                             state.trace2.paddings.l1, new_seq2_l2,
-                                                            alignscore, MANNER_ALN, weight, verbose); 
-                                    }
-                                    if (j1next != -1 && j2 >= hmmalign.low_bounds[j1next] && j2 <= hmmalign.up_bounds[j1next]) {
-                                        alignscore = get_hmm_score_right(j1, j1next-1, j2, j2, 1, 1, true); // true
-                                        alignscore = xlog_mul(state.alignscore, alignscore);
-
-                                        if (alignscore > LOG_OF_ZERO)
-                                            update_if_better(i1, j1next, i2, j2, bestMulti[j1next+j2][j1next][1][make_pair(i1, i2)], // bestMulti[j1next+j2][get_keys(j1next, i1, i2)].ins1obj,
-                                                            state.seq1foldscore + get<1>(result1),
-                                                            state.seq2foldscore,
-                                                            state.manner, MANNER_MULTI_eq_MULTI_plus_U_INS2,
-                                                            state.trace1.paddings.l1, new_seq1_l2,
-                                                            state.trace2.paddings.l1, state.trace2.paddings.l2,
                                                             alignscore, MANNER_ALN, weight, verbose); 
                                     }
                                     if (j2next != -1 && j2next >= hmmalign.low_bounds[j1] && j2next <= hmmalign.up_bounds[j1]) {
