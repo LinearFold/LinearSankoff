@@ -1297,20 +1297,18 @@ void BeamAlign::viterbi_backward(bool newpara) {
                         next_k = k + 1;
                         next_step += 2;
 
-                        if (next_i < seq1_len && next_k < seq2_len) {
-                            // check whether in valid region
-                            // loop the region slightly to make sure arrive at the end position with state s2
-                            if ((start2 + next_k) < low_bounds[start1 + next_i]) continue;
-                            if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
-                        } 
+                        // if (next_i < seq1_len && next_k < seq2_len) {
+                        //     // check whether in valid region
+                        //     // loop the region slightly to make sure arrive at the end position with state s2
+                        //     if ((start2 + next_k) < low_bounds[start1 + next_i]) continue;
+                        //     if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
+                        // } 
 
                         if (((next_i == seq1_len) && (next_k == seq2_len)) || ((next_i < seq1_len) && (next_k < seq2_len))) {
-                            trans_emit_prob = get_trans_emit_prob(manner, next_manner, next_i, next_k, newpara);
-                            update_if_better_backward(state, xlog_mul(bestALN[next_step][next_k].beta, trans_emit_prob));
-                            // state.beta = xlog_sum(state.beta, xlog_mul(bestALN[next_step][next_k].beta, trans_emit_prob));
-
-                            // debug
-                            // cout << pre_m << " " << i << " " << k << " " << state.ml << " " << state.beta << " " << xlog_mul(state.ml, state.beta) << endl;
+                            if (bestALN[next_step].find(next_k) != bestALN[next_step].end()) {
+                                trans_emit_prob = get_trans_emit_prob(manner, next_manner, next_i, next_k, newpara);
+                                update_if_better_backward(state, xlog_mul(bestALN[next_step][next_k].beta, trans_emit_prob));
+                            }
                         }
                         break;
 
@@ -1322,12 +1320,14 @@ void BeamAlign::viterbi_backward(bool newpara) {
 
                         // check whether in valid region
                         // loop the region slightly to make sure arrive at the end position with state s2
-                        if ((start2 + next_k) < low_bounds[start1 + next_i]) continue;
-                        if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
+                        // if ((start2 + next_k) < low_bounds[start1 + next_i]) continue;
+                        // if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
 
                         if ((next_i < seq1_len) && (next_k < seq2_len)) {
-                            trans_emit_prob = get_trans_emit_prob(manner, next_manner, next_i, next_k, newpara);
-                            update_if_better_backward(state, xlog_mul(bestINS1[next_step][next_k].beta, trans_emit_prob));
+                            if (bestINS1[next_step].find(next_k) != bestINS1[next_step].end()) {
+                                trans_emit_prob = get_trans_emit_prob(manner, next_manner, next_i, next_k, newpara);
+                                update_if_better_backward(state, xlog_mul(bestINS1[next_step][next_k].beta, trans_emit_prob));
+                            }
                             // state.beta = xlog_sum(state.beta, xlog_mul(bestINS1[next_step][next_k].beta, trans_emit_prob));
                         }
                         break;
@@ -1340,13 +1340,14 @@ void BeamAlign::viterbi_backward(bool newpara) {
 
                         // check whether in valid region
                         // loop the region slightly to make sure arrive at the end position with state s2
-                        if ((start2 + next_k) < low_bounds[start1 + next_i]) continue;
-                        if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
+                        // if ((start2 + next_k) < low_bounds[start1 + next_i]) continue;
+                        // if ((start2 + next_k) > up_bounds[start1 + next_i]) continue; 
 
                         if ((next_i < seq1_len) && (next_k < seq2_len)) {
-                            trans_emit_prob = get_trans_emit_prob(manner, next_manner, next_i, next_k, newpara);
-                            update_if_better_backward(state, xlog_mul(bestINS2[next_step][next_k].beta, trans_emit_prob));
-                            // state.beta = xlog_sum(state.beta, xlog_mul(bestINS2[next_step][next_k].beta, trans_emit_prob));
+                            if (bestINS2[next_step].find(next_k) != bestINS2[next_step].end()) {
+                                trans_emit_prob = get_trans_emit_prob(manner, next_manner, next_i, next_k, newpara);
+                                update_if_better_backward(state, xlog_mul(bestINS2[next_step][next_k].beta, trans_emit_prob));
+                            }
                         }
                         break;
                     

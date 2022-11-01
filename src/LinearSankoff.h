@@ -38,47 +38,42 @@ struct pair_hash {
 enum Manner {
   MANNER_NONE = 0,                  // 0: empty
 
-  MANNER_START,
+  MANNER_START,                     // 1
 
-  MANNER_H_ALN,                     // 1: hairpin candidate
-  MANNER_H_INS1,                    // 2: hairpin candidate
-  MANNER_H_INS2,                    // 3: hairpin candidate
+  MANNER_H_ALN,                     // 2: hairpin candidate
+  MANNER_H_INS1,                    // 3: hairpin candidate
+  MANNER_H_INS2,                    // 4: hairpin candidate
 
-  MANNER_HAIRPIN,
-  MANNER_SINGLE,
-  MANNER_P_eq_MULTI,
+  MANNER_HAIRPIN_ALN,               // 5: hairpin
+  MANNER_HAIRPIN_INS1,              // 6: hairpin
+  MANNER_HAIRPIN_INS2,              // 7: hairpin
 
-  MANNER_HAIRPIN_ALN,               // 4: hairpin
-  MANNER_HAIRPIN_INS1,              // 5: hairpin
-  MANNER_HAIRPIN_INS2,              // 6: hairpin
+  MANNER_SINGLE_ALN,                // 8: single
+  MANNER_SINGLE_INS1,               // 9: single
+  MANNER_SINGLE_INS2,               //10: single
 
-  MANNER_SINGLE_ALN,                // 7: single
-  MANNER_SINGLE_INS1,               // 8: single
-  MANNER_SINGLE_INS2,               // 9: single
+//   MANNER_STACKING_ALIGN_INTERNAL_LOOP1,
+//   MANNER_STACKING_ALIGN_INTERNAL_LOOP2,
+//   MANNER_STEM_EXTENSION1,
+//   MANNER_STEM_EXTENSION2,
 
-  MANNER_STACKING_ALIGN_INTERNAL_LOOP1,
-  MANNER_STACKING_ALIGN_INTERNAL_LOOP2,
+  MANNER_MULTI_ALN,                 // 11: multi = ..M2. [30 restriction on the left and jump on the right]
+  MANNER_MULTI_INS1,                // 12: multi = ..M2. [30 restriction on the left and jump on the right]
+  MANNER_MULTI_INS2,                // 13: multi = ..M2. [30 restriction on the left and jump on the right]
 
-  MANNER_STEM_EXTENSION1,
-  MANNER_STEM_EXTENSION2,
+  MANNER_MULTI_eq_MULTI_plus_U_ALN, // 14: multi = multi + U
+  MANNER_MULTI_eq_MULTI_plus_U_INS1,// 15: multi = multi + U
+  MANNER_MULTI_eq_MULTI_plus_U_INS2,// 16: multi = multi + U
 
-  MANNER_MULTI_ALN,                 // 10: multi = ..M2. [30 restriction on the left and jump on the right]
-  MANNER_MULTI_INS1,                // 11: multi = ..M2. [30 restriction on the left and jump on the right]
-  MANNER_MULTI_INS2,                // 12: multi = ..M2. [30 restriction on the left and jump on the right]
+  MANNER_P_eq_MULTI_ALN,            // 17: P = (multi)
+  MANNER_P_eq_MULTI_INS1,           // 18: P = (multi)
+  MANNER_P_eq_MULTI_INS2,           // 19: P = (multi)
 
-  MANNER_MULTI_eq_MULTI_plus_U_ALN, // 13: multi = multi + U
-  MANNER_MULTI_eq_MULTI_plus_U_INS1,// 14: multi = multi + U
-  MANNER_MULTI_eq_MULTI_plus_U_INS2,// 15: multi = multi + U
-
-  MANNER_P_eq_MULTI_ALN,            // 16: P = (multi)
-  MANNER_P_eq_MULTI_INS1,           // 17: P = (multi)
-  MANNER_P_eq_MULTI_INS2,           // 18: P = (multi)
-
-  MANNER_M2_eq_M_plus_P,            // 19: M2 = M + P
-  MANNER_M2_eq_M_plus_P1,
-  MANNER_M2_eq_M_plus_P2,
+  MANNER_M2_eq_M_plus_P,            // 20: M2 = M + P
+  MANNER_M2_eq_M_plus_P1,           // 21
+  MANNER_M2_eq_M_plus_P2,           // 22
   
-  MANNER_M_eq_M2,                   // 20: M = M2
+  MANNER_M_eq_M2,                   // 23: M = M2
   MANNER_M_eq_P,                    // 21: M = P
   MANNER_M_eq_P1,                    // 21: M = P
   MANNER_M_eq_P2,                    // 21: M = P
@@ -95,7 +90,7 @@ enum Manner {
   MANNER_C_eq_C_plus_P1,             // 28: C = C + P
   MANNER_C_eq_C_plus_P2,             // 28: C = C + P
   
-  MANNER_C_eq_P                     // 29: C = P
+//   MANNER_C_eq_P                     // 29: C = P
 };
 
 struct TraceInfo {
@@ -119,14 +114,14 @@ struct State {
     // float deviation;
     // bool check;
 
-    HMMManner endHMMstate; // TODO: simplify Manner
+    HMMManner startHMMstate, endHMMstate; // TODO: simplify Manner
     // HMMManner startHMMstate;
     // HMMManner endHMMstate;
 
     TraceInfo trace1;
     TraceInfo trace2;
 
-    State(): j1(-1), i1(-1), i2(-1), manner(MANNER_NONE), premanner(MANNER_NONE), score(VALUE_FMIN), seq1foldscore(VALUE_MIN), seq2foldscore(VALUE_MIN), alignscore(ALN_VALUE_MIN), endHMMstate(HMMMANNER_NONE) {}; //  cout << "init." << endl;
+    State(): j1(-1), i1(-1), i2(-1), manner(MANNER_NONE), premanner(MANNER_NONE), score(VALUE_FMIN), seq1foldscore(VALUE_MIN), seq2foldscore(VALUE_MIN), alignscore(ALN_VALUE_MIN), startHMMstate(HMMMANNER_NONE), endHMMstate(HMMMANNER_NONE) {}; //  cout << "init." << endl;
     // State(value_type s, Manner m): score(s), manner(m) {};
 
     void init() { // TODO
@@ -142,10 +137,11 @@ struct State {
         seq2foldscore = VALUE_MIN;
         alignscore = ALN_VALUE_MIN;
         
+        startHMMstate = HMMMANNER_NONE;
         endHMMstate = HMMMANNER_NONE;
     }
 
-    void set(int j1_, int i1_, int i2_, int seq1foldscore_, int seq2foldscore_, Manner premanner_, Manner manner_, float alignscore_, HMMManner end_hmm_m, float walignscore_) {
+    void set(int j1_, int i1_, int i2_, int seq1foldscore_, int seq2foldscore_, Manner premanner_, Manner manner_, float alignscore_, HMMManner start_hmm_m, HMMManner end_hmm_m, float walignscore_) {
         // assert (Fast_Exp(alignscore_) <= 1.0001);
         // check = true;
 
@@ -163,10 +159,11 @@ struct State {
         manner = manner_;
         // alnmanner = alnmanner_;
 
+        startHMMstate = start_hmm_m;
         endHMMstate = end_hmm_m;
     }
 
-    void set(int j1_, int i1_, int i2_, int seq1foldscore_, int seq2foldscore_, Manner premanner_, Manner manner_, int seq1_split_, int seq2_split_, float alignscore_, HMMManner end_hmm_m, float walignscore_) {
+    void set(int j1_, int i1_, int i2_, int seq1foldscore_, int seq2foldscore_, Manner premanner_, Manner manner_, int seq1_split_, int seq2_split_, float alignscore_, HMMManner start_hmm_m, HMMManner end_hmm_m, float walignscore_) {
         // assert (Fast_Exp(alignscore_) <= 1.0001);
         // check = true;
 
@@ -187,10 +184,11 @@ struct State {
         trace1.split = seq1_split_;
         trace2.split = seq2_split_;
 
+        startHMMstate = start_hmm_m;
         endHMMstate = end_hmm_m;
     }
 
-    void set(int j1_, int i1_, int i2_, int seq1foldscore_, int seq2foldscore_, Manner premanner_, Manner manner_, char seq1_l1_, int seq1_l2_, char seq2_l1_, int seq2_l2_, float alignscore_, HMMManner end_hmm_m, float walignscore_) {
+    void set(int j1_, int i1_, int i2_, int seq1foldscore_, int seq2foldscore_, Manner premanner_, Manner manner_, char seq1_l1_, int seq1_l2_, char seq2_l1_, int seq2_l2_, float alignscore_, HMMManner start_hmm_m, HMMManner end_hmm_m, float walignscore_) {
         // assert (Fast_Exp(alignscore_) <= 1.0001);
         // check = true;
 
@@ -213,6 +211,7 @@ struct State {
         trace2.paddings.l1 = seq2_l1_; 
         trace2.paddings.l2 = seq2_l2_;
 
+        startHMMstate = start_hmm_m;
         endHMMstate = end_hmm_m;
     }
 };
@@ -282,7 +281,7 @@ private:
     unordered_map<pair<int, int>, State, pair_hash>*** bestP;
     unordered_map<pair<int, int>, State, pair_hash>*** bestMulti;
 
-    unordered_map<pair<int, int>, State, pair_hash>** bestM;
+    unordered_map<pair<int, int>, State, pair_hash>*** bestM;
     unordered_map<pair<int, int>, State, pair_hash>** bestM2;
 
     vector<unordered_map<int, State3> > bestC;
@@ -532,7 +531,7 @@ inline int multi_unpaired_score(int j, SeqObject *seq){
     return VALUE_MIN;// / -100.0; 
 }
 
-inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int seq1foldscore, int seq2foldscore, Manner premanner, Manner manner, float alignscore, HMMManner end_hmm_m,  float wegiht, bool verbose) {
+inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int seq1foldscore, int seq2foldscore, Manner premanner, Manner manner, float alignscore, HMMManner start_hmm_m, HMMManner end_hmm_m,  float wegiht, bool verbose) {
     // if (alignscore <= VALUE_FMIN || alignscore <= LOG_OF_ZERO) return; // TODO
     // if (seq1foldscore <= VALUE_MIN || seq2foldscore <= VALUE_MIN) return;
     // assert (alignscore > LOG_OF_ZERO);
@@ -542,11 +541,11 @@ inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int s
     
     if (state.score <= seq1foldscore + seq2foldscore + wegiht * alignscore) {
         if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << " " << premanner << " " << manner << endl;
-        state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, alignscore, end_hmm_m, wegiht * alignscore);
+        state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, alignscore, start_hmm_m, end_hmm_m, wegiht * alignscore);
     }
 }
 
-inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int seq1foldscore, int seq2foldscore, Manner premanner, Manner manner, int seq1_split, int seq2_split, float alignscore, HMMManner end_hmm_m, float wegiht, bool verbose) {
+inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int seq1foldscore, int seq2foldscore, Manner premanner, Manner manner, int seq1_split, int seq2_split, float alignscore, HMMManner start_hmm_m, HMMManner end_hmm_m, float wegiht, bool verbose) {
     // if (alignscore <= LOG_OF_ZERO) return; // TODO
     // if (seq1foldscore <= VALUE_MIN || seq2foldscore <= VALUE_MIN) return;
     // assert (alignscore > LOG_OF_ZERO);
@@ -556,11 +555,11 @@ inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int s
 
     if (state.score <= seq1foldscore + seq2foldscore + wegiht * alignscore) {
         if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << " " << premanner << " " << manner << endl;
-        state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, seq1_split, seq2_split, alignscore, end_hmm_m, wegiht * alignscore);
+        state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, seq1_split, seq2_split, alignscore, start_hmm_m, end_hmm_m, wegiht * alignscore);
     }
 }
 
-inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int seq1foldscore, int seq2foldscore, Manner premanner, Manner manner, char seq1_l1, int seq1_l2, char seq2_l1, int seq2_l2, float alignscore, HMMManner end_hmm_m, float wegiht, bool verbose) {
+inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int seq1foldscore, int seq2foldscore, Manner premanner, Manner manner, char seq1_l1, int seq1_l2, char seq2_l1, int seq2_l2, float alignscore, HMMManner start_hmm_m, HMMManner end_hmm_m, float wegiht, bool verbose) {
     // if (alignscore <= VALUE_FMIN || alignscore <= LOG_OF_ZERO) return; // TODO
     // if (seq1foldscore <= VALUE_MIN || seq2foldscore <= VALUE_MIN) return;
     // assert (alignscore > LOG_OF_ZERO);
@@ -570,7 +569,7 @@ inline void update_if_better(int i1, int j1, int i2, int j2, State &state, int s
  
     if (state.score <= seq1foldscore + seq2foldscore + wegiht * alignscore) {
         if (verbose) cout << "better and update: "  << i1 << " " << j1 << " " << i2 << " " << j2 << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << state.alignscore << " " << seq1foldscore << " " << seq2foldscore << " " << alignscore  << " " << premanner << " " << manner << endl;
-        state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, seq1_l1, seq1_l2, seq2_l1, seq2_l2, alignscore, end_hmm_m, wegiht * alignscore);
+        state.set(j1, i1, i2, seq1foldscore, seq2foldscore, premanner, manner, seq1_l1, seq1_l2, seq2_l1, seq2_l2, alignscore, start_hmm_m, end_hmm_m, wegiht * alignscore);
     }
 }
 
