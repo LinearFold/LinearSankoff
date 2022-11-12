@@ -14,7 +14,7 @@ CFLAGS=-std=c++11 -O3
 .PHONY : clean bin/*
 objects=bin/linearsankoff # bin/linearmultilign bin/linearsankoff_dynalign bin/linearalignment
 
-linearsankoff: src/LinearSankoffInterface.cpp $(SANKOFFDEPS)
+linearsankof: src/LinearSankoffInterface.cpp $(SANKOFFDEPS)
 		chmod +x LinearSankoff
 		mkdir -p bin
 		# $(CC) src/LinearSankoffInterface.cpp src/LinearSankoff.cpp src/LinearSankoff_array.cpp src/HMMAlign.cpp src/LinearFold.cpp src/LinearPartition.cpp src/check_mem.cpp src/Utils/utility.cpp src/Utils/energy_parameter.cpp src/Utils/feature_weight.cpp src/Utils/intl11.cpp src/Utils/intl21.cpp src/Utils/intl22.cpp $(CFLAGS) -Dlv -o bin/linearsankoff
