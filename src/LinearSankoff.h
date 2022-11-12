@@ -281,30 +281,21 @@ private:
     unordered_map<pair<int, int>, State, pair_hash>*** bestP;
     unordered_map<pair<int, int>, State, pair_hash>*** bestMulti;
 
-    unordered_map<pair<int, int>, State, pair_hash>*** bestM;
+    unordered_map<pair<int, int>, State, pair_hash>** bestM;
     unordered_map<pair<int, int>, State, pair_hash>** bestM2;
 
     vector<unordered_map<int, State3> > bestC;
 
-    // state, cost of folding and alignment, three-dimentional: [s, (j1*seq1len+i1)*seq2len+i2] 
-    // outside score
-    // vector<unordered_map<int, State3> > bestH_beta, bestP_beta, bestMulti_beta;
-    // vector<unordered_map<int, State> > bestM_beta, bestM2_beta;
-    // vector<unordered_map<int, State> > bestC_beta;
-
     // single sequence folding outside score as hueristic
     vector<unordered_map<int, int> > seq1_out_H, seq1_out_P, seq1_out_M, seq1_out_M2, seq1_out_Multi;
     vector<unordered_map<int, int> > seq2_out_H, seq2_out_P, seq2_out_M, seq2_out_M2, seq2_out_Multi;
-    vector<int> seq1_out_C, seq2_out_C;
 
-    vector<unordered_map<int, int> > seq1_in_H, seq1_in_P, seq1_in_M, seq1_in_M2, seq1_in_Multi;
-    vector<unordered_map<int, int> > seq2_in_H, seq2_in_P, seq2_in_M, seq2_in_M2, seq2_in_Multi;
-    vector<int> seq1_in_C, seq2_in_C;
+    vector<unordered_map<int, int> > seq1_in_P; // seq1_in_H, seq1_in_P, seq1_in_M, seq1_in_M2, seq1_in_Multi;
+    vector<unordered_map<int, int> > seq2_in_P; // seq2_in_H, seq2_in_P, seq2_in_M, seq2_in_M2, seq2_in_Multi;
 
-    // base pair probs
-    // vector<unordered_map<int, float> > seq1_pairs, seq2_pairs;
     // alignment backward scores
-    vector<unordered_map<int, float>> aln_backward_score, ins1_backward_score, ins2_backward_score;
+    vector<unordered_map<int, float>> aln_fw_score, ins1_fw_score, ins2_fw_score;
+    vector<unordered_map<int, float>> aln_bw_score, ins1_bw_score, ins2_bw_score;
 
     pair<string, string> get_hmm_aln(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2);
     pair<string, string> get_hmm_aln_left(int i1, int j1, int i2, int j2, HMMManner s1, HMMManner s2);
@@ -349,6 +340,7 @@ private:
     // float beam_prune(unordered_map<int, State3> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
     // float beam_prune(unordered_map<int, State> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside, bool if_astar);
     // // new datastructure
+    vector<tuple<float, int, int, pair<int, int>> > candidates;
     float beam_prune(unordered_map<pair<int, int>, State, pair_hash> **beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
     float beam_prune(unordered_map<pair<int, int>, State, pair_hash> *beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
 };

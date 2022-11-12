@@ -709,32 +709,22 @@ float BeamAlign::cal_align_prob(float threshold){
             upbound = max(k, upbound);
 
             // runtime debug
-            // lowbound = i;
-            // upbound = i;
+            lowbound = i;
+            upbound = i;
         }
-
-        // if (lowbound > upbound) {
-        //     cout << "lowbound > upbound: " << i << " " << lowbound << " " << upbound << endl;
-        //     if (i == 0) {
-        //         low_bounds[i] = 0;
-        //         up_bounds[i] = 0;
-        //     } else {
-        //         low_bounds[i] = low_bounds[i-1];
-        //         up_bounds[i] = up_bounds[i-1];
-        //     }
-        // } else {
-        //     low_bounds[i] = lowbound;
-        //     up_bounds[i] = upbound;
-        // }
 
         assert (lowbound <= upbound); // TODO
         low_bounds[i] = lowbound;
         up_bounds[i] = upbound;
 
-        // cout << i << " " << low_bounds[i] << " " << up_bounds[i] << endl;
-        for (int k = low_bounds[i]; k <= up_bounds[i]; k++) {
-            max_j1[i+k] = max(max_j1[i+k], i);
-            min_j1[i+k] = min(min_j1[i+k], i);
+        // cout << i << " " << low_bounds[i] << " " << up_bounds[i] << " " << up_bounds[i] - low_bounds[i] + 1 << endl;
+        if (i > 0 && i < seq1_len) {
+            for (int k = low_bounds[i]; k <= up_bounds[i]; k++) {
+                if (k > 0 && k < seq2_len) {
+                    max_j1[i+k] = max(max_j1[i+k], i);
+                    min_j1[i+k] = min(min_j1[i+k], i);
+                }
+            }
         }
 
         max_range = max(max_range, up_bounds[i] - low_bounds[i] + 1);
