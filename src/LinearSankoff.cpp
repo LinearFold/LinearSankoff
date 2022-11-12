@@ -1047,57 +1047,95 @@ float BeamSankoffParser::beam_prune(unordered_map<pair<int, int>, State, pair_ha
                 int i1 = cand.i1;
                 int i2 = cand.i2;
 
-                // if (verbose) cout << "beam prune candidate: " << j1 << " " << j2 << " " << i1 << " " << i2 << endl;
+                if (!use_astar) {
+                    // original
+                    State& prefix_C = bestC[i1-1+i2-1][i1-1].alnobj; // todo
+                    int foldingscore = (prefix_C.seq1foldscore + prefix_C.seq2foldscore) + (cand.seq1foldscore + cand.seq2foldscore);
+                    
+                    // float alignscore = xlog_mul(xlog_mul(prefix_C.alignscore, cand.alignscore), hmmalign.trans_probs[2][2]);
+                    float alignscore, forward_score, newscore; 
+                    switch (m) 
+                    {
+                        case 0:
+                        {
+                            forward_score = ins1_fw_score[i1][i2+1];
+                            // backward_score = ins1_bw_score[j1][j2-1];
+                            break;
+                        }
+                        case 1:
+                        {
+                            forward_score = ins2_fw_score[i1+1][i2];
+                            // backward_score = ins2_bw_score[j1-1][j2];
+                            break;
+                        }
+                        default:
+                        {
+                            forward_score = aln_fw_score[i1][i2];
+                            // backward_score = aln_bw_score[j1][j2];
+                            break;
+                        }
+                    }
+                        
+                    if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN) // DEBUG
+                        newscore = LOG_OF_ZERO;
+                    else
+                        newscore = foldingscore + weight * alignscore;
 
-                float forward_score, backward_score, alignscore, newscore; // alignment backward/heuristic score
-                switch (m) 
-                {
-                    case 0:
+                    candidates.push_back(make_tuple(newscore, j1, m, item.first));
+                    
+                } else {
+                        // if (verbose) cout << "beam prune candidate: " << j1 << " " << j2 << " " << i1 << " " << i2 << endl;
+                    float forward_score, backward_score, alignscore, newscore; // alignment backward/heuristic score
+                    switch (m) 
                     {
-                        forward_score = ins1_fw_score[i1][i2+1];
-                        backward_score = ins1_bw_score[j1][j2-1];
-                        break;
+                        case 0:
+                        {
+                            forward_score = ins1_fw_score[i1][i2+1];
+                            backward_score = ins1_bw_score[j1][j2-1];
+                            break;
+                        }
+                        case 1:
+                        {
+                            forward_score = ins2_fw_score[i1+1][i2];
+                            backward_score = ins2_bw_score[j1-1][j2];
+                            break;
+                        }
+                        default:
+                        {
+                            forward_score = aln_fw_score[i1][i2];
+                            backward_score = aln_bw_score[j1][j2];
+                            break;
+                        }
                     }
-                    case 1:
-                    {
-                        forward_score = ins2_fw_score[i1+1][i2];
-                        backward_score = ins2_bw_score[j1-1][j2];
-                        break;
-                    }
-                    default:
-                    {
-                        forward_score = aln_fw_score[i1][i2];
-                        backward_score = aln_bw_score[j1][j2];
-                        break;
-                    }
+                    
+                    if (forward_score == 0.0) forward_score = xlog(0); // TODO
+                    // cout << m << " " << forward_score << " (" << xlog_mul(bestC[k1+k2][k1].alnobj.alignscore, hmmalign.trans_probs[2][2]) << ") " << backward_score << endl;
+                    // alignment forward score (simplified)
+                    // forward_score = xlog_mul(bestC[k1+k2][k1].alnobj.alignscore, hmmalign.trans_probs[2][2]);
+                    
+                    alignscore = xlog_mul(xlog_mul(forward_score, cand.alignscore), backward_score);
+
+                    // + folding score
+                    // joint folding score
+                    int foldingscore = cand.seq1foldscore + cand.seq2foldscore;
+                    // branch insertion P1/P2 to M
+                    int seq1_out, seq2_out; 
+                    if (i1 == (j1+1)) seq1_out = seq1_mfe;
+                    else seq1_out = seq1_outside[j1][i1];
+                    if (i2 == (j2+1)) seq2_out = seq2_mfe;
+                    else seq2_out = seq2_outside[j2][i2];
+
+                    foldingscore += seq1_out + seq2_out;
+
+                    // newscore
+                    if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN)
+                        newscore = LOG_OF_ZERO;
+                    else
+                        newscore = foldingscore + weight * alignscore;
+
+                    candidates.push_back(make_tuple(newscore, j1, m, item.first));
+                    
                 }
-                
-                if (forward_score == 0.0) forward_score = xlog(0); // TODO
-                // cout << m << " " << forward_score << " (" << xlog_mul(bestC[k1+k2][k1].alnobj.alignscore, hmmalign.trans_probs[2][2]) << ") " << backward_score << endl;
-                // alignment forward score (simplified)
-                // forward_score = xlog_mul(bestC[k1+k2][k1].alnobj.alignscore, hmmalign.trans_probs[2][2]);
-                
-                alignscore = xlog_mul(xlog_mul(forward_score, cand.alignscore), backward_score);
-
-                // + folding score
-                // joint folding score
-                int foldingscore = cand.seq1foldscore + cand.seq2foldscore;
-                // branch insertion P1/P2 to M
-                int seq1_out, seq2_out; 
-                if (i1 == (j1+1)) seq1_out = seq1_mfe;
-                else seq1_out = seq1_outside[j1][i1];
-                if (i2 == (j2+1)) seq2_out = seq2_mfe;
-                else seq2_out = seq2_outside[j2][i2];
-
-                foldingscore += seq1_out + seq2_out;
-
-                // newscore
-                if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN)
-                    newscore = LOG_OF_ZERO;
-                else
-                    newscore = foldingscore + weight * alignscore;
-
-                candidates.push_back(make_tuple(newscore, j1, m, item.first));
             }
         }
     }
@@ -1224,8 +1262,24 @@ float BeamSankoffParser::beam_prune(unordered_map<pair<int, int>, State, pair_ha
             } else {
                 // original
                 int foldingscore = (prefix_C.seq1foldscore + prefix_C.seq2foldscore) + (cand.seq1foldscore + cand.seq2foldscore);
-                float alignscore = xlog_mul(xlog_mul(prefix_C.alignscore, cand.alignscore), hmmalign.trans_probs[2][2]);
                 
+                // float alignscore = xlog_mul(xlog_mul(prefix_C.alignscore, cand.alignscore), hmmalign.trans_probs[2][2]);
+                float alignscore, forward_score, newscore; 
+                switch (cand.startHMMstate) {
+                    case MANNER_ALN:
+                        forward_score = aln_fw_score[i1][i2];
+                        break;
+                    case MANNER_INS1:
+                        forward_score = ins1_fw_score[i1][i2];
+                        break;
+                    case MANNER_INS2:
+                        forward_score = ins2_fw_score[i1][i2];
+                        break;
+                    default:
+                        forward_score = aln_fw_score[i1][i2];
+                        break;
+                }
+
                 if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN) // DEBUG
                     newscore = LOG_OF_ZERO;
                 else

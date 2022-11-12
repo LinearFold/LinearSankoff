@@ -12,7 +12,7 @@ def setgflags():
     flags.DEFINE_integer('b', 100, "set beam size, (DEFAULT=100)")
     flags.DEFINE_integer('LFb', -1, "set beam size, (DEFAULT=100)")
     flags.DEFINE_integer('LAb', 100, "set beam size, (DEFAULT=100)")
-    flags.DEFINE_boolean("astar", True, "use A star heuristic during beam search")
+    flags.DEFINE_boolean("astar", False, "use A star heuristic during beam search")
     flags.DEFINE_boolean("suffix", False, "use A star heuristic during beam search")
     flags.DEFINE_float("energyDiff", 1, "maximum energy difference")
     flags.DEFINE_boolean('verbose', False, "print out energy of each loop in the structure, (DEFAULT=FALSE)")

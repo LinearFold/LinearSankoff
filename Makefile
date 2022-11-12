@@ -21,15 +21,15 @@ linearsankoff: src/LinearSankoffInterface.cpp $(SANKOFFDEPS)
 		$(CC) src/LinearSankoffInterface.cpp src/LinearSankoff.cpp src/HMMAlign.cpp src/LinearFold.cpp src/LinearPartition.cpp src/check_mem.cpp src/Utils/utility.cpp src/Utils/energy_parameter.cpp src/Utils/feature_weight.cpp src/Utils/intl11.cpp src/Utils/intl21.cpp src/Utils/intl22.cpp $(CFLAGS) -Dlv -o bin/linearsankoff
 		# $(CC) src/LinearSankoffInterface.cpp src/LinearSankoff.cpp src/HMMAlign.cpp src/LinearFold.cpp src/LinearPartition.cpp src/check_mem.cpp src/Utils/utility.cpp src/Utils/energy_parameter.cpp src/Utils/feature_weight.cpp src/Utils/intl11.cpp src/Utils/intl21.cpp src/Utils/intl22.cpp $(CFLAGS) -Dlv -Ddynalign -o bin/linearsankoff_dynalign
 
-linearmultilign: src/LinearMultilign.cpp $(MULTILIGNDEPS)
-		chmod +x linearmultilign
-		mkdir -p bin
-		$(CC) src/LinearMultilign.cpp src/LinearSankoff.cpp src/HMMAlign.cpp src/LinearFold.cpp src/check_mem.cpp src/Utils/utility.cpp src/Utils/energy_parameter.cpp src/Utils/feature_weight.cpp src/Utils/intl11.cpp src/Utils/intl21.cpp src/Utils/intl22.cpp $(CFLAGS) -Dlv -Dmultilign -o bin/linearmultilign
+# linearmultilign: src/LinearMultilign.cpp $(MULTILIGNDEPS)
+# 		chmod +x linearmultilign
+# 		mkdir -p bin
+# 		$(CC) src/LinearMultilign.cpp src/LinearSankoff.cpp src/HMMAlign.cpp src/LinearFold.cpp src/check_mem.cpp src/Utils/utility.cpp src/Utils/energy_parameter.cpp src/Utils/feature_weight.cpp src/Utils/intl11.cpp src/Utils/intl21.cpp src/Utils/intl22.cpp $(CFLAGS) -Dlv -Dmultilign -o bin/linearmultilign
 
-linearalignment: src/HMMAlignInterface.cpp $(ALIGNDEPS)
-		chmod +x linearalignment
-		mkdir -p bin
-		$(CC) src/HMMAlignInterface.cpp src/HMMAlign.cpp src/Utils/utility.cpp $(CFLAGS) -o bin/linearalignment
+# linearalignment: src/HMMAlignInterface.cpp $(ALIGNDEPS)
+# 		chmod +x linearalignment
+# 		mkdir -p bin
+# 		$(CC) src/HMMAlignInterface.cpp src/HMMAlign.cpp src/Utils/utility.cpp $(CFLAGS) -o bin/linearalignment
 
 clean:
 	-rm $(objects)

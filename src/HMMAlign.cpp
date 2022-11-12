@@ -709,8 +709,8 @@ float BeamAlign::cal_align_prob(float threshold){
             upbound = max(k, upbound);
 
             // runtime debug
-            lowbound = i;
-            upbound = i;
+            // lowbound = i;
+            // upbound = i;
         }
 
         assert (lowbound <= upbound); // TODO
@@ -2595,7 +2595,6 @@ void BeamAlign::viterbi_path_all_locals()
             }
         }
     }
-
 }
 
 void BeamAlign::set(int beam_size, vector<int> &seq1_nuc_types, vector<int> &seq2_nuc_types)
