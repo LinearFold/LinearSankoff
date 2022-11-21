@@ -75,8 +75,21 @@ int main(int argc, char** argv){
             //     SankoffParser parser(aln_weight, beam_size, LFbeam, LAbeam, energy_diff, is_verbose);
             //     parser.parse(seqs);
             // } else {
+
+            try{ 
                 BeamSankoffParser parser(aln_weight, beam_size, LFbeam, LAbeam, use_astar, use_suffix, energy_diff, is_verbose);
                 parser.parse(seqs);
+            }  
+            catch (const std::overflow_error& e)
+            {
+                std::cout << " a overflow exception was caught, with message '"
+                        << e.what() << "'\n";
+            } // this executes if f() throws std::overflow_error (same type rule)
+            catch (const std::exception& e) // caught by reference to base
+            {
+                std::cout << " a standard exception was caught, with message '"
+                        << e.what() << "'\n";
+            }
             // }
             // }
                 

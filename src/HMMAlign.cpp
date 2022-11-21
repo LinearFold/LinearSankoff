@@ -693,6 +693,19 @@ float BeamAlign::cal_align_prob(float threshold){
     max_range = 0;
     int sum_range = 0;
     for (int i = 0; i <= seq1_len; i++){
+        // runtime fixed width
+        // int j = i * seq2_len / seq1_len;
+        // int lowbound = max(0, j - 4);
+        // int upbound = min(seq2_len, j + 5);
+        // cands.clear();
+        // for(auto &item : aln_env[i]){
+        //     int k = item.first;
+        //     if (k < lowbound || k > upbound) {
+        //         cands.push_back(k);
+        //         continue;
+        //     }
+        // }
+
         int upbound = -1;
         int lowbound = seq2_len;
         cands.clear();
@@ -707,10 +720,6 @@ float BeamAlign::cal_align_prob(float threshold){
             
             lowbound = min(k, lowbound);
             upbound = max(k, upbound);
-
-            // runtime debug
-            // lowbound = i;
-            // upbound = i;
         }
 
         assert (lowbound <= upbound); // TODO

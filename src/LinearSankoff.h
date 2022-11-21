@@ -74,23 +74,21 @@ enum Manner {
   MANNER_M2_eq_M_plus_P2,           // 22
   
   MANNER_M_eq_M2,                   // 23: M = M2
-  MANNER_M_eq_P,                    // 21: M = P
-  MANNER_M_eq_P1,                    // 21: M = P
-  MANNER_M_eq_P2,                    // 21: M = P
+  MANNER_M_eq_P,                    // 24: M = P
+  MANNER_M_eq_P1,                   // 25: M = P
+  MANNER_M_eq_P2,                   // 26: M = P
 
-  MANNER_M_eq_M_plus_U_ALN,         // 22: M = M + U
-  MANNER_M_eq_M_plus_U_INS1,        // 23: M = M + U
-  MANNER_M_eq_M_plus_U_INS2,        // 24: M = M + U
+  MANNER_M_eq_M_plus_U_ALN,         // 27: M = M + U
+  MANNER_M_eq_M_plus_U_INS1,        // 28: M = M + U
+  MANNER_M_eq_M_plus_U_INS2,        // 29: M = M + U
 
-  MANNER_C_eq_C_plus_U_ALN,         // 25: C = C + U
-  MANNER_C_eq_C_plus_U_INS1,        // 26: C = C + U
-  MANNER_C_eq_C_plus_U_INS2,        // 27: C = C + U
+  MANNER_C_eq_C_plus_U_ALN,         // 30: C = C + U
+  MANNER_C_eq_C_plus_U_INS1,        // 31: C = C + U
+  MANNER_C_eq_C_plus_U_INS2,        // 32: C = C + U
 
-  MANNER_C_eq_C_plus_P,             // 28: C = C + P
-  MANNER_C_eq_C_plus_P1,             // 28: C = C + P
-  MANNER_C_eq_C_plus_P2,             // 28: C = C + P
-  
-//   MANNER_C_eq_P                     // 29: C = P
+  MANNER_C_eq_C_plus_P,             // 33: C = C + P
+  MANNER_C_eq_C_plus_P1,            // 34: C = C + P
+  MANNER_C_eq_C_plus_P2,            // 35: C = C + P
 };
 
 struct TraceInfo {
@@ -341,7 +339,7 @@ private:
     // float beam_prune(unordered_map<int, State> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside, bool if_astar);
     // // new datastructure
     vector<tuple<float, int, int, pair<int, int>> > candidates;
-    float beam_prune(unordered_map<pair<int, int>, State, pair_hash> **beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
+    bool beam_prune(unordered_map<pair<int, int>, State, pair_hash> **beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
     float beam_prune(unordered_map<pair<int, int>, State, pair_hash> *beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
 };
 
