@@ -1550,7 +1550,7 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
                     if (in_score == VALUE_MIN || out_score == VALUE_MIN)
                         continue;
 
-                    if (in_score + out_score >= min_score) 
+                    if (max_energy_diff == 1 || (in_score + out_score >= min_score))
                         valid_pos.insert(i);
                 }
 
