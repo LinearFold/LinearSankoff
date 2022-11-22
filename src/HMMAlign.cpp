@@ -694,35 +694,35 @@ float BeamAlign::cal_align_prob(float threshold){
     int sum_range = 0;
     for (int i = 0; i <= seq1_len; i++){
         // runtime fixed width
-        int j = i * seq2_len / seq1_len;
-        // int m = 0;
-        int lowbound = max(0, j);
-        int upbound = min(seq2_len, j);
-        cands.clear();
-        for(auto &item : aln_env[i]){
-            int k = item.first;
-            if (k < lowbound || k > upbound) {
-                cands.push_back(k);
-                continue;
-            }
-        }
-
-        // soft width
-        // int upbound = -1;
-        // int lowbound = seq2_len;
+        // int j = i * seq2_len / seq1_len;
+        // // int m = 0;
+        // int lowbound = max(0, j);
+        // int upbound = min(seq2_len, j);
         // cands.clear();
         // for(auto &item : aln_env[i]){
         //     int k = item.first;
-        //     float prob = item.second.prob;
-        //     // cout << i << " " << k << " " << prob  << " " << threshold<< endl;
-        //     if (prob < threshold) {
+        //     if (k < lowbound || k > upbound) {
         //         cands.push_back(k);
         //         continue;
         //     }
-            
-        //     lowbound = min(k, lowbound);
-        //     upbound = max(k, upbound);
         // }
+
+        // soft width
+        int upbound = -1;
+        int lowbound = seq2_len;
+        cands.clear();
+        for(auto &item : aln_env[i]){
+            int k = item.first;
+            float prob = item.second.prob;
+            // cout << i << " " << k << " " << prob  << " " << threshold<< endl;
+            if (prob < threshold) {
+                cands.push_back(k);
+                continue;
+            }
+            
+            lowbound = min(k, lowbound);
+            upbound = max(k, upbound);
+        }
 
         assert (lowbound <= upbound); // TODO
         low_bounds[i] = lowbound;

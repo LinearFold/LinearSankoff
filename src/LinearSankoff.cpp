@@ -2172,8 +2172,6 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                                 alignscore = xlog_mul(alignscore, post_align_trans);
 #endif                                        
                                                 if (alignscore > LOG_OF_ZERO) {
-                                                    assert (p2 >= hmmalign.low_bounds[p1] && p2 <= hmmalign.up_bounds[p1]);
-                                                    assert (q2 >= hmmalign.low_bounds[q1] && q2 <= hmmalign.up_bounds[q1]);
                                                     update_if_better(p1, q1, p2, q2, bestP[q1+q2][q1][2][make_pair(p1, p2)],//bestP[q1+q2][get_keys(q1, p1, p2)].alnobj, 
                                                                     state.seq1foldscore + p2p1,
                                                                     state.seq2foldscore + p2p2,
@@ -2201,8 +2199,6 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                                 alignscore = xlog_mul(alignscore, post_align_trans); 
 #endif   
                                                 if (alignscore > LOG_OF_ZERO) {
-                                                    assert (p2 >= hmmalign.low_bounds[p1] && p2 <= hmmalign.up_bounds[p1]);
-                                                    assert (q2 >= hmmalign.low_bounds[q1] && q2 <= hmmalign.up_bounds[q1]);
                                                     update_if_better(p1, q1, p2, q2, bestP[q1+q2][q1][0][make_pair(p1, p2)], // bestP[q1+q2][get_keys(q1, p1, p2)].ins1obj, 
                                                                     state.seq1foldscore + p2p1,
                                                                     state.seq2foldscore + p2p2,
@@ -2230,9 +2226,6 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                                 alignscore = xlog_mul(alignscore, post_align_trans);
 #endif 
                                                 if (alignscore > LOG_OF_ZERO) {
-                                                    assert (p2 >= hmmalign.low_bounds[p1] && p2 <= hmmalign.up_bounds[p1]);
-                                                    assert (q2 >= hmmalign.low_bounds[q1] && q2 <= hmmalign.up_bounds[q1]);
-
                                                     update_if_better(p1, q1, p2, q2, bestP[q1+q2][q1][1][make_pair(p1, p2)], // bestP[q1+q2][get_keys(q1, p1, p2)].ins2obj,
                                                                     state.seq1foldscore + p2p1,
                                                                     state.seq2foldscore + p2p2,
@@ -2723,9 +2716,6 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                             alignscore = xlog_mul(alignscore, post_align_trans);
 #endif 
                                             if (alignscore > LOG_OF_ZERO) {
-                                                assert (p2 >= hmmalign.low_bounds[p1] && p2 <= hmmalign.up_bounds[p1]);
-                                                assert (q2 >= hmmalign.low_bounds[q1] && q2 <= hmmalign.up_bounds[q1]);
-
                                                 update_if_better(p1, q1, p2, q2, bestMulti[q1+q2][q1][2][make_pair(p1, p2)], // bestMulti[q1+q2][get_keys(q1, p1, p2)].alnobj,
                                                                 state.seq1foldscore + newscore1,
                                                                 state.seq2foldscore + newscore2, 
@@ -2747,8 +2737,6 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                             alignscore = xlog_mul(alignscore, post_align_trans);
 
                                             if (alignscore > LOG_OF_ZERO) {
-                                                assert (p2 >= hmmalign.low_bounds[p1] && p2 <= hmmalign.up_bounds[p1]);
-                                                assert (q2 >= hmmalign.low_bounds[q1] && q2 <= hmmalign.up_bounds[q1]);
                                                 update_if_better(p1, q1, p2, q2, bestMulti[q1+q2][q1][0][make_pair(p1, p2)], // bestMulti[q1+q2][get_keys(q1, p1, p2)].ins1obj,
                                                                 state.seq1foldscore + newscore1,
                                                                 state.seq2foldscore + newscore2, 
@@ -2769,9 +2757,6 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
                                             alignscore = xlog_mul(alignscore, post_align_trans);
 
                                             if (alignscore > LOG_OF_ZERO) {
-                                                assert (p2 >= hmmalign.low_bounds[p1] && p2 <= hmmalign.up_bounds[p1]);
-                                                assert (q2 >= hmmalign.low_bounds[q1] && q2 <= hmmalign.up_bounds[q1]);
-                                                
                                                 update_if_better(p1, q1, p2, q2, bestMulti[q1+q2][q1][1][make_pair(p1, p2)], // bestMulti[q1+q2][get_keys(q1, p1, p2)].ins2obj,
                                                                 state.seq1foldscore + newscore1,
                                                                 state.seq2foldscore + newscore2, 
