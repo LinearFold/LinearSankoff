@@ -339,8 +339,8 @@ private:
     // float beam_prune(unordered_map<int, State> &beamstep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside, bool if_astar);
     // // new datastructure
     vector<tuple<float, int, int, pair<int, int>> > candidates;
-    bool beam_prune(unordered_map<pair<int, int>, State, pair_hash> **beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
-    float beam_prune(unordered_map<pair<int, int>, State, pair_hash> *beststep, int s, vector<unordered_map<int, int> > seq1_outside, vector<unordered_map<int, int> > seq2_outside);
+    bool beam_prune(unordered_map<pair<int, int>, State, pair_hash> **beststep, int s, vector<unordered_map<int, int> > &seq1_outside, vector<unordered_map<int, int> > &seq2_outside);
+    float beam_prune(unordered_map<pair<int, int>, State, pair_hash> *beststep, int s, vector<unordered_map<int, int> > &seq1_outside, vector<unordered_map<int, int> > &seq2_outside);
 };
 
 ////////
