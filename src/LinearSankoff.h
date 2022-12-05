@@ -248,6 +248,7 @@ public:
     int beam;
     int lfbeam;
     int alnbeam;
+    int alnm;
     bool use_astar;
     bool use_suffix;
     float max_energy_diff;
@@ -266,7 +267,7 @@ public:
     int sum_len;
     vector<SeqObject> sequences;
 
-    BeamSankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, bool if_aster, bool if_suffix, float energy_diff, bool is_verbose=false);
+    BeamSankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, int LAwidth, bool if_aster, bool if_suffix, float energy_diff, bool is_verbose=false);
     ~BeamSankoffParser(){}
 
     void parse(const vector<string> &seqs, bool limited, const set<pair<int, int>> &allowed_pairs, vector<pair<int, int>> &out_pairs, int num_pairs);

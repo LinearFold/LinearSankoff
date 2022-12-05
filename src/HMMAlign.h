@@ -242,6 +242,7 @@ struct AlignState3 {
 class BeamAlign{
 public:
     int beam; // , max_len;
+    int m;
     int start1, start2; // end1, end2;
     vector<int> seq1, seq2;
     int seq1_len, seq2_len;
@@ -250,6 +251,7 @@ public:
     bool verbose=false;
 
     BeamAlign(int beam_size=100,
+              int m=-1,
               bool is_eval=false,
               bool is_verbose=false);
 
@@ -269,7 +271,7 @@ public:
     float ******left_local_scores;
     float ******right_local_scores;
 
-    void set(int beam_size, vector<int> &seq1_nuc_types, vector<int> &seq2_nuc_types);
+    void set(int beam_size, int witdth, vector<int> &seq1_nuc_types, vector<int> &seq2_nuc_types);
     void clear(bool local_path=true);
 
     float viterbi_path(bool newpara);

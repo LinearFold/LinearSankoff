@@ -693,35 +693,48 @@ float BeamAlign::cal_align_prob(float threshold){
     max_range = 0;
     int sum_range = 0;
     for (int i = 0; i <= seq1_len; i++){
-        // runtime fixed width
-        // int j = i * seq2_len / seq1_len;
-        // // int m = 0;
-        // int lowbound = max(0, j);
-        // int upbound = min(seq2_len, j);
-        // cands.clear();
-        // for(auto &item : aln_env[i]){
-        //     int k = item.first;
-        //     if (k < lowbound || k > upbound) {
-        //         cands.push_back(k);
-        //         continue;
-        //     }
-        // }
+        int lowbound, upbound;
 
-        // soft width
-        int upbound = -1;
-        int lowbound = seq2_len;
-        cands.clear();
-        for(auto &item : aln_env[i]){
-            int k = item.first;
-            float prob = item.second.prob;
-            // cout << i << " " << k << " " << prob  << " " << threshold<< endl;
-            if (prob < threshold) {
-                cands.push_back(k);
-                continue;
+        // runtime fixed width
+        if (m > 0) {
+            int j = i * seq2_len / seq1_len;
+            int lwidth, rwidth;
+            if (m%2 == 0) {
+                lwidth = m/2 - 1;
+                rwidth = m/2;
+            } else {
+                lwidth = (m-1)/2;
+                rwidth = lwidth;
             }
-            
-            lowbound = min(k, lowbound);
-            upbound = max(k, upbound);
+            lowbound = max(0, j-lwidth);
+            upbound = min(seq2_len, j+rwidth);
+            cands.clear();
+            for(auto &item : aln_env[i]){
+                int k = item.first;
+                if (k < lowbound || k > upbound) {
+                    cands.push_back(k);
+                    continue;
+                }
+            }
+        }
+        else {
+            // soft width
+            // cout << "soft width" << endl;
+            upbound = -1;
+            lowbound = seq2_len;
+            cands.clear();
+            for(auto &item : aln_env[i]){
+                int k = item.first;
+                float prob = item.second.prob;
+                cout << i << " " << k << " " << prob  << " " << exp(prob) << endl;
+                if (prob < threshold) {
+                    cands.push_back(k);
+                    continue;
+                }
+                
+                lowbound = min(k, lowbound);
+                upbound = max(k, upbound);
+            }
         }
 
         assert (lowbound <= upbound); // TODO
@@ -2608,10 +2621,11 @@ void BeamAlign::viterbi_path_all_locals()
     }
 }
 
-void BeamAlign::set(int beam_size, vector<int> &seq1_nuc_types, vector<int> &seq2_nuc_types)
+void BeamAlign::set(int beam_size, int width, vector<int> &seq1_nuc_types, vector<int> &seq2_nuc_types)
 {
-    cout << "aln beam size: " << beam_size << endl;
+    cout << "aln beam size: " << beam_size << " width: " << width << endl;
     beam = beam_size;
+    m = width;
     seq1 = seq1_nuc_types;
     seq2 = seq2_nuc_types;
 
@@ -2619,9 +2633,11 @@ void BeamAlign::set(int beam_size, vector<int> &seq1_nuc_types, vector<int> &seq
 }
 
 BeamAlign::BeamAlign(int beam_size,
+                     int width,
                      bool is_eval,
                      bool is_verbose)
     : beam(beam_size), 
+      m(width),
       eval(is_eval), 
       verbose(is_verbose){}
 

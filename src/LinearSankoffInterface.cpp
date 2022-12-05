@@ -24,7 +24,7 @@ using namespace std;
 int main(int argc, char** argv){
     vector<string> seqs;
     float aln_weight;
-    int beam_size, LFbeam, LAbeam;
+    int beam_size, LFbeam, LAbeam, LAwidth;
     bool use_astar, use_suffix;
     float energy_diff;
     bool is_verbose=false;
@@ -35,10 +35,11 @@ int main(int argc, char** argv){
         beam_size = atoi(argv[2]);
         LFbeam = atoi(argv[3]);
         LAbeam = atoi(argv[4]);
-        use_astar = atoi(argv[5]) == 1;
-        use_suffix = atoi(argv[6]) == 1;
-        energy_diff = atof(argv[7]);
-        is_verbose = atoi(argv[8]) == 1;
+        LAwidth = atoi(argv[5]);
+        use_astar = atoi(argv[6]) == 1;
+        use_suffix = atoi(argv[7]) == 1;
+        energy_diff = atof(argv[8]);
+        is_verbose = atoi(argv[9]) == 1;
     }
 
     int seq1len, seq2len;
@@ -77,7 +78,7 @@ int main(int argc, char** argv){
             // } else {
 
             try{ 
-                BeamSankoffParser parser(aln_weight, beam_size, LFbeam, LAbeam, use_astar, use_suffix, energy_diff, is_verbose);
+                BeamSankoffParser parser(aln_weight, beam_size, LFbeam, LAbeam, LAwidth, use_astar, use_suffix, energy_diff, is_verbose);
                 parser.parse(seqs);
             }  
             catch (const std::overflow_error& e)

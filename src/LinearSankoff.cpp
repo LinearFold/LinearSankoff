@@ -1353,7 +1353,7 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
     // preprocess: HMM align tool
     cout << endl;
     cout << "********** HMM alignment preprocessing **********" << endl;
-    hmmalign.set(alnbeam, sequences[0].nucs, sequences[1].nucs);
+    hmmalign.set(alnbeam, alnm, sequences[0].nucs, sequences[1].nucs);
     float similarity = hmmalign.viterbi_path(false);
     hmmalign.set_parameters_by_sim(similarity); // load new parameters
     
@@ -1550,7 +1550,7 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
                     if (in_score == VALUE_MIN || out_score == VALUE_MIN)
                         continue;
 
-                    if (max_energy_diff == 1 || (in_score + out_score >= min_score))
+                    if (max_energy_diff >= 1.0 || (in_score + out_score >= min_score))
                         valid_pos.insert(i);
                 }
 
@@ -3181,11 +3181,12 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 #endif
 }
 
-BeamSankoffParser::BeamSankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, bool if_aster, bool if_suffix, float energy_diff, bool is_verbose)
+BeamSankoffParser::BeamSankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, int LAwidth, bool if_aster, bool if_suffix, float energy_diff, bool is_verbose)
     :weight(aln_weight),
      beam(beam_size),
      lfbeam(LFbeam),
      alnbeam(LAbeam),
+     alnm(LAwidth),
      use_astar(if_aster),
      use_suffix(if_suffix),
      max_energy_diff(energy_diff),
