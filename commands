@@ -1,1 +1,0 @@
-nohup python -u train.py 5S 50 100 -1 0.3 &
