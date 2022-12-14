@@ -3184,7 +3184,7 @@ BeamSankoffParser::BeamSankoffParser(float aln_weight, int beam_size, int LFbeam
      max_energy_diff(energy_diff),
      verbose(is_verbose){
 
-    cout << "lambda: " << weight / 100 << ", beam : " << beam << ", lfbeam: " << lfbeam << ", alnbeam: " << alnbeam << ", use_astar: " << use_astar << ", add_branch: " << add_branch <<  ", max_energy_diff: " << max_energy_diff << endl;  
+    cout << "lambda: " << weight / 100 << ", beam : " << beam << ", lfbeam: " << lfbeam << ", alnbeam: " << alnbeam << ", alnband: " << alnm << ", use_astar: " << use_astar << ", add_branch: " << add_branch <<  ", max_energy_diff: " << max_energy_diff << endl;  
     
     initialize();
 

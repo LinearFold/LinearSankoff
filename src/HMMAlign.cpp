@@ -171,8 +171,8 @@ void BeamAlign::set_parameters_by_sim(float similarity)
 {
     // load parameters from file
     const char *data_dir = "/nfs/stak/users/lisiz/LinearSankoff"; // TODO
-    char* phmm_pars_file = (char*)malloc(sizeof(char*) * (strlen(data_dir) + strlen("src/data_tables/fam_hmm_pars.dat") + 2));
-    sprintf(phmm_pars_file, "%s/%s", data_dir, "src/data_tables/fam_hmm_pars.dat");
+    char* phmm_pars_file = (char*)malloc(sizeof(char*) * (strlen(data_dir) + strlen("src/Utils/fam_hmm_pars.dat") + 2));
+    sprintf(phmm_pars_file, "%s/%s", data_dir, "src/Utils/fam_hmm_pars.dat");
 
     // Read the parameters file. This parameters file contains 10 different parameter sets and thresholds.
 	FILE* fam_par_fp = fopen(phmm_pars_file, "r");

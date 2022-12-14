@@ -12,7 +12,7 @@ def setgflags():
     flags.DEFINE_integer('b', 100, "set beam size, (DEFAULT=100)")
     flags.DEFINE_integer('LFb', 100, "set beam size, (DEFAULT=100)")
     flags.DEFINE_integer('LAb', 100, "set beam size, (DEFAULT=100)")
-    flags.DEFINE_integer('LAw', -1, "set beam size, (DEFAULT=100)")
+    flags.DEFINE_integer('LAw', 0, "set beam size, (DEFAULT=0)")
     flags.DEFINE_boolean("astar", False, "use A star heuristic during beam search")
     flags.DEFINE_boolean("branch", False, "allow to add branch in one sequence")
     flags.DEFINE_float("energyDiff", 0.3, "maximum energy difference")
