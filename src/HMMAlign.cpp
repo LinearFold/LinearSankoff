@@ -169,10 +169,8 @@ int BeamAlign::get_bin_index(float similarity, int n_bins){
 }
 void BeamAlign::set_parameters_by_sim(float similarity)
 {
-    // load_init_params(); // allocal space
-
     // load parameters from file
-    char *data_dir = getcwd(NULL, 0);
+    const char *data_dir = "/nfs/stak/users/lisiz/LinearSankoff"; // TODO
     char* phmm_pars_file = (char*)malloc(sizeof(char*) * (strlen(data_dir) + strlen("src/data_tables/fam_hmm_pars.dat") + 2));
     sprintf(phmm_pars_file, "%s/%s", data_dir, "src/data_tables/fam_hmm_pars.dat");
 
@@ -726,7 +724,7 @@ float BeamAlign::cal_align_prob(float threshold){
             for(auto &item : aln_env[i]){
                 int k = item.first;
                 float prob = item.second.prob;
-                cout << i << " " << k << " " << prob  << " " << exp(prob) << endl;
+                // cout << i << " " << k << " " << prob  << " " << exp(prob) << endl;
                 if (prob < threshold) {
                     cands.push_back(k);
                     continue;
@@ -763,8 +761,8 @@ float BeamAlign::cal_align_prob(float threshold){
     //     cout << s << " " << min_j1[s] << " " << max_j1[s] << endl;
     // }
 
-    cout << "max_range: " << max_range << " sum_range: " << sum_range << endl;
-    cout << "average range: " << sum_range / float(seq1_len) << endl;
+    if (verbose) cout << "max_range: " << max_range << " sum_range: " << sum_range << endl;
+    if (verbose) cout << "average range: " << sum_range / float(seq1_len) << endl;
 
     // boundary case
     low_bounds[seq1_len] = seq2_len;
@@ -878,7 +876,7 @@ void BeamAlign::forward() {
     }
 
     forward_score = bestALN[seq1_len+seq2_len][seq2_len].ml;
-    printf("forward score: %.10f\n", forward_score);
+    if (verbose) printf("forward score: %.10f\n", forward_score);
 }
 
 void BeamAlign::backward() {
@@ -972,7 +970,7 @@ void BeamAlign::backward() {
     }
 
     float back_score = bestALN[0][0].beta;
-    printf("backward score: %.10f\n", back_score);
+    if (verbose) printf("backward score: %.10f\n", back_score);
     // return back_score;
 }
 
@@ -1086,7 +1084,7 @@ float BeamAlign::viterbi_path(bool newpara) {
     }
 
     float ml = bestALN[seq1_len + seq2_len][seq2_len].ml;
-    cout << "viterbi path score: " << ml << endl;
+    if (verbose) cout << "viterbi path score: " << ml << endl;
 
     // traceback
     vector<char> aln1, aln2;
@@ -1103,11 +1101,11 @@ float BeamAlign::viterbi_path(bool newpara) {
     }
     seq1_aln_line_str[aln_len] = 0;
     seq2_aln_line_str[aln_len] = 0;
-    cout << seq1_aln_line_str << endl;
-    cout << seq2_aln_line_str << endl;
+    if (verbose) cout << seq1_aln_line_str << endl;
+    if (verbose) cout << seq2_aln_line_str << endl;
 
     float similarity = get_aln_similarity(seq1_aln_line_str, seq2_aln_line_str);
-    cout << "similarity: " << similarity << endl;
+    if (verbose) cout << "similarity: " << similarity << endl;
 
     aln1.clear();
     aln2.clear();
@@ -1122,7 +1120,7 @@ float BeamAlign::envelope(float similarity){
     backward();
 
     float threshold = fam_thresholds[get_bin_index(similarity, N_BINZ)];
-    cout << "threshold: " << threshold << endl;
+    if (verbose) cout << "threshold: " << threshold << endl;
 
     aln_env.clear();
     aln_env.resize(seq1_len + 1);
@@ -1374,7 +1372,7 @@ void BeamAlign::viterbi_backward(bool newpara) {
     }
 
     float back_score = bestALN[0][0].beta;
-    printf("viterbi backward score: %.10f\n", back_score);
+    if (verbose) printf("viterbi backward score: %.10f\n", back_score);
     // return back_score;
 }
 
@@ -2488,7 +2486,7 @@ void BeamAlign::viterbi_path_local_right22(int i1, int j1, int i2, int j2, HMMMa
 
 void BeamAlign::viterbi_path_all_locals()
 {
-    cout << "viterbi_path_all_locals start" << endl;
+    if (verbose) cout << "viterbi_path_all_locals start" << endl;
     // int seq1len = seq1_len;
     // int seq2len = seq2_len;
 
@@ -2621,13 +2619,14 @@ void BeamAlign::viterbi_path_all_locals()
     }
 }
 
-void BeamAlign::set(int beam_size, int width, vector<int> &seq1_nuc_types, vector<int> &seq2_nuc_types)
+void BeamAlign::set(int beam_size, int width, vector<int> &seq1_nuc_types, vector<int> &seq2_nuc_types, bool is_verbose)
 {
-    cout << "aln beam size: " << beam_size << " width: " << width << endl;
+    if (verbose) cout << "aln beam size: " << beam_size << " width: " << width << endl;
     beam = beam_size;
     m = width;
     seq1 = seq1_nuc_types;
     seq2 = seq2_nuc_types;
+    verbose = is_verbose;
 
     load_init_params();
 }

@@ -236,7 +236,7 @@ tuple<string, string, string, string> BeamSankoffParser::get_parentheses_M2(SeqO
         switch (state.manner) {
             case MANNER_M2_eq_M_plus_P1:
             {
-                cout << "MANNER_M2_eq_M_plus_P1: " << i1 << " " << i2 << " " << k1+1 << " " << j1 << " " << k2+1 << " " << j2 << endl;
+                if (verbose) cout << "MANNER_M2_eq_M_plus_P1: " << i1 << " " << i2 << " " << k1+1 << " " << j1 << " " << k2+1 << " " << j2 << endl;
 
                 tuple<string, string, string, string> branch_insertion = backtrace_branch_insertion(k1+1, j1, k2+1, j2);
 
@@ -246,7 +246,7 @@ tuple<string, string, string, string> BeamSankoffParser::get_parentheses_M2(SeqO
             }
             case MANNER_M2_eq_M_plus_P2:
             {
-                cout << "MANNER_M2_eq_M_plus_P2: " << i1 << " " << i2 << " " << k1+1 << " " << j1 << " " << k2+1 << " " << j2 << endl;
+                if (verbose) cout << "MANNER_M2_eq_M_plus_P2: " << i1 << " " << i2 << " " << k1+1 << " " << j1 << " " << k2+1 << " " << j2 << endl;
 
                 tuple<string, string, string, string> branch_insertion = backtrace_branch_insertion(k1+1, j1, k2+1, j2);
                 
@@ -870,13 +870,13 @@ tuple<string, string, string, string> BeamSankoffParser::backtrace_branch_insert
     if (i2 == (j2+1)) { // branch insertion in seq1
         string seq1_struc = backtrace_single_seq(&sequences[0], i1, j1, seq1_in_P);
         pair<string, string> alignment = get_hmm_aln(i1, j1, i2, j2, MANNER_INS1, MANNER_INS1);
-        cout << seq1_struc << " " << alignment.first << " " << alignment.second << endl;
+        if (verbose) cout << seq1_struc << " " << alignment.first << " " << alignment.second << endl;
         return make_tuple(seq1_struc, "", alignment.first, alignment.second);
     } 
     else if (i1 == (j1+1)) { // branch insertion in seq2
         string seq2_struc = backtrace_single_seq(&sequences[1], i2, j2, seq2_in_P);
         pair<string, string> alignment = get_hmm_aln(i1, j1, i2, j2, MANNER_INS2, MANNER_INS2);
-        cout << seq2_struc << " " << alignment.first << " " << alignment.second << endl;
+        if (verbose) cout << seq2_struc << " " << alignment.first << " " << alignment.second << endl;
         return make_tuple("", seq2_struc, alignment.first, alignment.second);
     } else {
         cout << "wrong parameters for backtrace_branch_insertion: " << i1 << " " << j1 << " " << i2 << " " << j2 << endl;
@@ -1252,22 +1252,13 @@ float BeamSankoffParser::beam_prune(unordered_map<pair<int, int>, State, pair_ha
                 // joint folding score
                 int foldingscore = cand.seq1foldscore + cand.seq2foldscore;
                 // folding heuristic
-                if (!use_suffix) {
-                    // foldingscore += seq1_outside[j1][i1] + seq2_outside[j2][i2];
+                int seq1_out, seq2_out; 
+                if (i1 == (j1+1)) seq1_out = seq1_mfe; // branch insertion P1/P2 to M
+                else seq1_out = seq1_outside[j1][i1];
+                if (i2 == (j2+1)) seq2_out = seq2_mfe; // branch insertion P1/P2 to M
+                else seq2_out = seq2_outside[j2][i2];
 
-                    // branch insertion P1/P2 to M
-                    int seq1_out, seq2_out; 
-                    if (i1 == (j1+1)) seq1_out = seq1_mfe;
-                    else seq1_out = seq1_outside[j1][i1];
-                    if (i2 == (j2+1)) seq2_out = seq2_mfe;
-                    else seq2_out = seq2_outside[j2][i2];
-
-                    foldingscore += seq1_out + seq2_out;
-                } 
-                // else {
-                //     foldingscore += prefix_C.seq1foldscore + prefix_C.seq2foldscore;
-                //     foldingscore += seq1_out_C[j1] + seq2_out_C[j2];
-                // }
+                foldingscore += seq1_out + seq2_out;
 
                 // final score
                 if (alignscore <= LOG_OF_ZERO || foldingscore == VALUE_MIN)
@@ -1332,7 +1323,7 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
         sequences.push_back(seq);
         sum_len += seq.seq_len;
     }
-    cout << "sum of seq length: " << sum_len << " " << seq1_len << " " << seq2_len << endl;
+    if (verbose) cout << "sum of seq length: " << sum_len << " " << seq1_len << " " << seq2_len << endl;
 
     // preprocess: get next posititon paired with i after j
     {    
@@ -1351,9 +1342,9 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
     }
 
     // preprocess: HMM align tool
-    cout << endl;
-    cout << "********** HMM alignment preprocessing **********" << endl;
-    hmmalign.set(alnbeam, alnm, sequences[0].nucs, sequences[1].nucs);
+    if (verbose) cout << endl;
+    if (verbose) cout << "********** HMM alignment preprocessing **********" << endl;
+    hmmalign.set(alnbeam, alnm, sequences[0].nucs, sequences[1].nucs, verbose);
     float similarity = hmmalign.viterbi_path(false);
     hmmalign.set_parameters_by_sim(similarity); // load new parameters
     
@@ -1363,7 +1354,7 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
     // hmmalign.set_parameters_by_sim(similarity); // load new parameters
 
     float avg_width = hmmalign.envelope(similarity); // alignment envelope
-    cout << endl;
+    if (verbose) cout << endl;
     
     // update alignment weight
     // cout << "weight old: " << weight << endl;
@@ -1407,7 +1398,7 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
     delete[] hmmalign.bestALN;
     delete[] hmmalign.bestINS1;
     delete[] hmmalign.bestINS2;
-    cout << endl;
+    if (verbose) cout << endl;
 
     // local alignment scores
     hmmalign.viterbi_path_all_locals();
@@ -1454,8 +1445,8 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
     bestC.resize(sum_len+1);
 
     // single sequence folding
-    cout << endl;
-    cout << "********** single sequence folding preprocessing **********" << endl;
+    if (verbose) cout << endl;
+    if (verbose) cout << "********** single sequence folding preprocessing **********" << endl;
     BeamCKYParser* cky_parser = new BeamCKYParser();
     cky_parser->beam = lfbeam;
 
@@ -1519,7 +1510,7 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
         // only keep suboptimal base pairs
         // the maximum % change in free energy from the lowest free energy structure
         float min_score = seq_viterbi * (1 - max_energy_diff); // max_score must be positive
-        cout << "min_score: " << min_score << endl;
+        if (verbose) cout << "min_score: " << min_score << endl;
         
         int seq_len = i_seq==0? seq1_len: seq2_len;
         for (int j=0; j<seq_len-1; j++) {
@@ -1586,11 +1577,11 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 
     gettimeofday(&parse_endtime, NULL);
     double parse_elapsed_time = parse_endtime.tv_sec - parse_starttime.tv_sec + (parse_endtime.tv_usec-parse_starttime.tv_usec)/1000000.0;
-    printf("seqs %d %d pre-processing time: %f seconds.\n", seq1_len, seq2_len, parse_elapsed_time);
+    if (verbose) printf("seqs %d %d pre-processing time: %f seconds.\n", seq1_len, seq2_len, parse_elapsed_time);
 
     /********** core code **********/
-    cout << endl;
-    cout << "********** start computing **********" << endl;
+    if (verbose) cout << endl;
+    if (verbose) cout << "********** start computing **********" << endl;
     gettimeofday(&parse_starttime, NULL);
 
     SeqObject* seq1 = &sequences[0];
@@ -1639,7 +1630,7 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
     processMem_t mem;
     float threshold;
     for(int s = 1; s < seq1_len + seq2_len - 1; ++s) {
-        if (s % 10 == 1) {
+        if (verbose && s % 10 == 1) {
             mem = GetProcessMemory();
             cout << "s: " << s << " VmPeak: " << mem.VmPeak << endl;
             // if (s > 10000) verbose = true;
@@ -2375,7 +2366,7 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 
         // branch insertion 
         // fully insertion P in seq1 
-        if (false) 
+        if (add_branch) 
         {
             for (int j1=hmmalign.min_j1[s]; j1<=hmmalign.max_j1[s]; j1++) {
                 int j2 = s - j1;
@@ -2952,7 +2943,7 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 
                     float trans_emit_prob;
                     if (j1 == seq1->seq_len - 1 && j2 == seq2->seq_len - 1) {
-                        cout << m << " " << j1 << " "  << j2  << " " << state.score << endl;
+                        if (verbose) cout << m << " " << j1 << " "  << j2  << " " << state.score << endl;
 
                         trans_emit_prob = hmmalign.get_trans_emit_prob0(pre_manner, MANNER_ALN, j1+1, j2+1, true);
                         float alignscore = xlog_mul(state.alignscore, trans_emit_prob);
@@ -3028,11 +3019,12 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
         } // beam of C
 
     } // for loop s
-    cout << "end of loop s" << endl;
+    if (verbose) cout << "end of loop s" << endl;
+    cout << endl;
 
     gettimeofday(&parse_endtime, NULL);
     parse_elapsed_time = parse_endtime.tv_sec - parse_starttime.tv_sec + (parse_endtime.tv_usec-parse_starttime.tv_usec)/1000000.0;
-    printf("seqs %d %d only parse time: %f seconds.\n", seq1_len, seq2_len, parse_elapsed_time);  
+    if (verbose) printf("seqs %d %d only parse time: %f seconds.\n", seq1_len, seq2_len, parse_elapsed_time);  
 
     mem = GetProcessMemory();
     cout << "VmPeak: " << mem.VmPeak / 1024.0 / 1024.0 << endl;
@@ -3181,18 +3173,18 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 #endif
 }
 
-BeamSankoffParser::BeamSankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, int LAwidth, bool if_aster, bool if_suffix, float energy_diff, bool is_verbose)
+BeamSankoffParser::BeamSankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, int LAwidth, bool if_aster, bool if_add_branch, float energy_diff, bool is_verbose)
     :weight(aln_weight),
      beam(beam_size),
      lfbeam(LFbeam),
      alnbeam(LAbeam),
      alnm(LAwidth),
      use_astar(if_aster),
-     use_suffix(if_suffix),
+     add_branch(if_add_branch),
      max_energy_diff(energy_diff),
      verbose(is_verbose){
 
-    cout << "beam : " << beam << " lfbeam: " << lfbeam << " alnbeam: " << alnbeam << " use_astar: " << use_astar << " use_suffix: " << use_suffix <<  " max_energy_diff: " << max_energy_diff << endl;  
+    cout << "lambda: " << weight / 100 << ", beam : " << beam << ", lfbeam: " << lfbeam << ", alnbeam: " << alnbeam << ", use_astar: " << use_astar << ", add_branch: " << add_branch <<  ", max_energy_diff: " << max_energy_diff << endl;  
     
     initialize();
 

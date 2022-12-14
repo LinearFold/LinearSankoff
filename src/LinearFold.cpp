@@ -781,7 +781,7 @@ bool BeamCKYParser::allow_paired(int i, int j, vector<int>* cons, char nuci, cha
 }
 
 int BeamCKYParser::parse(const string& seq, short**** internal_score, vector<int>* cons) {
-    cout << "LF beam: " << beam << endl; 
+    if (is_verbose) cout << "LF beam: " << beam << endl; 
     struct timeval parse_starttime, parse_endtime;
 
     // number of states
@@ -1470,7 +1470,7 @@ int BeamCKYParser::parse(const string& seq, short**** internal_score, vector<int
         double printscore = viterbi.score;
 #endif
 
-        printf("%s (%.2f)\n", string(result).c_str(), printscore);
+        if (is_verbose) printf("%s (%.2f)\n", string(result).c_str(), printscore);
         // printf("Zuker suboptimal structures...\n");
         if (seq_length < 500)
             window_size = 2;

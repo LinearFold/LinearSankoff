@@ -250,7 +250,7 @@ public:
     int alnbeam;
     int alnm;
     bool use_astar;
-    bool use_suffix;
+    bool add_branch;
     float max_energy_diff;
     bool verbose;
 
@@ -267,7 +267,7 @@ public:
     int sum_len;
     vector<SeqObject> sequences;
 
-    BeamSankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, int LAwidth, bool if_aster, bool if_suffix, float energy_diff, bool is_verbose=false);
+    BeamSankoffParser(float aln_weight, int beam_size, int LFbeam, int LAbeam, int LAwidth, bool if_aster, bool if_add_branch, float energy_diff, bool is_verbose=false);
     ~BeamSankoffParser(){}
 
     void parse(const vector<string> &seqs, bool limited, const set<pair<int, int>> &allowed_pairs, vector<pair<int, int>> &out_pairs, int num_pairs);
@@ -275,13 +275,13 @@ public:
     void outside(bool limited, const set<pair<int, int>> &allowed_pairs);
 
 private:
-    // state, cost of folding and alignment, three-dimentional: [s][j1][(i1,i2)] 
+    // state, cost of folding and alignment, three-dimentional: [s][j1][h] 
     unordered_map<pair<int, int>, State, pair_hash>*** bestH;
     unordered_map<pair<int, int>, State, pair_hash>*** bestP;
     unordered_map<pair<int, int>, State, pair_hash>*** bestMulti;
 
-    unordered_map<pair<int, int>, State, pair_hash>** bestM;
-    unordered_map<pair<int, int>, State, pair_hash>** bestM2;
+    unordered_map<pair<int, int>, State, pair_hash>** bestM; // [s][j1]
+    unordered_map<pair<int, int>, State, pair_hash>** bestM2; // [s][j1]
 
     vector<unordered_map<int, State3> > bestC;
 

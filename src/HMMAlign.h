@@ -271,7 +271,7 @@ public:
     float ******left_local_scores;
     float ******right_local_scores;
 
-    void set(int beam_size, int witdth, vector<int> &seq1_nuc_types, vector<int> &seq2_nuc_types);
+    void set(int beam_size, int witdth, vector<int> &seq1_nuc_types, vector<int> &seq2_nuc_types, bool is_verbose);
     void clear(bool local_path=true);
 
     float viterbi_path(bool newpara);
