@@ -1344,7 +1344,7 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
     // preprocess: HMM align tool
     if (verbose) cout << endl;
     if (verbose) cout << "********** HMM alignment preprocessing **********" << endl;
-    hmmalign.set(alnbeam, alnm, sequences[0].nucs, sequences[1].nucs, verbose);
+    hmmalign.set(alnbeam, alnm, sequences[0].nucs, sequences[1].nucs, true);
     float similarity = hmmalign.viterbi_path(false);
     hmmalign.set_parameters_by_sim(similarity); // load new parameters
     
@@ -1630,7 +1630,7 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
     processMem_t mem;
     float threshold;
     for(int s = 1; s < seq1_len + seq2_len - 1; ++s) {
-        if (verbose && s % 10 == 1) {
+        if (s % 10 == 1) {
             mem = GetProcessMemory();
             cout << "s: " << s << " VmPeak: " << mem.VmPeak << endl;
             // if (s > 10000) verbose = true;
