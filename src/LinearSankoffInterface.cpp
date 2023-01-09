@@ -21,6 +21,24 @@ using namespace std;
 // Main method to run the program.
 ///////////////////////////////////////////////////////////////////////////////
 
+// trim whitespace at two ends
+const std::string WHITESPACE = " \n\r\t\f\v";
+std::string ltrim(const std::string &s)
+{
+    size_t start = s.find_first_not_of(WHITESPACE);
+    return (start == std::string::npos) ? "" : s.substr(start);
+}
+ 
+std::string rtrim(const std::string &s)
+{
+    size_t end = s.find_last_not_of(WHITESPACE);
+    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+}
+ 
+std::string trim(const std::string &s) {
+    return rtrim(ltrim(s));
+}
+
 int main(int argc, char** argv){
     vector<string> seqs;
     float aln_weight;
@@ -51,6 +69,9 @@ int main(int argc, char** argv){
             printf("%s\n", seq.c_str());
             continue;
         }
+
+        // trim
+        seq = trim(seq);
 
         // convert to uppercase
         transform(seq.begin(), seq.end(), seq.begin(), ::toupper);
@@ -96,7 +117,7 @@ int main(int argc, char** argv){
                 
             gettimeofday(&parse_endtime, NULL);
             double parse_elapsed_time = parse_endtime.tv_sec - parse_starttime.tv_sec + (parse_endtime.tv_usec-parse_starttime.tv_usec)/1000000.0;
-            printf("seqs %d %d time: %f seconds.\n", seq1len, seq2len, parse_elapsed_time);
+            printf("time: %f seconds\n", parse_elapsed_time);
         }
     }
 

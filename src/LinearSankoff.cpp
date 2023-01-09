@@ -1344,7 +1344,7 @@ void BeamSankoffParser::prepare(const vector<string> &seqs){
     // preprocess: HMM align tool
     if (verbose) cout << endl;
     if (verbose) cout << "********** HMM alignment preprocessing **********" << endl;
-    hmmalign.set(alnbeam, alnm, sequences[0].nucs, sequences[1].nucs, true);
+    hmmalign.set(alnbeam, alnm, sequences[0].nucs, sequences[1].nucs, false);
     float similarity = hmmalign.viterbi_path(false);
     hmmalign.set_parameters_by_sim(similarity); // load new parameters
     
@@ -1632,7 +1632,7 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
     for(int s = 1; s < seq1_len + seq2_len - 1; ++s) {
         if (s % 10 == 1) {
             mem = GetProcessMemory();
-            cout << "s: " << s << " VmPeak: " << mem.VmPeak << endl;
+            // cout << "s: " << s << " VmPeak: " << mem.VmPeak << endl;
             // if (s > 10000) verbose = true;
 
             // cout << "s: " << s << endl;
@@ -3031,15 +3031,18 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
 
     auto &state  = bestC[seq1->seq_len + seq2->seq_len][seq1->seq_len].alnobj; // bestC[seq1->seq_len - 1][seq2->seq_len-1];
     float bestscore = state.score;
-    cout << "inside: " << state.score << " " << state.seq1foldscore << " " << state.seq2foldscore << " " << xlog_mul(state.alignscore, hmmalign.trans_probs[2][2]) << endl;
+    cout << "inside score: " << state.score << endl; 
+    cout << "sequence 1 folding score: " << state.seq1foldscore << endl; 
+    cout << "sequence 2 folding score: " << state.seq2foldscore << endl;
+    cout << "probability of alignment path: " << xlog_mul(state.alignscore, hmmalign.trans_probs[2][2]) << endl;
 
     // backtrace
     // verbose = true;
     tuple<string, string, string, string> ret = get_parentheses(*seq1, *seq2, hmmalign);
-    cout << get<0>(ret) <<endl;
-    cout << get<1>(ret) <<endl;
-    cout << get<2>(ret) <<endl;
-    cout << get<3>(ret) <<endl;
+    cout << "structure 1: " << get<0>(ret) <<endl;
+    cout << "structure 2: " << get<1>(ret) <<endl;
+    cout << "alignment 1: " << get<2>(ret) <<endl;
+    cout << "alignment 2: " << get<3>(ret) <<endl;
 
     // release space
     for (int s = 1; s <= sum_len; ++s) {
@@ -3184,7 +3187,14 @@ BeamSankoffParser::BeamSankoffParser(float aln_weight, int beam_size, int LFbeam
      max_energy_diff(energy_diff),
      verbose(is_verbose){
 
-    cout << "lambda: " << weight / 100 << ", beam : " << beam << ", lfbeam: " << lfbeam << ", alnbeam: " << alnbeam << ", alnband: " << alnm << ", use_astar: " << use_astar << ", add_branch: " << add_branch <<  ", max_energy_diff: " << max_energy_diff << endl;  
+    cout << "lambda: " << weight / 100 << endl;
+    cout << "beam: " << beam << endl;
+    cout << "LinearFold beam: " << lfbeam << endl;
+    cout << "maximum energy difference: " << max_energy_diff << endl;  
+    cout << "LinearAlignment beam: " << alnbeam << endl;
+    cout << "alignment band: " << alnm << endl;
+    cout << "use astar: " << use_astar << endl;
+    cout << "add branch: " << add_branch << endl;
     
     initialize();
 
