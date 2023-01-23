@@ -3032,8 +3032,8 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
     auto &state  = bestC[seq1->seq_len + seq2->seq_len][seq1->seq_len].alnobj; // bestC[seq1->seq_len - 1][seq2->seq_len-1];
     float bestscore = state.score;
     cout << "inside score: " << state.score << endl; 
-    cout << "sequence 1 folding score: " << state.seq1foldscore << endl; 
-    cout << "sequence 2 folding score: " << state.seq2foldscore << endl;
+    cout << "sequence 1 folding score: " << state.seq1foldscore / -100.0 << endl; 
+    cout << "sequence 2 folding score: " << state.seq2foldscore / -100.0 << endl;
     cout << "probability of alignment path: " << xlog_mul(state.alignscore, hmmalign.trans_probs[2][2]) << endl;
 
     // backtrace
