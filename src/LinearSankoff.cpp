@@ -1630,13 +1630,11 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
     processMem_t mem;
     float threshold;
     for(int s = 1; s < seq1_len + seq2_len - 1; ++s) {
-        if (s % 10 == 1) {
-            mem = GetProcessMemory();
-            // cout << "s: " << s << " VmPeak: " << mem.VmPeak << endl;
-            // if (s > 10000) verbose = true;
-
-            // cout << "s: " << s << endl;
-        }
+        // if (s % 10 == 1) {
+        //     mem = GetProcessMemory();
+        //     cout << "s: " << s << " VmPeak: " << mem.VmPeak << endl;
+        //     cout << "s: " << s << endl;
+        // }
 
         if (hmmalign.min_j1[s] > hmmalign.max_j1[s]) continue;
 
@@ -3026,8 +3024,8 @@ void BeamSankoffParser::parse(const vector<string> &seqs){
     parse_elapsed_time = parse_endtime.tv_sec - parse_starttime.tv_sec + (parse_endtime.tv_usec-parse_starttime.tv_usec)/1000000.0;
     if (verbose) printf("seqs %d %d only parse time: %f seconds.\n", seq1_len, seq2_len, parse_elapsed_time);  
 
-    mem = GetProcessMemory();
-    cout << "VmPeak: " << mem.VmPeak / 1024.0 / 1024.0 << endl;
+    // mem = GetProcessMemory();
+    // cout << "VmPeak: " << mem.VmPeak / 1024.0 / 1024.0 << endl;
 
     auto &state  = bestC[seq1->seq_len + seq2->seq_len][seq1->seq_len].alnobj; // bestC[seq1->seq_len - 1][seq2->seq_len-1];
     float bestscore = state.score;
