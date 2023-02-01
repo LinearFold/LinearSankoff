@@ -2,7 +2,7 @@
 
 Run LinearSankoff with default setting: 
 
-<code> cat sample.fasta | ./liearsankoff  </code>
+<code> cat sample.fasta | ./linearsankoff  </code>
 
 Arguments: 
 
@@ -15,4 +15,4 @@ Arguments:
 
 Run LinearSankoff with specific requirements: 
 
-<code> cat sample.fasta | ./liearsankoff -w 0.4 -b 200 --branch </code> 
+<code> cat sample.fasta | ./linearsankoff -w 0.4 -b 200 --branch </code> 
